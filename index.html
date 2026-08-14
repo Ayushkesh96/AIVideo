@@ -1628,6 +1628,115 @@ button {
   }
 }
 
+/* --- styles/director.css --- */
+/* ==========================================================================
+   AIVIDEO MASTER DIRECTOR & INTERACTIVE TIMELINE V2 STYLES
+   ========================================================================== */
+
+/* Keyframe Track Bar */
+.keyframes-track-container {
+  margin-top: 14px;
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.keyframes-track-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.keyframes-track-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-lime);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyframe-diamonds-row {
+  position: relative;
+  height: 24px;
+  background: #14141c;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.keyframe-node {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--accent-lime);
+  transform: rotate(45deg);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-lime);
+  transition: all 0.15s ease;
+}
+
+.keyframe-node:hover {
+  transform: rotate(45deg) scale(1.3);
+  background: #ffffff;
+}
+
+.keyframe-node.cyan {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.keyframe-node.magenta {
+  background: var(--accent-magenta);
+  box-shadow: 0 0 8px var(--accent-magenta);
+}
+
+/* Prompt Enhancer AI Magic Wand Button */
+.prompt-magic-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(204, 255, 0, 0.12);
+  border: 1px solid rgba(204, 255, 0, 0.4);
+  color: var(--accent-lime);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-magic-btn:hover {
+  background: var(--accent-lime);
+  color: #000000;
+  box-shadow: 0 0 12px var(--accent-lime-glow);
+}
+
+/* Live Audio Oscilloscope Canvas */
+.audio-oscilloscope-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oscilloscope-canvas {
+  width: 80px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  border-radius: 4px;
+}
+
 /* --- styles/presets.css --- */
 /* ==========================================================================
    VIRAL PRESETS FX GALLERY & HOVER CARDS
@@ -2729,9 +2838,15 @@ button {
               <span>Scene Prompt</span>
               <span style="font-size:0.72rem; color:var(--accent-lime);">On-Device Neural Latent</span>
             </div>
-            <textarea id="studio-prompt-input" class="prompt-textarea" placeholder="Describe the scene, lighting, lens, and action...">Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece</textarea>
+            <div class="prompt-box-wrapper" style="position:relative;">
+              <textarea id="studio-prompt-input" class="prompt-textarea" style="width:100%; min-height:85px; padding-bottom:32px;" placeholder="Describe the scene, lighting, lens, and action...">Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece</textarea>
+              <button id="ai-enhance-prompt-btn" class="prompt-magic-btn" type="button" title="Enhance prompt with cinematic tokens">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>AI Enhance</span>
+              </button>
+            </div>
             
-            <div class="prompt-templates">
+            <div class="prompt-templates" style="margin-top:8px;">
               <span class="template-chip" data-prompt="Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece">Cyber Samurai</span>
               <span class="template-chip" data-prompt="Hyper-realistic ocean wave curling in bioluminescent turquoise glow under twilight galaxy sky, 1000fps slow motion water simulation">Bioluminescent Wave</span>
               <span class="template-chip" data-prompt="Astronaut floating inside an ancient abandoned botanical greenhouse on Mars, dust motes drifting in golden sunbeam rays">Mars Greenhouse</span>
@@ -4216,7 +4331,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 /* --- js/studio.js --- */
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER — ULTRA 4K RESOLUTION ENGINE (3840x2160)
- * True Native 4K UHD Raymarching & High-Bitrate Hardware Video Encoding
+ * Native 4K UHD Raymarching + AI Prompt Enhancer + Master Director Suite
  */
 
 (function () {
@@ -4286,6 +4401,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 
   // DOM Elements
   const promptInput = document.getElementById('studio-prompt-input');
+  const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
   const modelBtns = document.querySelectorAll('.model-pill-btn');
   const cameraBtns = document.querySelectorAll('.camera-btn');
   const ratioBtns = document.querySelectorAll('.ratio-btn');
@@ -4308,7 +4424,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
   const grainSlider = document.getElementById('grain-slider');
   const fogSlider = document.getElementById('fog-slider');
 
-  // Set Ultra 4K Native Resolution or Display Resolution
   function resizeCanvas(force4K = false) {
     if (!canvas || !canvas.parentElement) return;
     if (force4K) {
@@ -4356,7 +4471,28 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Generate Real 4K UHD Master Video
+  // AI Prompt Enhancer Logic
+  function enhanceUserPrompt() {
+    if (!promptInput) return;
+    const base = promptInput.value.trim();
+    if (!base) return;
+
+    const enhancers = [
+      "anamorphic lens flare, 35mm film grain, volumetric God-rays, photorealistic octane render, 8k masterpiece",
+      "shot on IMAX 70mm, atmospheric haze, ray-traced subsurface scattering, hyper-detailed textures, cinematic color grade",
+      "ultra-high dynamic range, dual key rim lighting, shallow depth of field, micro-surface reflections, unreal engine 5.4 render"
+    ];
+
+    const chosen = enhancers[Math.floor(Math.random() * enhancers.length)];
+    const enhanced = `${base}, ${chosen}`;
+    promptInput.value = enhanced;
+    state.prompt = enhanced;
+
+    if (window.showToast) {
+      window.showToast("✨ AI Prompt Enhanced with 8K Cinematic Tokens!");
+    }
+  }
+
   function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -4364,7 +4500,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     recordedChunks = [];
     if (overlay) overlay.classList.add('active');
 
-    // Upgrade Canvas Buffer to 4K Ultra Resolution for Crystal Clear Capture
     resizeCanvas(true);
 
     if (window.showToast) {
@@ -4378,7 +4513,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
         mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 25000000 // 25 Mbps Ultra 4K Bitrate
+          videoBitsPerSecond: 25000000
         });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
@@ -4443,7 +4578,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     }, 1000 / state.fps);
   }
 
-  // Render Full 4K Multi-Shot Storyboard Film
   window.renderFullStoryboardFilm = function () {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -4631,7 +4765,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     }
   };
 
-  // Instant 4K Master Video Export
   window.downloadCurrentVideoFile = function () {
     if (state.generatedBlob) {
       const a = document.createElement('a');
@@ -4660,6 +4793,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 
   // Bind Listeners
   if (generateBtn) generateBtn.addEventListener('click', startSovereignVideoGeneration);
+  if (aiEnhanceBtn) aiEnhanceBtn.addEventListener('click', enhanceUserPrompt);
 
   modeTabs.forEach(tab => {
     tab.addEventListener('click', () => {

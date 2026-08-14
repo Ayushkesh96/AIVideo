@@ -1,0 +1,107 @@
+/* ==========================================================================
+   AIVIDEO MASTER DIRECTOR & INTERACTIVE TIMELINE V2 STYLES
+   ========================================================================== */
+
+/* Keyframe Track Bar */
+.keyframes-track-container {
+  margin-top: 14px;
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.keyframes-track-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.keyframes-track-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-lime);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyframe-diamonds-row {
+  position: relative;
+  height: 24px;
+  background: #14141c;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.keyframe-node {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--accent-lime);
+  transform: rotate(45deg);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-lime);
+  transition: all 0.15s ease;
+}
+
+.keyframe-node:hover {
+  transform: rotate(45deg) scale(1.3);
+  background: #ffffff;
+}
+
+.keyframe-node.cyan {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.keyframe-node.magenta {
+  background: var(--accent-magenta);
+  box-shadow: 0 0 8px var(--accent-magenta);
+}
+
+/* Prompt Enhancer AI Magic Wand Button */
+.prompt-magic-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(204, 255, 0, 0.12);
+  border: 1px solid rgba(204, 255, 0, 0.4);
+  color: var(--accent-lime);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-magic-btn:hover {
+  background: var(--accent-lime);
+  color: #000000;
+  box-shadow: 0 0 12px var(--accent-lime-glow);
+}
+
+/* Live Audio Oscilloscope Canvas */
+.audio-oscilloscope-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oscilloscope-canvas {
+  width: 80px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  border-radius: 4px;
+}

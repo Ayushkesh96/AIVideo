@@ -1,6 +1,6 @@
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER — ULTRA 4K RESOLUTION ENGINE (3840x2160)
- * True Native 4K UHD Raymarching & High-Bitrate Hardware Video Encoding
+ * Native 4K UHD Raymarching + AI Prompt Enhancer + Master Director Suite
  */
 
 (function () {
@@ -70,6 +70,7 @@
 
   // DOM Elements
   const promptInput = document.getElementById('studio-prompt-input');
+  const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
   const modelBtns = document.querySelectorAll('.model-pill-btn');
   const cameraBtns = document.querySelectorAll('.camera-btn');
   const ratioBtns = document.querySelectorAll('.ratio-btn');
@@ -92,7 +93,6 @@
   const grainSlider = document.getElementById('grain-slider');
   const fogSlider = document.getElementById('fog-slider');
 
-  // Set Ultra 4K Native Resolution or Display Resolution
   function resizeCanvas(force4K = false) {
     if (!canvas || !canvas.parentElement) return;
     if (force4K) {
@@ -140,7 +140,28 @@
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Generate Real 4K UHD Master Video
+  // AI Prompt Enhancer Logic
+  function enhanceUserPrompt() {
+    if (!promptInput) return;
+    const base = promptInput.value.trim();
+    if (!base) return;
+
+    const enhancers = [
+      "anamorphic lens flare, 35mm film grain, volumetric God-rays, photorealistic octane render, 8k masterpiece",
+      "shot on IMAX 70mm, atmospheric haze, ray-traced subsurface scattering, hyper-detailed textures, cinematic color grade",
+      "ultra-high dynamic range, dual key rim lighting, shallow depth of field, micro-surface reflections, unreal engine 5.4 render"
+    ];
+
+    const chosen = enhancers[Math.floor(Math.random() * enhancers.length)];
+    const enhanced = `${base}, ${chosen}`;
+    promptInput.value = enhanced;
+    state.prompt = enhanced;
+
+    if (window.showToast) {
+      window.showToast("✨ AI Prompt Enhanced with 8K Cinematic Tokens!");
+    }
+  }
+
   function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -148,7 +169,6 @@
     recordedChunks = [];
     if (overlay) overlay.classList.add('active');
 
-    // Upgrade Canvas Buffer to 4K Ultra Resolution for Crystal Clear Capture
     resizeCanvas(true);
 
     if (window.showToast) {
@@ -162,7 +182,7 @@
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
         mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 25000000 // 25 Mbps Ultra 4K Bitrate
+          videoBitsPerSecond: 25000000
         });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
@@ -227,7 +247,6 @@
     }, 1000 / state.fps);
   }
 
-  // Render Full 4K Multi-Shot Storyboard Film
   window.renderFullStoryboardFilm = function () {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -415,7 +434,6 @@
     }
   };
 
-  // Instant 4K Master Video Export
   window.downloadCurrentVideoFile = function () {
     if (state.generatedBlob) {
       const a = document.createElement('a');
@@ -444,6 +462,7 @@
 
   // Bind Listeners
   if (generateBtn) generateBtn.addEventListener('click', startSovereignVideoGeneration);
+  if (aiEnhanceBtn) aiEnhanceBtn.addEventListener('click', enhanceUserPrompt);
 
   modeTabs.forEach(tab => {
     tab.addEventListener('click', () => {
