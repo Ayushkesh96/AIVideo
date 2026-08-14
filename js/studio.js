@@ -1,12 +1,12 @@
 /**
- * HIGGSFIELD AI — STUDIO INTEGRATION WITH DEEP HARDCORE NEURAL VIDEO ENGINE
- * 100% Client-Side Pure WebGL2 GPU Math + MediaRecorder Video Encoding
+ * AIVIDEO SOVEREIGN STUDIO CONTROLLER
+ * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Generative Cinematic Audio Muxing
  */
 
 (function () {
   const state = {
     mode: "text-to-video",
-    model: "Seedance 2.5 (1080p)",
+    model: "Sovereign DiT v4.0",
     aspectRatio: "16:9",
     cameraMotion: "Orbit 360°",
     resolution: "1080p",
@@ -25,8 +25,13 @@
 
   const canvas = document.getElementById('studio-viewport-canvas');
   let neuralEngine = null;
+  let audioEngine = null;
+
   if (canvas && window.NeuralVideoEngine) {
     neuralEngine = new window.NeuralVideoEngine(canvas);
+  }
+  if (window.CinemaAudioEngine) {
+    audioEngine = new window.CinemaAudioEngine();
   }
 
   let mediaRecorder = null;
@@ -92,8 +97,8 @@
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Hardcore Neural Video Generation & Hardware Stream Encoding
-  function startHardcoreVideoGeneration() {
+  // Generate 3D Neural Video with Synchronized Generative Audio
+  function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
     state.isPlaying = false;
@@ -101,19 +106,43 @@
     overlay.classList.add('active');
 
     if (window.showToast) {
-      window.showToast("⚡ Compiling 3D DiT Latent Vectors on WebGL2 GPU...");
+      window.showToast("⚡ Synthesizing 3D Neural Latents & Audio Foley...");
     }
 
-    const stream = canvas.captureStream(state.fps);
-    let options = { mimeType: 'video/webm;codecs=vp9' };
+    // Determine scene archetype for audio
+    const p = state.prompt.toLowerCase();
+    let sType = 0;
+    if (p.includes('ocean') || p.includes('wave') || p.includes('water')) sType = 1;
+    else if (p.includes('space') || p.includes('galaxy') || p.includes('star')) sType = 2;
+    else if (p.includes('ancient') || p.includes('temple') || p.includes('dragon')) sType = 3;
+
+    // Start Audio Synthesizer
+    let audioStream = null;
+    if (audioEngine) {
+      audioStream = audioEngine.playCinematicSoundscape(sType, state.duration);
+    }
+
+    // Video Canvas Stream
+    const videoStream = canvas.captureStream(state.fps);
+    
+    // Combine Video + Audio tracks if available
+    let combinedStream = videoStream;
+    if (audioStream && audioStream.getAudioTracks().length > 0) {
+      combinedStream = new MediaStream([
+        ...videoStream.getVideoTracks(),
+        ...audioStream.getAudioTracks()
+      ]);
+    }
+
+    let options = { mimeType: 'video/webm;codecs=vp9,opus' };
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
       options = { mimeType: 'video/webm' };
     }
 
     try {
-      mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorder = new MediaRecorder(combinedStream, options);
     } catch (e) {
-      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder = new MediaRecorder(videoStream);
     }
 
     mediaRecorder.ondataavailable = (event) => {
@@ -136,7 +165,7 @@
       addGenerationToHistory(state.generatedVideoUrl);
 
       if (window.showToast) {
-        window.showToast("✓ Neural 3D AI video synthesized and encoded! Ready for export.");
+        window.showToast("✓ Master video + synchronized cinematic soundtrack rendered! Ready for export.");
       }
     };
 
@@ -146,11 +175,11 @@
     let currentFrame = 0;
 
     const steps = [
-      "Running 128-dim Latent Tokenizer...",
-      "Raymarching 3D Signed Distance Fields...",
-      "Computing Spatio-Temporal Volumetric Lighting...",
-      "Applying 3D Camera Trajectory Vectors...",
-      "Hardware Muxing 1080p Video Stream..."
+      "Vectorizing prompt in 128-dim Latent Space...",
+      "Raymarching 3D Volumetric Scene Geometry...",
+      "Synthesizing dynamic binaural audio soundtrack...",
+      "Applying 3D Camera Choreography Paths...",
+      "Hardware Muxing Master 1080p Video Stream..."
     ];
 
     const frameInterval = setInterval(() => {
@@ -215,11 +244,11 @@
     if (state.generatedBlob) {
       const a = document.createElement('a');
       a.href = state.generatedVideoUrl;
-      a.download = `higgsfield-neural-${Date.now()}.webm`;
+      a.download = `aivideo-master-${Date.now()}.webm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Real AI video exported & downloaded!");
+      if (window.showToast) window.showToast("✓ Master video + audio exported & downloaded!");
     } else {
       window.downloadCurrentFrame();
     }
@@ -230,15 +259,15 @@
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `higgsfield-neural-frame-${Date.now()}.png`;
+    a.download = `aivideo-frame-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    if (window.showToast) window.showToast("✓ Frame exported & downloaded!");
+    if (window.showToast) window.showToast("✓ High-Res PNG frame exported!");
   };
 
   // Bind Listeners
-  if (generateBtn) generateBtn.addEventListener('click', startHardcoreVideoGeneration);
+  if (generateBtn) generateBtn.addEventListener('click', startSovereignVideoGeneration);
 
   modeTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -287,7 +316,7 @@
       const text = chip.dataset.prompt || chip.textContent.trim();
       if (promptInput) promptInput.value = text;
       state.prompt = text;
-      startHardcoreVideoGeneration();
+      startSovereignVideoGeneration();
     });
   });
 
@@ -336,7 +365,7 @@
       studioSection.scrollIntoView({ behavior: 'smooth' });
     }
 
-    startHardcoreVideoGeneration();
+    startSovereignVideoGeneration();
   };
 
   window.addEventListener('resize', resizeCanvas);
@@ -345,6 +374,9 @@
     resizeCanvas();
     if (!neuralEngine && window.NeuralVideoEngine) {
       neuralEngine = new window.NeuralVideoEngine(canvas);
+    }
+    if (!audioEngine && window.CinemaAudioEngine) {
+      audioEngine = new window.CinemaAudioEngine();
     }
     state.isPlaying = true;
     previewLoop();
