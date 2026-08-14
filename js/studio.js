@@ -163,6 +163,13 @@
 
   // 100% Crash-Proof Non-Blocking Video Generation Engine
   function startSovereignVideoGeneration() {
+    if (promptInput && promptInput.value.trim()) {
+      state.prompt = promptInput.value.trim();
+    }
+    if (window.FilmOS && typeof window.FilmOS.resolveMentions === 'function') {
+      state.prompt = window.FilmOS.resolveMentions(state.prompt);
+    }
+
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
     state.isPlaying = false;
