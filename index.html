@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Higgsfield AI — AI-native creative suite (Self-Sufficient Video Platform)</title>
+  <meta name="description" content="Create images, videos, and voice content with Higgsfield AI from text prompts or references. Edit and upscale media, automate creative workflows with its AI agent.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/hero.css">
+  <link rel="stylesheet" href="styles/studio.css">
+  <link rel="stylesheet" href="styles/presets.css">
+  <link rel="stylesheet" href="styles/community.css">
+  <link rel="stylesheet" href="styles/pricing.css">
+
+  <style>
+    /* Global Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(16px);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-box {
+      background: #141418;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 500px;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      transform: scale(0.96);
+      transition: transform 0.25s ease;
+    }
+    .modal-overlay.active .modal-box {
+      transform: scale(1);
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .modal-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .modal-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .modal-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .modal-input {
+      background: #09090d;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: #ffffff;
+      font-size: 0.9rem;
+    }
+    .modal-input:focus {
+      border-color: var(--accent-lime);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       EXACT HIGGSFIELD NAVBAR (MATCHING SCREENSHOT)
+       ========================================================================== -->
+  <header class="site-header">
+    <div class="nav-container">
+      <!-- Logo -->
+      <a href="#" class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V4zm10 10a3 3 0 0 1-6 0v-6a3 3 0 0 1 6 0v6z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Left Links -->
+      <nav class="nav-menu">
+        <a href="#explore" class="nav-link-item active">Explore</a>
+        <div class="nav-divider"></div>
+        <a href="#studio" class="nav-link-item">Image</a>
+        <a href="#studio" class="nav-link-item">Video</a>
+        <a href="#studio" class="nav-link-item">Audio</a>
+        <a href="#studio" class="nav-link-item">
+          Edit <span class="badge-layers">Layers</span>
+        </a>
+        <a href="#studio" class="nav-link-item">
+          Cinema Studio <span class="badge-lime">New</span>
+        </a>
+        <a href="#presets" class="nav-link-item">
+          Marketing Studio <span class="badge-lime">New</span>
+        </a>
+        <a href="#presets" class="nav-link-item">Viral Presets</a>
+        <div class="nav-divider"></div>
+        <a href="#supercomputer" class="nav-link-item">
+          MCP & CLI <span class="badge-lime">New</span>
+        </a>
+        <a href="#supercomputer" class="nav-link-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.75;"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Supercomputer
+        </a>
+      </nav>
+
+      <!-- Right Actions -->
+      <div class="nav-actions">
+        <!-- Pricing with 30% OFF pill -->
+        <a href="#pricing" class="nav-action-link pricing-wrap">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <span>Pricing</span>
+          </div>
+          <span class="pricing-btn-badge">30% OFF</span>
+        </a>
+
+        <!-- Enterprise -->
+        <a href="#enterprise" class="nav-action-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Enterprise</span>
+        </a>
+
+        <!-- Language Selector -->
+        <button class="lang-selector-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="nav-divider"></div>
+
+        <!-- Login / Sign Up -->
+        <button class="btn btn-login auth-trigger">Login</button>
+        <button class="btn btn-lime auth-trigger">Sign up</button>
+
+        <!-- Mobile Toggle -->
+        <button class="mobile-menu-toggle" aria-label="Toggle Navigation">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       HERO SHOWCASE SECTION (EXACT SCREENSHOT TOP ROW + 2X3 GRID)
+       ========================================================================== -->
+  <section class="section hero-section" id="explore">
+    <div class="container-fluid">
+
+      <!-- TOP ROW: 3 HERO MEDIA CARDS -->
+      <div class="hero-cards-scroll-container">
+        
+        <!-- CARD 1: SEEDANCE 2.5 1080P -->
+        <div class="hero-showcase-item" onclick="document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+          <div class="hero-card-media border-glow-blue">
+            <canvas id="hero-cv-seedance" class="hero-card-canvas"></canvas>
+            <div class="hero-card-overlay">
+              <div class="media-title-seedance">SEEDANCE 2.5</div>
+              <div class="media-badge-1080p">1080P</div>
+              <div class="media-subtitle-seedance">EARLY ACCESS ONLY ON HIGGSFIELD</div>
+            </div>
+          </div>
+          <div class="hero-card-meta">
+            <div class="hero-meta-title">SEEDANCE 2.5 IN 1080P</div>
+            <div class="hero-meta-subtitle">Now generating in 1080p exclusively on Higgsfield</div>
+          </div>
+        </div>
+
+        <!-- CARD 2: MARKETING STUDIO -->
+        <div class="hero-showcase-item" onclick="document.getElementById('presets').scrollIntoView({behavior:'smooth'})">
+          <div class="hero-card-media">
+            <canvas id="hero-cv-marketing" class="hero-card-canvas"></canvas>
+            <span class="media-badge-ugc">UGC ADS</span>
+          </div>
+          <div class="hero-card-meta">
+            <div class="hero-meta-title">MARKETING STUDIO</div>
+            <div class="hero-meta-subtitle">1500+ presets for everything</div>
+          </div>
+        </div>
+
+        <!-- CARD 3: ADILIADA -->
+        <div class="hero-showcase-item" onclick="document.getElementById('community').scrollIntoView({behavior:'smooth'})">
+          <div class="hero-card-media">
+            <canvas id="hero-cv-adiliada" class="hero-card-canvas"></canvas>
+            <div class="hero-card-overlay" style="align-items:center; justify-content:center;">
+              <div class="media-title-adiliada">ADILIADA</div>
+              <div class="media-subtitle-adiliada">FULLY OPEN-SOURCE POWERED BY SEEDANCE</div>
+            </div>
+          </div>
+          <div class="hero-card-meta">
+            <div class="hero-meta-title">ADILIADA</div>
+            <div class="hero-meta-subtitle">A fully open-source original, powered by Seedance.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECOND ROW: SPOTLIGHT BANNER (LEFT) + 2X3 FEATURE GRID (RIGHT) -->
+      <div class="hero-feature-matrix-container">
+        
+        <!-- LEFT: EXCLUSIVE SEEDANCE 2.5 BANNER -->
+        <div class="spotlight-hero-card">
+          <canvas id="spotlight-bg-canvas" class="spotlight-bg-canvas"></canvas>
+          <div class="spotlight-bg-overlay"></div>
+          <div class="spotlight-content">
+            <div class="spotlight-title-lime">EXCLUSIVE SEEDANCE 2.5</div>
+            <div class="spotlight-title-white">AT 1080P WITH 30% OFF</div>
+            <div class="spotlight-desc">The most advanced model at 1080p with an exclusive access</div>
+            <a href="#studio" class="spotlight-btn-lime">Get Seedance 2.5 at 1080p with 30% OFF</a>
+          </div>
+        </div>
+
+        <!-- RIGHT: 2X3 COMPACT FEATURE GRID -->
+        <div class="compact-feature-grid">
+          
+          <!-- Card 1: Seedance 2.5 -->
+          <div class="feature-compact-card card-blue-glow" onclick="document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+            <div class="card-top-row">
+              <div class="card-icon icon-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18h3V6H4v12zm7 0h3V2h-3v16zm7 0h3v-8h-3v8z"/></svg>
+              </div>
+              <span class="card-badge-pink">EXCLUSIVE 1080P</span>
+            </div>
+            <div>
+              <div class="feature-card-name">Seedance 2.5</div>
+              <div class="feature-card-desc" style="color:#7dd3fc;">The most advanced video model</div>
+            </div>
+          </div>
+
+          <!-- Card 2: Higgsfield Academy -->
+          <div class="feature-compact-card" onclick="window.showToast('Opening Higgsfield Academy tutorials...')">
+            <div class="card-top-row">
+              <div class="card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="feature-card-name">Higgsfield Academy</div>
+              <div class="feature-card-desc">Learn how to use Higgsfield</div>
+            </div>
+          </div>
+
+          <!-- Card 3: Seedance 2.0 -->
+          <div class="feature-compact-card" onclick="document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+            <div class="card-top-row">
+              <div class="card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18h3V6H4v12zm7 0h3V2h-3v16zm7 0h3v-8h-3v8z"/></svg>
+              </div>
+              <span class="card-badge-video">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Video
+              </span>
+            </div>
+            <div>
+              <div class="feature-card-name">Seedance 2.0</div>
+              <div class="feature-card-desc">Create high-quality videos</div>
+            </div>
+          </div>
+
+          <!-- Card 4: Supercomputer -->
+          <div class="feature-compact-card" onclick="document.getElementById('supercomputer').scrollIntoView({behavior:'smooth'})">
+            <div class="card-top-row">
+              <div class="card-icon icon-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="feature-card-name">Supercomputer</div>
+              <div class="feature-card-desc">Automation, skills, apps and more</div>
+            </div>
+          </div>
+
+          <!-- Card 5: MCP & CLI -->
+          <div class="feature-compact-card" onclick="window.showToast('MCP connector enabled for Claude!')">
+            <div class="card-top-row">
+              <div class="card-icon icon-orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="feature-card-name">MCP & CLI</div>
+              <div class="feature-card-desc">Turn Claude into a creative engine</div>
+            </div>
+          </div>
+
+          <!-- Card 6: Cinema Studio 4.0 -->
+          <div class="feature-compact-card" onclick="document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+            <div class="card-top-row">
+              <div class="card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              </div>
+              <span class="card-badge-lime">NEW</span>
+            </div>
+            <div>
+              <div class="feature-card-name">Cinema Studio 4.0</div>
+              <div class="feature-card-desc">Create cinematic scenes effortlessly</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE CINEMA STUDIO 4.0 (FULL SELF-CONTAINED GENERATIVE WORKSPACE)
+       ========================================================================== -->
+  <section class="section" id="studio">
+    <div class="container-fluid">
+      <div class="section-header">
+        <span class="section-tag">Self-Sufficient Video Platform</span>
+        <h2 class="section-title">Cinema Studio 4.0</h2>
+        <p class="section-subtitle">Real on-device video synthesis and encoding engine. Generates downloadable video files directly in your browser with zero 3rd-party APIs.</p>
+      </div>
+
+      <div class="studio-wrapper">
+        <!-- Studio Mode Tabs -->
+        <div class="studio-mode-tabs" style="grid-column: 1 / -1;">
+          <button class="studio-mode-tab active" data-mode="text-to-video">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Text to Video
+          </button>
+          <button class="studio-mode-tab" data-mode="image-to-video">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="21 15 16 10 5 21"/></svg>
+            Image to Video
+          </button>
+          <button class="studio-mode-tab" data-mode="text-to-image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
+            Text to Image (Nano Banana Pro)
+          </button>
+          <button class="studio-mode-tab" data-mode="storyboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Director Storyboard Mode
+          </button>
+        </div>
+
+        <!-- Left Controls Sidebar -->
+        <div class="studio-sidebar">
+          <div class="studio-panel-title">
+            <span>Model Engine</span>
+            <span class="badge-lime">Seedance 2.5 (1080p)</span>
+          </div>
+          <div class="model-pill-selector">
+            <button class="model-pill-btn active" data-model="Seedance 2.5 (1080p)">Seedance 2.5</button>
+            <button class="model-pill-btn" data-model="Seedance 2.0">Seedance 2.0</button>
+            <button class="model-pill-btn" data-model="Nano Banana Pro">Nano Banana</button>
+          </div>
+
+          <!-- Prompt Box -->
+          <div class="prompt-container">
+            <div class="studio-panel-title">
+              <span>Scene Prompt</span>
+              <span style="font-size:0.72rem; color:var(--accent-lime);">On-Device Neural Latent</span>
+            </div>
+            <textarea id="studio-prompt-input" class="prompt-textarea" placeholder="Describe the scene, lighting, lens, and action...">Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece</textarea>
+            
+            <div class="prompt-templates">
+              <span class="template-chip" data-prompt="Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece">Cyber Samurai</span>
+              <span class="template-chip" data-prompt="Hyper-realistic ocean wave curling in bioluminescent turquoise glow under twilight galaxy sky, 1000fps slow motion water simulation">Bioluminescent Wave</span>
+              <span class="template-chip" data-prompt="Astronaut floating inside an ancient abandoned botanical greenhouse on Mars, dust motes drifting in golden sunbeam rays">Mars Greenhouse</span>
+              <span class="template-chip" data-prompt="High fashion model walking on mirror glass runway in infinite desert dusk, haute couture geometric obsidian dress fluttering">Desert Fashion</span>
+            </div>
+          </div>
+
+          <!-- Camera Director Matrix -->
+          <div class="camera-controller">
+            <div class="studio-panel-title">
+              <span>Camera Choreography</span>
+              <span style="font-size:0.72rem; color:var(--accent-lime);">Active: Orbit 360°</span>
+            </div>
+            <div class="camera-grid">
+              <button class="camera-btn" data-camera="Pan Left">
+                <svg viewBox="0 0 24 24" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Pan Left
+              </button>
+              <button class="camera-btn" data-camera="Tilt Up">
+                <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                Tilt Up
+              </button>
+              <button class="camera-btn" data-camera="Pan Right">
+                <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                Pan Right
+              </button>
+              <button class="camera-btn" data-camera="Zoom In">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                Zoom In
+              </button>
+              <button class="camera-btn active" data-camera="Orbit 360°">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Orbit 360°
+              </button>
+              <button class="camera-btn" data-camera="Zoom Out">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                Zoom Out
+              </button>
+              <button class="camera-btn" data-camera="Tilt Down">
+                <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                Tilt Down
+              </button>
+              <button class="camera-btn" data-camera="Drone Overhead">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="4"/></svg>
+                Drone
+              </button>
+              <button class="camera-btn" data-camera="FPV Dive">
+                <svg viewBox="0 0 24 24" fill="none"><polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2"/></svg>
+                FPV Dive
+              </button>
+            </div>
+          </div>
+
+          <!-- Motion Strength Slider -->
+          <div class="slider-group">
+            <div class="slider-row">
+              <span class="modal-label">Motion Dynamics & Speed:</span>
+              <span id="motion-strength-val" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-lime); font-weight:700;">75%</span>
+            </div>
+            <input type="range" id="motion-strength-slider" class="custom-slider" min="10" max="100" value="75">
+          </div>
+
+          <!-- Aspect Ratio & Resolution -->
+          <div class="settings-row">
+            <span class="modal-label">Aspect Ratio:</span>
+            <div class="ratio-group">
+              <button class="ratio-btn active" data-ratio="16:9">16:9</button>
+              <button class="ratio-btn" data-ratio="9:16">9:16</button>
+              <button class="ratio-btn" data-ratio="1:1">1:1</button>
+              <button class="ratio-btn" data-ratio="21:9">21:9</button>
+            </div>
+          </div>
+
+          <!-- Local Reference Image Upload Slot -->
+          <div class="ref-uploader" title="Click to upload any local image to animate">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 4px; color:var(--text-muted);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <div class="ref-text">Upload / Drop local image for Image-to-Video</div>
+          </div>
+
+          <button id="studio-generate-btn" class="btn btn-lime btn-lg" style="width:100%;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate Real Video (1080p)
+          </button>
+        </div>
+
+        <!-- Right Viewport Stage -->
+        <div class="studio-viewport-stage">
+          <div class="viewport-canvas-container">
+            <canvas id="studio-viewport-canvas" class="viewport-canvas"></canvas>
+
+            <!-- Top HUD -->
+            <div class="viewport-hud">
+              <div class="hud-pill">
+                <span class="hud-dot" style="background:var(--accent-lime);"></span>
+                <span id="hud-model-tag">Seedance 2.5</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div class="hud-pill" id="hud-motion-tag">Orbit 360°</div>
+                <div class="hud-pill" id="hud-res-tag">1080p • 30 FPS</div>
+              </div>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="studio-rendering-overlay" class="rendering-overlay">
+              <div class="render-spinner" style="border-top-color:var(--accent-lime);"></div>
+              <div class="render-progress-bar">
+                <div id="render-progress-fill" class="render-progress-fill" style="background:linear-gradient(90deg, var(--accent-lime), var(--accent-cyan));"></div>
+              </div>
+              <div id="render-status-text" class="render-status-text">Synthesizing latent 3D scene physics...</div>
+            </div>
+          </div>
+
+          <!-- Bottom Playback & Real Video Export Bar -->
+          <div class="viewport-bottom-bar">
+            <div class="playback-controls">
+              <button id="playback-play-pause" class="btn btn-icon btn-sm">
+                <svg id="play-pause-icon" width="14" height="14" viewBox="0 0 24 24"><path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/></svg>
+              </button>
+              <span id="studio-time-display" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">00:00.0 / 00:06.0</span>
+            </div>
+
+            <div id="studio-timeline-scrubber" class="timeline-scrubber">
+              <div id="studio-timeline-progress" class="timeline-progress" style="background:var(--accent-lime);"></div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-dark btn-sm" onclick="window.showToast('✓ Video upscaled to 4K Master!')">Upscale 4K</button>
+              <button class="btn btn-lime btn-sm" onclick="window.downloadCurrentVideoFile()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Video File
+              </button>
+            </div>
+          </div>
+
+          <!-- Generation History Reel -->
+          <div class="studio-history-section">
+            <div class="history-strip-title">
+              <span>Recent Generation Reel</span>
+              <span style="font-size:0.7rem; color:var(--accent-lime);">Click to reload clip</span>
+            </div>
+            <div id="studio-history-strip" class="history-strip"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIRAL PRESETS FX GALLERY
+       ========================================================================== -->
+  <section class="section" id="presets">
+    <div class="container-fluid">
+      <div class="section-header">
+        <span class="section-tag">One-Click FX</span>
+        <h2 class="section-title">Higgsfield Viral Presets</h2>
+        <p class="section-subtitle">Big-budget visual effects, from explosions and reality warps to surreal transformations.</p>
+      </div>
+
+      <div class="presets-filter-bar">
+        <button class="preset-filter-btn active" data-category="all">All Presets (14)</button>
+        <button class="preset-filter-btn" data-category="vfx">Visual Effects</button>
+        <button class="preset-filter-btn" data-category="scifi">Sci-Fi & Cyber</button>
+        <button class="preset-filter-btn" data-category="characters">Characters & Anime</button>
+        <button class="preset-filter-btn" data-category="surreal">Surreal & Fantasy</button>
+      </div>
+
+      <div id="presets-grid" class="presets-grid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       EXPLORE INSIDE EVERY PROJECT
+       ========================================================================== -->
+  <section class="section" id="community">
+    <div class="container-fluid">
+      <div class="section-header">
+        <span class="section-tag">Open Source Prompts</span>
+        <h2 class="section-title">Explore the inside of every project</h2>
+        <p class="section-subtitle">See all prompts, latent seeds, camera trajectories, and layered assets for community projects.</p>
+      </div>
+
+      <div id="community-projects-grid" class="projects-grid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SUPERCOMPUTER AGENT
+       ========================================================================== -->
+  <section class="section" id="supercomputer">
+    <div class="container-fluid">
+      <div class="section-header">
+        <span class="section-tag">Autonomous Workflow</span>
+        <h2 class="section-title">Supercomputer</h2>
+        <p class="section-subtitle">Describe what you want. Higgsfield Supercomputer plans the shots, picks the AI models, and renders it all in one chat.</p>
+      </div>
+
+      <div class="supercomputer-chat-wrapper">
+        <div class="chat-header">
+          <div class="chat-agent-info">
+            <div class="chat-agent-avatar">H</div>
+            <div>
+              <div style="font-weight:700; font-size:0.95rem;">Higgsfield Supercomputer Agent</div>
+              <div style="font-size:0.75rem; color:var(--accent-green); display:flex; align-items:center; gap:4px;">
+                <span class="hud-dot" style="background:var(--accent-green);"></span> Online • Connected to H100 Cluster
+              </div>
+            </div>
+          </div>
+          <span class="badge-lime">Auto-Director</span>
+        </div>
+
+        <div id="supercomputer-chat-messages" class="chat-messages-container">
+          <div class="chat-msg agent">
+            <div class="chat-bubble">
+              <div style="font-weight:700; margin-bottom:4px; color:var(--accent-lime);">Higgsfield Supercomputer:</div>
+              Hello! I am your AI creative director. What would you like to build today? You can ask me to write a multi-shot commercial, plan an anime launch trailer, or generate a photorealistic brand kit.
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <input type="text" id="supercomputer-chat-input" class="chat-input" placeholder="e.g. Create a 30s cyberpunk trailer with FPV drone dive and neon rain...">
+          <button id="supercomputer-chat-send" class="btn btn-lime btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send Instruction
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PRICING & FAQ
+       ========================================================================== -->
+  <section class="section" id="pricing">
+    <div class="container-fluid">
+      <div class="section-header" style="text-align:center;">
+        <span class="section-tag">Transparent Pricing</span>
+        <h2 class="section-title">Plans built for creators & studios</h2>
+        
+        <div class="billing-switcher-container">
+          <div class="billing-switcher">
+            <button id="billing-annual-btn" class="billing-tab active">Annual Billing</button>
+            <button id="billing-monthly-btn" class="billing-tab">Monthly Billing</button>
+          </div>
+          <span class="badge-pink">30% OFF</span>
+        </div>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Starter Plan -->
+        <div class="pricing-card">
+          <div>
+            <div class="pricing-tier">Starter</div>
+            <div class="pricing-desc">Explore AI video generation and create your first prompts for free.</div>
+            <div class="pricing-price-wrap">
+              <span class="pricing-currency">$</span>
+              <span class="pricing-amount" data-plan="starter">0</span>
+              <span class="pricing-period">/month</span>
+            </div>
+            <div class="pricing-features-list">
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>50 Generation Credits / month</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>720p Resolution video renders</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Access to 1,500+ Viral Presets</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-dark" style="width:100%;" onclick="window.showToast('Starter plan active!')">Get Started Free</button>
+        </div>
+
+        <!-- Creator Plan -->
+        <div class="pricing-card">
+          <div>
+            <div class="pricing-tier">Creator</div>
+            <div class="pricing-desc">Ideal for content creators making regular TikTok, Reels, and shorts.</div>
+            <div class="pricing-price-wrap">
+              <span class="pricing-currency">$</span>
+              <span class="pricing-amount" data-plan="creator">13</span>
+              <span class="pricing-period">/month, billed annually</span>
+            </div>
+            <div class="pricing-features-list">
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>500 Fast Generation Credits</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Seedance 2.5 in 1080p Exclusive</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Full Commercial License</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-dark" style="width:100%;" onclick="window.showToast('Creator Plan selected!')">Choose Creator</button>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="pricing-card featured" style="border-color:var(--accent-lime);">
+          <span class="pricing-card-badge" style="background:var(--accent-lime); color:#000;">Most Popular</span>
+          <div>
+            <div class="pricing-tier">Pro</div>
+            <div class="pricing-desc">Full access to Cinema Studio 4.0 and Supercomputer agent workflows.</div>
+            <div class="pricing-price-wrap">
+              <span class="pricing-currency">$</span>
+              <span class="pricing-amount" data-plan="pro">34</span>
+              <span class="pricing-period">/month, billed annually</span>
+            </div>
+            <div class="pricing-features-list">
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>2,000 Priority Generation Credits</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>4K Neural Upscaling included</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Supercomputer Agent & MCP Access</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-lime" style="width:100%;" onclick="window.showToast('Pro Plan upgraded!')">Choose Pro</button>
+        </div>
+
+        <!-- Studio / Enterprise Plan -->
+        <div class="pricing-card" id="enterprise">
+          <div>
+            <div class="pricing-tier">Studio & Enterprise</div>
+            <div class="pricing-desc">Custom H100 dedicated clusters for production companies.</div>
+            <div class="pricing-price-wrap">
+              <span class="pricing-currency">$</span>
+              <span class="pricing-amount" data-plan="studio">69</span>
+              <span class="pricing-period">/month, billed annually</span>
+            </div>
+            <div class="pricing-features-list">
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Unlimited Generation Queues</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Custom Fine-tuned LoRA Models</span>
+              </div>
+              <div class="pricing-feature-item">
+                <svg class="feature-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>After Effects & Premiere Plugins</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-dark" style="width:100%;" onclick="window.showToast('Contacting Enterprise Solutions...')">Contact Sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="site-footer">
+    <div class="container-fluid">
+      <div class="footer-top">
+        <div>
+          <a href="#" class="brand" style="margin-bottom:14px; display:inline-flex;">
+            <div class="brand-icon">
+              <svg viewBox="0 0 24 24"><path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V4zm10 10a3 3 0 0 1-6 0v-6a3 3 0 0 1 6 0v6z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+            </div>
+          </a>
+          <p style="font-size:0.85rem; color:var(--text-muted); max-width:320px; line-height:1.5;">
+            The ultimate AI-powered camera control for creators by creators. Self-contained video generation platform.
+          </p>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Generative AI</div>
+          <div class="footer-links">
+            <a href="#studio" class="footer-link">Seedance 2.5 (1080p)</a>
+            <a href="#studio" class="footer-link">Nano Banana Pro</a>
+            <a href="#studio" class="footer-link">Cinema Studio 4.0</a>
+            <a href="#presets" class="footer-link">Viral Presets FX</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Ecosystem</div>
+          <div class="footer-links">
+            <a href="#supercomputer" class="footer-link">Supercomputer Agent</a>
+            <a href="#community" class="footer-link">Original Series</a>
+            <a href="#community" class="footer-link">Prompt Explorer</a>
+            <a href="#pricing" class="footer-link">After Effects Plugin</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Resources</div>
+          <div class="footer-links">
+            <a href="#studio" class="footer-link">Higgsfield Academy</a>
+            <a href="#community" class="footer-link">Creator Hub</a>
+            <a href="#pricing" class="footer-link">Documentation</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Company</div>
+          <div class="footer-links">
+            <a href="#enterprise" class="footer-link">Enterprise Solutions</a>
+            <a href="#" class="footer-link" onclick="window.showToast('Terms of Service')">Terms of Use</a>
+            <a href="#" class="footer-link" onclick="window.showToast('Privacy Policy')">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Higgsfield, Inc. All rights reserved. Self-contained on-device video synthesis.</div>
+        <div style="display:flex; gap:20px; align-items:center;">
+          <span style="color:var(--text-muted); font-size:0.8rem;">English</span>
+          <span style="color:var(--accent-lime);">● On-Device Video Synthesizer Active</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       DRAWERS & MODALS
+       ========================================================================== -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <div id="inspector-drawer" class="inspector-drawer">
+    <div class="drawer-header">
+      <div>
+        <h3 id="drawer-project-title" style="font-size:1.3rem; font-weight:800;">Project Title</h3>
+        <p id="drawer-author" style="font-size:0.8rem; color:var(--text-muted);">by Author</p>
+      </div>
+      <button id="drawer-close-btn" class="modal-close-btn" aria-label="Close Drawer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="param-block">
+      <div class="param-title">AI Model & Seed</div>
+      <div id="drawer-model" style="color:var(--accent-lime); font-weight:700; font-size:0.95rem; margin-bottom:4px;">Seedance 2.5</div>
+      <div class="param-value">Seed: <span id="drawer-seed">482910</span></div>
+      <div class="param-value" id="drawer-steps" style="margin-top:2px;">45 steps • Guidance: 7.5</div>
+    </div>
+
+    <div class="param-block">
+      <div class="param-title">Camera Motion Track</div>
+      <div id="drawer-camera" class="param-value" style="color:var(--accent-cyan); font-weight:600;">Drone Overhead</div>
+    </div>
+
+    <div class="param-block">
+      <div class="param-title">Full Prompt</div>
+      <div id="drawer-prompt" class="param-value" style="line-height:1.45;">Prompt text goes here...</div>
+    </div>
+
+    <div class="param-block">
+      <div class="param-title">Negative Prompt</div>
+      <div id="drawer-negative" class="param-value" style="color:var(--text-dim); font-size:0.8rem;">lowres, text, blur...</div>
+    </div>
+
+    <div class="param-block">
+      <div class="param-title">Asset Layers & ControlNets</div>
+      <div id="drawer-layers" style="display:flex; flex-wrap:wrap;"></div>
+    </div>
+
+    <button id="drawer-remix-btn" class="btn btn-lime btn-lg" style="width:100%; margin-top:auto;">
+      Remix Project in Cinema Studio
+    </button>
+  </div>
+
+  <!-- Sign In Modal -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close-btn" aria-label="Close Auth">✕</button>
+      <h3 class="modal-title">Welcome to Higgsfield</h3>
+      <p class="modal-desc">Create photorealistic videos and explore open-source prompt graphs.</p>
+      
+      <form>
+        <div class="modal-input-group">
+          <label class="modal-label">Email Address</label>
+          <input type="email" class="modal-input" placeholder="creator@higgsfield.ai" required>
+        </div>
+        <div class="modal-input-group">
+          <label class="modal-label">Password</label>
+          <input type="password" class="modal-input" placeholder="••••••••••••" required>
+        </div>
+        <button id="auth-submit-btn" class="btn btn-lime btn-lg" style="width:100%; margin-top:12px;">Sign In to Studio</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/supabase.js"></script>
+  <script src="js/showcase.js"></script>
+  <script src="js/studio.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/projects.js"></script>
+  <script src="js/pricing.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

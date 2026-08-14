@@ -1,0 +1,336 @@
+/* ==========================================================================
+   HIGGSFIELD AI — AUTHENTIC EXACT BRAND DESIGN SYSTEM & TOKENS
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  /* Exact Higgsfield Black & Obsidian */
+  --bg-black: #000000;
+  --bg-page: #000000;
+  --bg-card: #121216;
+  --bg-card-hover: #181820;
+  --bg-surface: #17171d;
+  --bg-input: #0d0d12;
+  --bg-navbar: rgba(0, 0, 0, 0.92);
+
+  /* Exact Higgsfield Neon & Signature Accents */
+  --accent-lime: #ccff00;
+  --accent-lime-hover: #b8e600;
+  --accent-lime-glow: rgba(204, 255, 0, 0.35);
+
+  --accent-magenta: #ff007f;
+  --accent-pink-badge: #ff1a8c;
+  --accent-pink-glow: rgba(255, 0, 127, 0.35);
+
+  --accent-cyan: #0099ff;
+  --accent-blue-glow: rgba(0, 153, 255, 0.3);
+  --accent-purple: #9d4edd;
+  --accent-green: #10b981;
+  --accent-orange: #ff5500;
+
+  /* Typography Colors */
+  --text-white: #ffffff;
+  --text-muted: #8e8e93;
+  --text-dim: #5c5c62;
+  --text-sub: #a1a1aa;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: #222228;
+  --border-card-hover: #33333e;
+  --border-glow-blue: rgba(0, 153, 255, 0.5);
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Syne', var(--font-sans);
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+
+  /* Layout */
+  --max-width: 1440px;
+  --nav-height: 60px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-black);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+.container-fluid {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: 60px 0;
+  position: relative;
+}
+
+.section-header {
+  margin-bottom: 28px;
+}
+
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(204, 255, 0, 0.1);
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-lime);
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--text-white);
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  max-width: 640px;
+}
+
+/* ==========================================================================
+   BUTTONS & BADGES (EXACT HIGGSFIELD SPEC)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Neon Lime Sign up Button */
+.btn-lime {
+  background: var(--accent-lime);
+  color: #000000;
+  font-weight: 700;
+}
+
+.btn-lime:hover {
+  background: var(--accent-lime-hover);
+  box-shadow: 0 0 20px var(--accent-lime-glow);
+  transform: translateY(-1px);
+}
+
+.btn-login {
+  background: #1c1c22;
+  color: var(--text-white);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.btn-login:hover {
+  background: #282832;
+  color: var(--accent-lime);
+}
+
+.btn-white {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 700;
+}
+
+.btn-white:hover {
+  background: #e5e5ea;
+  transform: translateY(-1px);
+}
+
+.btn-dark {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-white);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-dark:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Exact Badges */
+.badge-lime {
+  background: var(--accent-lime);
+  color: #000000;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.badge-layers {
+  background: #2a2a10;
+  color: var(--accent-lime);
+  border: 1px solid rgba(204, 255, 0, 0.4);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.badge-pink {
+  background: var(--accent-magenta);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-1080p {
+  background: linear-gradient(135deg, #0099ff, #0055ff);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+}
+
+.badge-ugc {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #14141a;
+  border: 1px solid rgba(204, 255, 0, 0.4);
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+  font-size: 0.85rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-lime);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222228;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33333e;
+}

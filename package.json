@@ -1,0 +1,21 @@
+{
+  "name": "social-media",
+  "version": "1.0.0",
+  "description": "A complete, self-contained replica of **Higgsfield AI** ([higgsfield.ai](https://higgsfield.ai/)).",
+  "main": "push-to-github.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "isomorphic-git": "^1.41.4"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3"
+  }
+}
