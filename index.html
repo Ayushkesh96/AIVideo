@@ -947,6 +947,355 @@ button {
   }
 }
 
+/* --- styles/film-os.css --- */
+/* ==========================================================================
+   AIVIDEO FILMMAKING PRODUCTION OS — DESIGN SYSTEM & STYLES
+   ========================================================================== */
+
+/* Main Workspace Tabs */
+.filmos-workspace-header {
+  background: #0d0d12;
+  border-bottom: 1px solid var(--border-card);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+
+.filmos-project-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-folder-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(204, 255, 0, 0.12);
+  border: 1px solid var(--accent-lime);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-lime);
+}
+
+.filmos-nav-tabs {
+  display: flex;
+  gap: 6px;
+  background: #14141c;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+}
+
+.filmos-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.filmos-tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filmos-tab-btn.active {
+  background: var(--accent-lime);
+  color: #000;
+  box-shadow: 0 0 14px rgba(204, 255, 0, 0.35);
+}
+
+/* Master Layout: 3-Column Studio Grid */
+.filmos-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 16px;
+  padding: 20px;
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1200px) {
+  .filmos-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Column 1: Project Hierarchy Tree */
+.filmos-tree-panel {
+  background: #111116;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tree-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tree-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.tree-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tree-node-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #17171e;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tree-node-item:hover {
+  background: #1e1e28;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tree-node-item.active {
+  background: rgba(204, 255, 0, 0.1);
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+.tree-tag-count {
+  font-size: 0.68rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* Column 2: Center Director Stage & Viewport */
+.filmos-stage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* AI Co-Director Assistant Banner */
+.director-assistant-banner {
+  background: linear-gradient(135deg, #181824, #121820);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.director-icon-box {
+  width: 42px;
+  height: 42px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+/* Keyframe Candidate Cards Strip */
+.keyframe-candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.keyframe-card {
+  background: #171720;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keyframe-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.keyframe-card.approved {
+  border: 2px solid var(--accent-lime);
+  box-shadow: 0 0 12px rgba(204, 255, 0, 0.3);
+}
+
+.keyframe-card-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #fff;
+}
+
+/* Column 3: Pro Camera Rig & Settings Studio */
+.filmos-inspector-panel {
+  background: #111116;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.camera-rig-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.camera-rig-btn {
+  background: #171720;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.camera-rig-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.camera-rig-btn.active {
+  background: rgba(204, 255, 0, 0.15);
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+/* Multi-Track NLE Timeline View */
+.filmos-timeline-container {
+  background: #0e0e14;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.timeline-track-lane {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  background: #14141c;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.track-lane-label {
+  width: 90px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.track-clips-area {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  height: 28px;
+}
+
+.timeline-clip-block {
+  background: #222230;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.timeline-clip-block.video {
+  background: #2a1b3d;
+  border-color: #ff0055;
+  color: #ff99bb;
+}
+
+.timeline-clip-block.voice {
+  background: #1b2e3d;
+  border-color: #00f0ff;
+  color: #a6f4ff;
+}
+
+.timeline-clip-block.music {
+  background: #23361b;
+  border-color: #ccff00;
+  color: #e5ff80;
+}
+
+.timeline-clip-block.captions {
+  background: #3a2e15;
+  border-color: #ffaa00;
+  color: #ffe099;
+}
+
 /* --- styles/studio.css --- */
 /* ==========================================================================
    INTERACTIVE CINEMA STUDIO 4.0 & CREATIVE ENGINE
@@ -2789,39 +3138,77 @@ button {
   </section>
 
   <!-- ==========================================================================
-       INTERACTIVE CINEMA STUDIO 4.0 (FULL SELF-CONTAINED GENERATIVE WORKSPACE)
+       AI FILMMAKING PRODUCTION OS (PROJECTS, ELEMENTS, AI DIRECTOR & NLE SUITE)
        ========================================================================== -->
-  <section class="section" id="studio">
+  <section class="section" id="studio" style="padding-top:20px;">
     <div class="container-fluid">
-      <div class="section-header">
-        <span class="section-tag">Self-Sufficient Video Platform</span>
-        <h2 class="section-title">Cinema Studio 4.0</h2>
-        <p class="section-subtitle">Real on-device video synthesis and encoding engine. Generates downloadable video files directly in your browser with zero 3rd-party APIs.</p>
-      </div>
-
-      <div class="studio-wrapper">
-        <!-- Studio Mode Tabs -->
-        <div class="studio-mode-tabs" style="grid-column: 1 / -1;">
-          <button class="studio-mode-tab active" data-mode="text-to-video">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            Text to Video
-          </button>
-          <button class="studio-mode-tab" data-mode="image-to-video">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="21 15 16 10 5 21"/></svg>
-            Image to Video
-          </button>
-          <button class="studio-mode-tab" data-mode="text-to-image">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
-            Text to Image (Nano Banana Pro)
-          </button>
-          <button class="studio-mode-tab" data-mode="storyboard">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            Director Storyboard Mode
-          </button>
+      
+      <!-- Project OS Workspace Bar -->
+      <div class="filmos-workspace-header" style="border-radius: var(--radius-lg); margin-bottom: 20px;">
+        <div class="filmos-project-badge">
+          <div class="project-folder-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="filmos-project-name" style="font-weight:800; font-size:1.05rem; color:#fff;">Midnight Runner: Tokyo Protocol</span>
+              <span class="badge badge-lime" style="font-size:0.65rem;">ACTIVE PROJECT</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Filmmaking Production Operating System • 2 Scenes • 4 Shots • 2 Elements</div>
+          </div>
         </div>
 
-        <!-- Left Controls Sidebar -->
-        <div class="studio-sidebar">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="filmos-nav-tabs">
+            <button class="filmos-tab-btn active" onclick="window.showToast('Pro Filmmaker Workspace Active')">
+              <span>Pro Director</span>
+            </button>
+            <button class="filmos-tab-btn" onclick="window.FilmOSUI.showElementsTab('characters')">
+              <span>🎭 Elements (@)</span>
+            </button>
+            <button class="filmos-tab-btn" onclick="document.getElementById('filmos-timeline-container').scrollIntoView({behavior:'smooth'})">
+              <span>🎞️ Multi-Track NLE</span>
+            </button>
+          </div>
+
+          <button id="filmos-add-character-btn" class="btn btn-dark btn-sm">
+            <span>+ Add @Element</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Co-Director Assistant Copilot Banner -->
+      <div class="director-assistant-banner" style="margin-bottom: 20px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div class="director-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          </div>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span>AI Co-Director (Script-to-Shots Generator)</span>
+              <span class="badge-blue-pill" style="font-size:0.65rem; background:rgba(0,240,255,0.15); color:var(--accent-cyan); padding:2px 6px; border-radius:4px;">COPILOT</span>
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Tell the AI Director your film vision (e.g. <i>"A 30-sec Nike style runner in Tokyo rain"</i>) and it will automatically generate the Scene Breakdown, Shot Lists, Lenses, and @Elements.</div>
+          </div>
+        </div>
+
+        <button id="filmos-ask-director-btn" class="btn btn-lime btn-sm" style="flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Ask AI Director</span>
+        </button>
+      </div>
+
+      <!-- Master FilmOS 3-Column Studio Grid -->
+      <div class="filmos-layout-grid">
+        
+        <!-- COLUMN 1: PROJECT TREE HIERARCHY -->
+        <div id="filmos-tree-container" class="filmos-tree-panel">
+          <!-- Populated dynamically by FilmOS -->
+        </div>
+
+        <!-- COLUMN 2: CENTER DIRECTOR STAGE & VIEWPORT -->
+        <div class="filmos-stage-panel">
+          <div class="studio-wrapper" style="margin:0; grid-template-columns: 1fr;">
           <div class="studio-panel-title">
             <span>Model Engine</span>
             <span class="badge-lime">Seedance 2.5 (1080p)</span>
@@ -3057,7 +3444,64 @@ button {
             <div id="storyboard-shots-strip" class="shot-cards-strip"></div>
           </div>
         </div>
+
+        <!-- COLUMN 3: PRO CAMERA RIG & LENS INSPECTOR -->
+        <div class="filmos-inspector-panel">
+          <div class="studio-panel-title">
+            <span>Pro Virtual Camera Rig</span>
+            <span class="badge-lime">ARRI Alexa Mini</span>
+          </div>
+
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Lens Focal Length:</div>
+          <div class="camera-rig-selector" style="margin-bottom:12px;">
+            <button class="camera-rig-btn" onclick="window.showToast('Selected 16mm Ultra-Wide')">16mm</button>
+            <button class="camera-rig-btn active" onclick="window.showToast('Selected 24mm Wide Anamorphic')">24mm</button>
+            <button class="camera-rig-btn" onclick="window.showToast('Selected 35mm Hollywood Prime')">35mm</button>
+            <button class="camera-rig-btn" onclick="window.showToast('Selected 50mm Standard Prime')">50mm</button>
+            <button class="camera-rig-btn" onclick="window.showToast('Selected 85mm Portrait Telephoto')">85mm</button>
+            <button class="camera-rig-btn" onclick="window.showToast('Selected 135mm Close-Up')">135mm</button>
+          </div>
+
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Motion Rig Type:</div>
+          <div class="camera-rig-selector" style="margin-bottom:14px;">
+            <button class="camera-rig-btn active">Dolly</button>
+            <button class="camera-rig-btn">Truck</button>
+            <button class="camera-rig-btn">Crane</button>
+            <button class="camera-rig-btn">Handheld</button>
+            <button class="camera-rig-btn">FPV Drone</button>
+            <button class="camera-rig-btn">Orbit 360°</button>
+          </div>
+
+          <div class="studio-panel-title">
+            <span>Active @Elements In Scene</span>
+          </div>
+          <div id="filmos-elements-list" style="max-height:220px; overflow-y:auto;">
+            <!-- Populated dynamically by FilmOS -->
+          </div>
+        </div>
+
       </div>
+
+      <!-- BOTTOM: MULTI-TRACK NLE TIMELINE SEQUENCER -->
+      <div id="filmos-timeline-container" class="filmos-timeline-container">
+        <div class="storyboard-header">
+          <div class="storyboard-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12H2M12 2v20"/><rect x="2" y="2" width="20" height="20" rx="2.18"/></svg>
+            <span>Multi-Track NLE Video Sequencer (Video • Voice • Music • Captions)</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-dark btn-sm" onclick="window.showToast('Audio/Music Synchronizer Active')">🎵 Mux Audio</button>
+            <button class="btn btn-lime btn-sm" onclick="window.renderFullStoryboardFilm()">
+              🎬 Export Master Timeline Film
+            </button>
+          </div>
+        </div>
+
+        <div id="filmos-timeline-tracks">
+          <!-- Populated dynamically by FilmOS -->
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -3517,6 +3961,435 @@ button {
       }
     }
   });
+})();
+
+/* --- js/film-os.js --- */
+/**
+ * AIVIDEO FILMMAKING PRODUCTION OS — CORE STATE & STORAGE ENGINE
+ * Manages Projects, Elements (@Characters, @Locations, @Props, @Styles),
+ * AI Co-Director, Keyframe Workflow, and Multi-Track NLE Timelines.
+ */
+
+(function () {
+  const STORAGE_KEY = 'aivideo_filmmaking_os_v1';
+
+  const defaultProject = {
+    id: "proj-neo-runner",
+    name: "Midnight Runner: Tokyo Protocol",
+    logline: "A rogue courier sprints through rain-soaked Neo-Tokyo to deliver an encrypted neural drive before dawn.",
+    aspectRatio: "16:9",
+    resolution: "1080p",
+    fps: 24,
+    activeMode: "pro", // 'beginner' | 'pro' | 'director' | 'elements' | 'timeline'
+    
+    // Elements Library (@Mentionable)
+    elements: {
+      characters: [
+        {
+          id: "char-alex",
+          tag: "Alex",
+          name: "Alex Vance",
+          age: 28,
+          gender: "Male",
+          appearance: "Athletic build, sharp jawline, short textured dark hair, hazel eyes, cybernetic optic scanner over left temple",
+          clothing: "Weathered obsidian technical windbreaker, charcoal compression pants, neon crimson accented running sneakers",
+          personality: "Focused, resilient, breathless determination",
+          avatarColor: "#00f0ff"
+        },
+        {
+          id: "char-sarah",
+          tag: "Sarah",
+          name: "Sarah Chen",
+          age: 31,
+          gender: "Female",
+          appearance: "Elegant features, emerald green eyes, shoulder-length raven hair with subtle cyber-braids",
+          clothing: "High-collar mustard tailored blazer, tailored trousers, emerald hoop earrings",
+          personality: "Calm, calculating, authoritative operator",
+          avatarColor: "#ccff00"
+        }
+      ],
+      locations: [
+        {
+          id: "loc-tokyo-night",
+          tag: "TokyoRain",
+          name: "Neo-Tokyo Rain Alley",
+          time: "Night",
+          weather: "Heavy Rain / Volumetric Mist",
+          description: "Narrow alley framed by towering skyscrapers, flickering neon signs in kanji, reflective wet obsidian asphalt, steam vents",
+          colorKey: "#ff0055"
+        },
+        {
+          id: "loc-cafe-rooftop",
+          tag: "RooftopCafe",
+          name: "Skyline Lounge Cafe",
+          time: "Twilight / Dusk",
+          weather: "Golden Hour Glow",
+          description: "Minimalist glass interior overlooking panoramic futuristic metropolis skyline",
+          colorKey: "#ffaa00"
+        }
+      ],
+      props: [
+        {
+          id: "prop-drive",
+          tag: "NeuralDrive",
+          name: "Quantum Neural Data Drive",
+          description: "Compact obsidian glass cartridge pulsing with internal crimson fiber-optic data light"
+        },
+        {
+          id: "prop-katana",
+          tag: "Katana",
+          name: "Thermal Katana",
+          description: "High-frequency cybernetic blade with glowing red thermal edge"
+        }
+      ],
+      styles: [
+        {
+          id: "style-kodak",
+          tag: "Cinematic35mm",
+          name: "Kodak 35mm Neo-Noir",
+          description: "Anamorphic lens flares, rich shadows, 35mm organic film grain, warm skin tones with cool shadow contrasts"
+        }
+      ]
+    },
+
+    // Scenes & Shot List Hierarchy
+    scenes: [
+      {
+        id: "scene-01",
+        number: 1,
+        title: "The Midnight Sprint",
+        setting: "EXT. NEO-TOKYO STREETS - NIGHT",
+        summary: "Alex navigates the neon rain alleyways at maximum sprint speed.",
+        shots: [
+          {
+            id: "shot-01a",
+            code: "01A",
+            title: "Wide Establishing Sprint",
+            prompt: "Wide establishing tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive in @Cinematic35mm",
+            cameraBody: "ARRI Alexa Mini LF",
+            lens: "24mm Ultra Wide",
+            focalLength: "24mm",
+            aperture: "f/2.8",
+            motion: "Tracking Forward",
+            speed: "Fast (1.5x)",
+            duration: 4,
+            keyframeApproved: true,
+            status: "ready", // 'draft' | 'keyframe' | 'ready' | 'rendered'
+            videoUrl: null
+          },
+          {
+            id: "shot-01b",
+            code: "01B",
+            title: "Medium Hero Orbit",
+            prompt: "Cinematic medium close-up shot of @Alex checking pulse while running through @TokyoRain under crimson neon rain, 8k",
+            cameraBody: "RED V-Raptor 8K",
+            lens: "50mm Prime",
+            focalLength: "50mm",
+            aperture: "f/1.8",
+            motion: "Orbit 360°",
+            speed: "Normal (1.0x)",
+            duration: 5,
+            keyframeApproved: true,
+            status: "ready",
+            videoUrl: null
+          },
+          {
+            id: "shot-01c",
+            code: "01C",
+            title: "Extreme Close-Up Eyes",
+            prompt: "Macro close-up on @Alex cybernetic optic eye scanner analyzing street route in @TokyoRain",
+            cameraBody: "Sony Venice 2",
+            lens: "85mm Telephoto Macro",
+            focalLength: "85mm",
+            aperture: "f/1.4",
+            motion: "Push-In Slow",
+            speed: "Slow-Mo (0.5x)",
+            duration: 4,
+            keyframeApproved: false,
+            status: "draft",
+            videoUrl: null
+          }
+        ]
+      },
+      {
+        id: "scene-02",
+        number: 2,
+        title: "The Operator Contact",
+        setting: "INT. SKYLINE CAFE - TWILIGHT",
+        summary: "Sarah watches the city grid from the rooftop lounge cafe.",
+        shots: [
+          {
+            id: "shot-02a",
+            code: "02A",
+            title: "Sarah Overlook Medium",
+            prompt: "Medium portrait shot of @Sarah in mustard blazer looking at city grid from @RooftopCafe in @Cinematic35mm",
+            cameraBody: "ARRI Alexa Mini LF",
+            lens: "50mm Prime",
+            focalLength: "50mm",
+            aperture: "f/2.0",
+            motion: "Dolly Push",
+            speed: "Normal (1.0x)",
+            duration: 5,
+            keyframeApproved: true,
+            status: "ready",
+            videoUrl: null
+          }
+        ]
+      }
+    ],
+
+    // Multi-Track NLE Timeline Data
+    timeline: {
+      activePlayhead: 0,
+      zoomLevel: 1.0,
+      tracks: {
+        video: [
+          { id: "clip-v1", shotId: "shot-01a", start: 0, duration: 4, label: "Shot 01A (Wide Sprint)" },
+          { id: "clip-v2", shotId: "shot-01b", start: 4, duration: 5, label: "Shot 01B (Medium Orbit)" },
+          { id: "clip-v3", shotId: "shot-02a", start: 9, duration: 5, label: "Shot 02A (Sarah Cafe)" }
+        ],
+        voice: [
+          { id: "clip-vo1", start: 0.5, duration: 3.5, text: "Vance, you have two minutes before sector lockdown.", speaker: "Sarah" },
+          { id: "clip-vo2", start: 5.0, duration: 3.0, text: "I'm already on the lower boulevard.", speaker: "Alex" }
+        ],
+        music: [
+          { id: "clip-m1", start: 0, duration: 14, title: "Synthwave Pulse OST", genre: "Cyberpunk Cinematic" }
+        ],
+        captions: [
+          { id: "clip-c1", start: 0.5, duration: 3.5, text: "[Sarah]: Vance, you have two minutes before sector lockdown." },
+          { id: "clip-c2", start: 5.0, duration: 3.0, text: "[Alex]: I'm already on the lower boulevard." }
+        ]
+      }
+    }
+  };
+
+  class FilmOSStore {
+    constructor() {
+      this.project = this.loadProject();
+      this.listeners = [];
+    }
+
+    loadProject() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {
+        console.warn("Error loading stored project:", e);
+      }
+      return JSON.parse(JSON.stringify(defaultProject));
+    }
+
+    saveProject() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.project));
+        this.notify();
+      } catch (e) {
+        console.error("Error saving project:", e);
+      }
+    }
+
+    subscribe(fn) {
+      this.listeners.push(fn);
+      return () => {
+        this.listeners = this.listeners.filter(l => l !== fn);
+      };
+    }
+
+    notify() {
+      this.listeners.forEach(fn => fn(this.project));
+    }
+
+    // Resolves @Character, @Location, @Prop, @Style into full enriched prompt
+    resolveMentions(promptText) {
+      if (!promptText) return "";
+      let resolved = promptText;
+
+      // Characters
+      this.project.elements.characters.forEach(c => {
+        const reg = new RegExp(`@${c.tag}\\b`, 'gi');
+        if (reg.test(resolved)) {
+          resolved = resolved.replace(reg, `${c.name} (${c.appearance}, wearing ${c.clothing})`);
+        }
+      });
+
+      // Locations
+      this.project.elements.locations.forEach(l => {
+        const reg = new RegExp(`@${l.tag}\\b`, 'gi');
+        if (reg.test(resolved)) {
+          resolved = resolved.replace(reg, `${l.name} (${l.time}, ${l.weather}, ${l.description})`);
+        }
+      });
+
+      // Props
+      this.project.elements.props.forEach(p => {
+        const reg = new RegExp(`@${p.tag}\\b`, 'gi');
+        if (reg.test(resolved)) {
+          resolved = resolved.replace(reg, `${p.name} (${p.description})`);
+        }
+      });
+
+      // Styles
+      this.project.elements.styles.forEach(s => {
+        const reg = new RegExp(`@${s.tag}\\b`, 'gi');
+        if (reg.test(resolved)) {
+          resolved = resolved.replace(reg, `${s.name} (${s.description})`);
+        }
+      });
+
+      return resolved;
+    }
+
+    // AI Director: Script/Concept to Scene & Shot Breakdown
+    generateShotsFromConcept(conceptText) {
+      const p = conceptText.toLowerCase();
+      let newSceneTitle = "Cinematic Sequence";
+      let newSetting = "EXT. CINEMATIC ENVIRONMENT - NIGHT";
+
+      if (p.includes("commercial") || p.includes("nike") || p.includes("runner")) {
+        newSceneTitle = "Nike Style Night Runner";
+        newSetting = "EXT. RAIN-SLICKED CITY - NIGHT";
+      } else if (p.includes("space") || p.includes("mars")) {
+        newSceneTitle = "Mars Orbital Descent";
+        newSetting = "EXT. MARS ATMOSPHERE - DAY";
+      } else if (p.includes("ocean") || p.includes("water")) {
+        newSceneTitle = "Abyssal Wave Expedition";
+        newSetting = "EXT. BIOLUMINESCENT OCEAN - DUSK";
+      }
+
+      const newScene = {
+        id: `scene-${Date.now()}`,
+        number: this.project.scenes.length + 1,
+        title: newSceneTitle,
+        setting: newSetting,
+        summary: conceptText,
+        shots: [
+          {
+            id: `shot-${Date.now()}-1`,
+            code: `${this.project.scenes.length + 1}A`,
+            title: "Wide Establishing Atmosphere",
+            prompt: `Wide establishing cinematic shot of ${conceptText}, 35mm film grain, volumetric fog`,
+            cameraBody: "ARRI Alexa Mini LF",
+            lens: "24mm Ultra Wide",
+            focalLength: "24mm",
+            aperture: "f/2.8",
+            motion: "Dolly Push",
+            speed: "Normal (1.0x)",
+            duration: 4,
+            keyframeApproved: false,
+            status: "draft",
+            videoUrl: null
+          },
+          {
+            id: `shot-${Date.now()}-2`,
+            code: `${this.project.scenes.length + 1}B`,
+            title: "Hero Subject Motion Tracking",
+            prompt: `Medium tracking shot following hero in ${conceptText}, high tension motion blur, 8k`,
+            cameraBody: "RED V-Raptor 8K",
+            lens: "50mm Prime",
+            focalLength: "50mm",
+            aperture: "f/1.8",
+            motion: "Tracking Forward",
+            speed: "Fast (1.5x)",
+            duration: 5,
+            keyframeApproved: false,
+            status: "draft",
+            videoUrl: null
+          },
+          {
+            id: `shot-${Date.now()}-3`,
+            code: `${this.project.scenes.length + 1}C`,
+            title: "Dynamic 360 Climax Orbit",
+            prompt: `Dramatic 360 orbit camera rotation around subject in ${conceptText}, anamorphic lens flare`,
+            cameraBody: "Sony Venice 2",
+            lens: "85mm Telephoto",
+            focalLength: "85mm",
+            aperture: "f/1.4",
+            motion: "Orbit 360°",
+            speed: "Slow-Mo (0.5x)",
+            duration: 4,
+            keyframeApproved: false,
+            status: "draft",
+            videoUrl: null
+          }
+        ]
+      };
+
+      this.project.scenes.push(newScene);
+      this.syncTimelineFromShots();
+      this.saveProject();
+      return newScene;
+    }
+
+    // Synchronize Timeline clips from scenes & shots
+    syncTimelineFromShots() {
+      let curTime = 0;
+      const vClips = [];
+
+      this.project.scenes.forEach(scene => {
+        scene.shots.forEach(shot => {
+          vClips.push({
+            id: `clip-${shot.id}`,
+            shotId: shot.id,
+            start: curTime,
+            duration: shot.duration || 4,
+            label: `Shot ${shot.code} (${shot.title})`
+          });
+          curTime += shot.duration || 4;
+        });
+      });
+
+      this.project.timeline.tracks.video = vClips;
+    }
+
+    // Add Character
+    addCharacter(charData) {
+      const newChar = {
+        id: `char-${Date.now()}`,
+        tag: charData.tag || `Char${this.project.elements.characters.length + 1}`,
+        name: charData.name || "Unnamed Character",
+        age: charData.age || 25,
+        gender: charData.gender || "Any",
+        appearance: charData.appearance || "",
+        clothing: charData.clothing || "",
+        personality: charData.personality || "",
+        avatarColor: charData.avatarColor || "#ccff00"
+      };
+      this.project.elements.characters.push(newChar);
+      this.saveProject();
+      return newChar;
+    }
+
+    // Add Location
+    addLocation(locData) {
+      const newLoc = {
+        id: `loc-${Date.now()}`,
+        tag: locData.tag || `Loc${this.project.elements.locations.length + 1}`,
+        name: locData.name || "Unnamed Location",
+        time: locData.time || "Night",
+        weather: locData.weather || "Clear",
+        description: locData.description || "",
+        colorKey: locData.colorKey || "#00f0ff"
+      };
+      this.project.elements.locations.push(newLoc);
+      this.saveProject();
+      return newLoc;
+    }
+
+    // Add Prop
+    addProp(propData) {
+      const newProp = {
+        id: `prop-${Date.now()}`,
+        tag: propData.tag || `Prop${this.project.elements.props.length + 1}`,
+        name: propData.name || "Unnamed Prop",
+        description: propData.description || ""
+      };
+      this.project.elements.props.push(newProp);
+      this.saveProject();
+      return newProp;
+    }
+  }
+
+  window.FilmOS = new FilmOSStore();
 })();
 
 /* --- js/audio-engine.js --- */
@@ -4894,6 +5767,289 @@ window.NeuralVideoEngine = GenerativeHumanVideoEngine;
     previewLoop();
     addGenerationToHistory(null);
   });
+})();
+
+/* --- js/film-ui.js --- */
+/**
+ * AIVIDEO FILMMAKING OS — UI CONTROLLER
+ * Connects FilmOS state store with interactive Project Tree, Elements,
+ * AI Co-Director, Keyframe Approval, and Multi-Track NLE Editor.
+ */
+
+(function () {
+  function initFilmUI() {
+    const store = window.FilmOS;
+    if (!store) return;
+
+    // Render Initial State
+    renderProjectTree();
+    renderElementsList();
+    renderTimelineTracks();
+    setupEventListeners();
+
+    // Subscribe to state changes
+    store.subscribe(() => {
+      renderProjectTree();
+      renderElementsList();
+      renderTimelineTracks();
+    });
+  }
+
+  // 1. Render Left Project Tree
+  function renderProjectTree() {
+    const treeContainer = document.getElementById('filmos-tree-container');
+    if (!treeContainer) return;
+
+    const proj = window.FilmOS.project;
+    document.getElementById('filmos-project-name').textContent = proj.name;
+
+    let html = `
+      <div class="tree-group">
+        <div class="tree-section-title">📖 Project Story</div>
+        <div class="tree-node-item active" onclick="window.FilmOSUI.showStoryOverview()">
+          <span>📄 Screenplay & Logline</span>
+        </div>
+      </div>
+
+      <div class="tree-group" style="margin-top:10px;">
+        <div class="tree-section-title">🎭 Reusable Elements (@)</div>
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('characters')">
+          <span>👤 Characters</span>
+          <span class="tree-tag-count">${proj.elements.characters.length}</span>
+        </div>
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('locations')">
+          <span>📍 Locations</span>
+          <span class="tree-tag-count">${proj.elements.locations.length}</span>
+        </div>
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('props')">
+          <span>📦 Props</span>
+          <span class="tree-tag-count">${proj.elements.props.length}</span>
+        </div>
+      </div>
+
+      <div class="tree-group" style="margin-top:10px;">
+        <div class="tree-header-row">
+          <div class="tree-section-title">🎬 Scenes & Shot Lists</div>
+          <button class="btn btn-dark btn-sm" style="padding:2px 6px; font-size:0.68rem;" onclick="window.FilmOSUI.promptNewScene()">+ Scene</button>
+        </div>
+    `;
+
+    proj.scenes.forEach(scene => {
+      html += `
+        <div style="margin-top:6px;">
+          <div style="font-size:0.75rem; font-weight:800; color:#fff; padding:4px 6px; display:flex; justify-content:space-between;">
+            <span>Scene ${scene.number}: ${scene.title}</span>
+            <span style="color:var(--text-muted); font-size:0.68rem;">${scene.shots.length} shots</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px; padding-left:8px;">
+      `;
+      scene.shots.forEach(shot => {
+        html += `
+          <div class="tree-node-item" onclick="window.FilmOSUI.loadShotIntoStudio('${shot.id}')">
+            <span>🎬 Shot ${shot.code}: ${shot.title}</span>
+            <span class="badge ${shot.status === 'ready' ? 'badge-lime' : 'badge-dark'}" style="font-size:0.6rem;">${shot.status.toUpperCase()}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+    treeContainer.innerHTML = html;
+  }
+
+  // 2. Render Elements Drawer / Modal
+  function renderElementsList() {
+    const listEl = document.getElementById('filmos-elements-list');
+    if (!listEl) return;
+
+    const proj = window.FilmOS.project;
+    let html = '';
+
+    // Characters
+    proj.elements.characters.forEach(c => {
+      html += `
+        <div class="element-card" style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; color:var(--accent-lime);">@${c.tag} (${c.name})</span>
+            <span style="font-size:0.7rem; color:var(--text-muted);">${c.gender}, ${c.age} y/o</span>
+          </div>
+          <div style="font-size:0.74rem; color:var(--text-muted); margin-top:4px;">${c.appearance}</div>
+          <div style="font-size:0.72rem; color:var(--accent-cyan); margin-top:4px;">Outfit: ${c.clothing}</div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  }
+
+  // 3. Render Multi-Track NLE Timeline
+  function renderTimelineTracks() {
+    const tracksContainer = document.getElementById('filmos-timeline-tracks');
+    if (!tracksContainer) return;
+
+    const tData = window.FilmOS.project.timeline.tracks;
+
+    let html = `
+      <!-- Video Track -->
+      <div class="timeline-track-lane">
+        <div class="track-lane-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>Video</span>
+        </div>
+        <div class="track-clips-area">
+    `;
+
+    tData.video.forEach(clip => {
+      const widthPct = Math.max(15, clip.duration * 12);
+      html += `
+        <div class="timeline-clip-block video" style="width:${widthPct}%;">
+          <span>${clip.label}</span>
+          <span style="font-size:0.65rem;">${clip.duration}s</span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+
+      <!-- Voice Track -->
+      <div class="timeline-track-lane">
+        <div class="track-lane-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+          <span>Voice</span>
+        </div>
+        <div class="track-clips-area">
+    `;
+
+    tData.voice.forEach(clip => {
+      const widthPct = Math.max(20, clip.duration * 12);
+      html += `
+        <div class="timeline-clip-block voice" style="width:${widthPct}%;">
+          <span>${clip.speaker}: "${clip.text.slice(0, 22)}..."</span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+
+      <!-- Music Track -->
+      <div class="timeline-track-lane">
+        <div class="track-lane-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span>Music</span>
+        </div>
+        <div class="track-clips-area">
+    `;
+
+    tData.music.forEach(clip => {
+      html += `
+        <div class="timeline-clip-block music" style="width:90%;">
+          <span>🎵 ${clip.title} (${clip.genre})</span>
+          <span>14.0s</span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+
+    tracksContainer.innerHTML = html;
+  }
+
+  // Setup UI Listeners & Global API
+  function setupEventListeners() {
+    // Co-Director Ask Button
+    const askDirectorBtn = document.getElementById('filmos-ask-director-btn');
+    if (askDirectorBtn) {
+      askDirectorBtn.addEventListener('click', () => {
+        const input = prompt("AI Co-Director: What is your film concept or commercial idea?", "A 30-second cinematic commercial of a runner sprinting through Tokyo in neon rain at night.");
+        if (input && input.trim()) {
+          const newScene = window.FilmOS.generateShotsFromConcept(input.trim());
+          if (window.showToast) {
+            window.showToast(`🎬 AI Director generated Scene "${newScene.title}" with ${newScene.shots.length} shots!`);
+          }
+        }
+      });
+    }
+
+    // New Element Creation Buttons
+    const addCharBtn = document.getElementById('filmos-add-character-btn');
+    if (addCharBtn) {
+      addCharBtn.addEventListener('click', () => {
+        const tag = prompt("Character Tag (e.g. John, Elena):", "Maya");
+        const name = prompt("Character Full Name:", "Maya Thorne");
+        const appearance = prompt("Appearance details:", "Athletic, futuristic visor, braided hair");
+        const clothing = prompt("Clothing:", "Charcoal tactical jacket with neon trim");
+
+        if (tag && name) {
+          window.FilmOS.addCharacter({ tag, name, appearance, clothing });
+          if (window.showToast) window.showToast(`✓ Created @${tag} Character Element!`);
+        }
+      });
+    }
+  }
+
+  // Window API
+  window.FilmOSUI = {
+    loadShotIntoStudio: function (shotId) {
+      let foundShot = null;
+      window.FilmOS.project.scenes.forEach(s => {
+        const shot = s.shots.find(sh => sh.id === shotId);
+        if (shot) foundShot = shot;
+      });
+
+      if (foundShot) {
+        const promptInput = document.getElementById('studio-prompt-input');
+        if (promptInput) {
+          promptInput.value = foundShot.prompt;
+          if (window.FilmOS) {
+            const enriched = window.FilmOS.resolveMentions(foundShot.prompt);
+            console.log("Enriched Prompt:", enriched);
+          }
+        }
+
+        // Set camera
+        const cameraBtns = document.querySelectorAll('.camera-btn');
+        cameraBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.camera === foundShot.motion);
+        });
+
+        const hudMotion = document.getElementById('hud-motion-tag');
+        if (hudMotion) hudMotion.textContent = `${foundShot.lens} • ${foundShot.motion}`;
+
+        if (window.showToast) window.showToast(`Loaded Shot ${foundShot.code}: ${foundShot.title}`);
+
+        const studioEl = document.getElementById('studio');
+        if (studioEl) studioEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
+
+    showStoryOverview: function () {
+      const proj = window.FilmOS.project;
+      alert(`PROJECT: ${proj.name}\n\nLOGLINE:\n${proj.logline}\n\nSCENES: ${proj.scenes.length}\nTOTAL SHOTS: ${proj.scenes.reduce((a, s) => a + s.shots.length, 0)}`);
+    },
+
+    showElementsTab: function (type) {
+      const proj = window.FilmOS.project;
+      const count = proj.elements[type] ? proj.elements[type].length : 0;
+      alert(`Elements Library: ${type.toUpperCase()} (${count} registered)\n\nType @ in any prompt to reference these elements.`);
+    },
+
+    promptNewScene: function () {
+      const title = prompt("Enter New Scene Title:", "The High Speed Chase");
+      if (title && title.trim()) {
+        window.FilmOS.generateShotsFromConcept(title.trim());
+      }
+    }
+  };
+
+  window.addEventListener('DOMContentLoaded', initFilmUI);
 })();
 
 /* --- js/presets.js --- */
