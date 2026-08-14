@@ -1,6 +1,6 @@
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER
- * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Generative Audio Muxing + Multi-Shot Storyboard Editor
+ * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Audio Muxing + Storyboard + Neural Color Grading
  */
 
 (function () {
@@ -13,6 +13,11 @@
     duration: 6,
     fps: 30,
     motionStrength: 75,
+    playbackSpeed: 1.0,
+    activeLut: "cyber",
+    flareStrength: 80,
+    grainStrength: 35,
+    fogStrength: 50,
     seed: 4829103,
     prompt: "Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece",
     isGenerating: false,
@@ -21,7 +26,6 @@
     generatedVideoUrl: null,
     generatedBlob: null,
     history: [],
-    // Storyboard Shots Chain
     storyboardShots: [
       {
         id: 1,
@@ -94,7 +98,7 @@
   function renderSceneFrame(t) {
     if (neuralEngine) {
       neuralEngine.renderFrame(
-        t,
+        t * state.playbackSpeed,
         state.prompt,
         state.cameraMotion,
         state.motionStrength,
@@ -105,7 +109,7 @@
 
   function previewLoop() {
     if (state.isPlaying && !state.isGenerating) {
-      sceneTick += 1 / state.fps;
+      sceneTick += (1 / state.fps) * state.playbackSpeed;
       state.currentTime = sceneTick % state.duration;
       updateTimeHUD();
       renderSceneFrame(state.currentTime);
@@ -122,7 +126,6 @@
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Generate Single Shot with Generative Audio
   function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -131,7 +134,7 @@
     overlay.classList.add('active');
 
     if (window.showToast) {
-      window.showToast("⚡ Synthesizing 3D Neural Latents & Audio Foley...");
+      window.showToast(`⚡ Synthesizing 3D Neural Latents (${state.activeLut.toUpperCase()} LUT)...`);
     }
 
     const p = state.prompt.toLowerCase();
@@ -196,9 +199,9 @@
 
     const steps = [
       "Vectorizing prompt in 128-dim Latent Space...",
+      `Applying ${state.activeLut.toUpperCase()} Neural Color Grading...`,
       "Raymarching 3D Volumetric Scene Geometry...",
       "Synthesizing dynamic binaural audio soundtrack...",
-      "Applying 3D Camera Choreography Paths...",
       "Hardware Muxing Master 1080p Video Stream..."
     ];
 
@@ -224,7 +227,6 @@
     }, 1000 / state.fps);
   }
 
-  // Render Full Multi-Shot Storyboard Sequence Chained Film
   window.renderFullStoryboardFilm = function () {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -289,7 +291,6 @@
       const currentShot = state.storyboardShots[shotIdx];
       shotTime += 1 / state.fps;
 
-      // Render active shot
       if (neuralEngine) {
         neuralEngine.renderFrame(
           shotTime,
@@ -356,7 +357,6 @@
     });
   }
 
-  // Render Storyboard Strip UI
   function renderStoryboardStrip() {
     const strip = document.getElementById('storyboard-shots-strip');
     if (!strip) return;
@@ -491,6 +491,25 @@
       motionValDisplay.textContent = `${state.motionStrength}%`;
     });
   }
+
+  // Compositor LUT and Speed listeners
+  document.querySelectorAll('.lut-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lut-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeLut = btn.dataset.lut || 'cyber';
+      if (window.showToast) window.showToast(`LUT Applied: ${btn.textContent}`);
+    });
+  });
+
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playbackSpeed = parseFloat(btn.dataset.speed || '1.0');
+      if (window.showToast) window.showToast(`Playback Speed: ${btn.dataset.speed}x`);
+    });
+  });
 
   document.querySelectorAll('.template-chip').forEach(chip => {
     chip.addEventListener('click', () => {

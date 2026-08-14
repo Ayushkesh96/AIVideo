@@ -1,0 +1,83 @@
+/* ==========================================================================
+   AIVIDEO COLOR GRADING & NEURAL LAYER COMPOSITOR STYLES
+   ========================================================================== */
+
+.compositor-panel {
+  margin-top: 16px;
+  background: #13131a;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.compositor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.lut-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lut-btn {
+  background: #1c1c24;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.lut-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.lut-btn.active {
+  background: rgba(204, 255, 0, 0.12);
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+.compositor-sliders-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.speed-ramp-selector {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.speed-btn {
+  background: #1a1a22;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.speed-btn.active {
+  background: var(--accent-lime);
+  color: #000;
+  border-color: var(--accent-lime);
+}
+
+@media (max-width: 900px) {
+  .compositor-sliders-grid {
+    grid-template-columns: 1fr;
+  }
+}

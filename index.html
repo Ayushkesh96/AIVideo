@@ -1543,6 +1543,91 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* --- styles/compositor.css --- */
+/* ==========================================================================
+   AIVIDEO COLOR GRADING & NEURAL LAYER COMPOSITOR STYLES
+   ========================================================================== */
+
+.compositor-panel {
+  margin-top: 16px;
+  background: #13131a;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.compositor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.lut-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lut-btn {
+  background: #1c1c24;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.lut-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.lut-btn.active {
+  background: rgba(204, 255, 0, 0.12);
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+.compositor-sliders-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.speed-ramp-selector {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.speed-btn {
+  background: #1a1a22;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.speed-btn.active {
+  background: var(--accent-lime);
+  color: #000;
+  border-color: var(--accent-lime);
+}
+
+@media (max-width: 900px) {
+  .compositor-sliders-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* --- styles/presets.css --- */
 /* ==========================================================================
    VIRAL PRESETS FX GALLERY & HOVER CARDS
@@ -2790,6 +2875,59 @@ button {
             <div id="studio-history-strip" class="history-strip"></div>
           </div>
 
+          <!-- Neural Layer FX Compositor & Color Grading Panel -->
+          <div class="compositor-panel">
+            <div class="compositor-header">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                <span style="font-weight:800; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em;">Neural Color Grading & FX Compositor</span>
+              </div>
+              <div class="speed-ramp-selector">
+                <span style="font-size:0.72rem; color:var(--text-muted); margin-right:4px;">Speed:</span>
+                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                <button class="speed-btn active" data-speed="1.0">1.0x</button>
+                <button class="speed-btn" data-speed="2.0">2.0x</button>
+                <button class="speed-btn" data-speed="4.0">4.0x</button>
+              </div>
+            </div>
+
+            <!-- LUTs Color Grading Presets -->
+            <div class="lut-pill-grid">
+              <button class="lut-btn active" data-lut="cyber">Cyber Neon (Teal/Orange)</button>
+              <button class="lut-btn" data-lut="matrix">Matrix Emerald</button>
+              <button class="lut-btn" data-lut="solar">Solar Flare Gold</button>
+              <button class="lut-btn" data-lut="biolum">Bioluminescent Deep</button>
+              <button class="lut-btn" data-lut="noir">Obsidian Noir</button>
+            </div>
+
+            <!-- FX Sliders -->
+            <div class="compositor-sliders-grid">
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="modal-label" style="font-size:0.72rem;">Anamorphic Flare:</span>
+                  <span id="flare-strength-val" style="font-size:0.72rem; color:var(--accent-lime); font-family:var(--font-mono);">80%</span>
+                </div>
+                <input type="range" id="flare-slider" class="custom-slider" min="0" max="100" value="80">
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="modal-label" style="font-size:0.72rem;">Film Grain:</span>
+                  <span id="grain-strength-val" style="font-size:0.72rem; color:var(--accent-lime); font-family:var(--font-mono);">35%</span>
+                </div>
+                <input type="range" id="grain-slider" class="custom-slider" min="0" max="100" value="35">
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-row">
+                  <span class="modal-label" style="font-size:0.72rem;">Atmospheric Fog:</span>
+                  <span id="fog-strength-val" style="font-size:0.72rem; color:var(--accent-lime); font-family:var(--font-mono);">50%</span>
+                </div>
+                <input type="range" id="fog-slider" class="custom-slider" min="0" max="100" value="50">
+              </div>
+            </div>
+          </div>
+
           <!-- Multi-Shot Storyboard Sequencer Suite -->
           <div id="storyboard-suite-container" class="storyboard-container" style="display:none;">
             <div class="storyboard-header">
@@ -3966,7 +4104,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 /* --- js/studio.js --- */
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER
- * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Generative Audio Muxing + Multi-Shot Storyboard Editor
+ * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Audio Muxing + Storyboard + Neural Color Grading
  */
 
 (function () {
@@ -3979,6 +4117,11 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     duration: 6,
     fps: 30,
     motionStrength: 75,
+    playbackSpeed: 1.0,
+    activeLut: "cyber",
+    flareStrength: 80,
+    grainStrength: 35,
+    fogStrength: 50,
     seed: 4829103,
     prompt: "Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece",
     isGenerating: false,
@@ -3987,7 +4130,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     generatedVideoUrl: null,
     generatedBlob: null,
     history: [],
-    // Storyboard Shots Chain
     storyboardShots: [
       {
         id: 1,
@@ -4060,7 +4202,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
   function renderSceneFrame(t) {
     if (neuralEngine) {
       neuralEngine.renderFrame(
-        t,
+        t * state.playbackSpeed,
         state.prompt,
         state.cameraMotion,
         state.motionStrength,
@@ -4071,7 +4213,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 
   function previewLoop() {
     if (state.isPlaying && !state.isGenerating) {
-      sceneTick += 1 / state.fps;
+      sceneTick += (1 / state.fps) * state.playbackSpeed;
       state.currentTime = sceneTick % state.duration;
       updateTimeHUD();
       renderSceneFrame(state.currentTime);
@@ -4088,7 +4230,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Generate Single Shot with Generative Audio
   function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -4097,7 +4238,7 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     overlay.classList.add('active');
 
     if (window.showToast) {
-      window.showToast("⚡ Synthesizing 3D Neural Latents & Audio Foley...");
+      window.showToast(`⚡ Synthesizing 3D Neural Latents (${state.activeLut.toUpperCase()} LUT)...`);
     }
 
     const p = state.prompt.toLowerCase();
@@ -4162,9 +4303,9 @@ window.NeuralVideoEngine = NeuralVideoEngine;
 
     const steps = [
       "Vectorizing prompt in 128-dim Latent Space...",
+      `Applying ${state.activeLut.toUpperCase()} Neural Color Grading...`,
       "Raymarching 3D Volumetric Scene Geometry...",
       "Synthesizing dynamic binaural audio soundtrack...",
-      "Applying 3D Camera Choreography Paths...",
       "Hardware Muxing Master 1080p Video Stream..."
     ];
 
@@ -4190,7 +4331,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     }, 1000 / state.fps);
   }
 
-  // Render Full Multi-Shot Storyboard Sequence Chained Film
   window.renderFullStoryboardFilm = function () {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -4255,7 +4395,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
       const currentShot = state.storyboardShots[shotIdx];
       shotTime += 1 / state.fps;
 
-      // Render active shot
       if (neuralEngine) {
         neuralEngine.renderFrame(
           shotTime,
@@ -4322,7 +4461,6 @@ window.NeuralVideoEngine = NeuralVideoEngine;
     });
   }
 
-  // Render Storyboard Strip UI
   function renderStoryboardStrip() {
     const strip = document.getElementById('storyboard-shots-strip');
     if (!strip) return;
@@ -4457,6 +4595,25 @@ window.NeuralVideoEngine = NeuralVideoEngine;
       motionValDisplay.textContent = `${state.motionStrength}%`;
     });
   }
+
+  // Compositor LUT and Speed listeners
+  document.querySelectorAll('.lut-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lut-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeLut = btn.dataset.lut || 'cyber';
+      if (window.showToast) window.showToast(`LUT Applied: ${btn.textContent}`);
+    });
+  });
+
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.playbackSpeed = parseFloat(btn.dataset.speed || '1.0');
+      if (window.showToast) window.showToast(`Playback Speed: ${btn.dataset.speed}x`);
+    });
+  });
 
   document.querySelectorAll('.template-chip').forEach(chip => {
     chip.addEventListener('click', () => {
