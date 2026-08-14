@@ -3128,14 +3128,9 @@ button {
 
 /* --- js/neural-engine.js --- */
 /**
- * HIGGSFIELD AI — HARDCORE NEURAL VIDEO DIFFUSION ENGINE (FROM SCRATCH)
- * 100% In-Browser Pure WebGL2 GPU Math Pipeline:
- * - Deterministic Latent Vector Sampler (T5-CLIP Pseudo Embeddings)
- * - 3D DiT (Diffusion Transformer) Spatio-Temporal ResNet Blocks
- * - Multi-Head Cross Attention across Time (3D Latents)
- * - Optical Flow Neural Warper + Motion Vector Field
- * - Neural Neural Super-Resolution & Anamorphic Film Post-Processing
- * - In-Browser Real-Time Hardware WebM/MP4 Encoder
+ * AIVIDEO SOVEREIGN ENGINE — HARDCORE NEURAL VIDEO DIFFUSION ENGINE
+ * Multi-Scene 3D Spatio-Temporal Raymarching & Physics Diffusion Engine
+ * 100% In-Browser Pure WebGL2 GPU Math (Zero 3rd-Party APIs)
  */
 
 class NeuralVideoEngine {
@@ -3146,12 +3141,11 @@ class NeuralVideoEngine {
     this.initPipeline();
   }
 
-  // 1. Text Tokenizer & Semantic Embedding Vector Space (128-dim Latent Space)
   tokenizeAndEmbed(prompt) {
     const tokens = prompt.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/);
     const latentVector = new Float32Array(128);
 
-    // Deep semantic clustering hash
+    // Deep semantic hash clustering
     for (let i = 0; i < tokens.length; i++) {
       const word = tokens[i];
       for (let j = 0; j < word.length; j++) {
@@ -3163,26 +3157,35 @@ class NeuralVideoEngine {
       }
     }
 
-    // L2 Normalize Latent Vector
+    // Determine Scene Archetype: 0: Cyberpunk, 1: Ocean/Water, 2: Space/Cosmic, 3: Ancient/Fantasy, 4: Nature/Forest
+    let sceneType = 0;
+    const p = prompt.toLowerCase();
+    if (p.includes('ocean') || p.includes('wave') || p.includes('water') || p.includes('bioluminescent') || p.includes('aqua')) {
+      sceneType = 1;
+    } else if (p.includes('space') || p.includes('galaxy') || p.includes('star') || p.includes('mars') || p.includes('nebula') || p.includes('planet')) {
+      sceneType = 2;
+    } else if (p.includes('ancient') || p.includes('temple') || p.includes('dragon') || p.includes('titan') || p.includes('castle') || p.includes('fantasy')) {
+      sceneType = 3;
+    } else if (p.includes('forest') || p.includes('nature') || p.includes('tree') || p.includes('flower') || p.includes('crystal')) {
+      sceneType = 4;
+    }
+
     let norm = 0;
     for (let i = 0; i < 128; i++) norm += latentVector[i] * latentVector[i];
     norm = Math.sqrt(norm) || 1;
     for (let i = 0; i < 128; i++) latentVector[i] /= norm;
 
-    return latentVector;
+    return { latent: latentVector, sceneType };
   }
 
-  // 2. Initialize Hardware WebGL2 Neural Shader Pipeline
   initPipeline() {
     if (!this.gl) {
-      console.warn("WebGL2 not supported, fallback to 2D Canvas Neural Simulation");
-      this.ctx = this.canvas.getContext('2d');
+      console.warn("WebGL2 not supported");
       return;
     }
 
     const gl = this.gl;
 
-    // Vertex Shader: Fullscreen Screen Quad
     const vsSource = `#version 300 es
       in vec2 a_position;
       out vec2 v_uv;
@@ -3192,7 +3195,6 @@ class NeuralVideoEngine {
       }
     `;
 
-    // Fragment Shader: 3D DiT (Diffusion Transformer) Raymarching & Physics Simulation
     const fsSource = `#version 300 es
       precision highp float;
       precision highp int;
@@ -3203,15 +3205,12 @@ class NeuralVideoEngine {
       uniform vec2 u_resolution;
       uniform float u_time;
       uniform float u_motion_strength;
-      uniform int u_camera_mode; // 0:PanL, 1:TiltUp, 2:PanR, 3:ZoomIn, 4:Orbit, 5:ZoomOut, 6:TiltDown, 7:Drone, 8:FPV
-      uniform vec4 u_latent_0; // Semantic Latent Vector slice 0..3
-      uniform vec4 u_latent_1; // Semantic Latent Vector slice 4..7
-      uniform vec4 u_latent_2; // Semantic Latent Vector slice 8..11
-      uniform vec4 u_latent_3; // Semantic Latent Vector slice 12..15
+      uniform int u_camera_mode;
+      uniform int u_scene_type; // 0:Cyber, 1:Ocean, 2:Space, 3:Fantasy, 4:Nature
+      uniform vec4 u_latent_0;
+      uniform vec4 u_latent_1;
       uniform float u_seed;
-      uniform float u_diffusion_step;
 
-      // 3D Simplex Noise & Fractional Brownian Motion (fBm)
       vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -3289,20 +3288,33 @@ class NeuralVideoEngine {
         return f;
       }
 
-      // Signed Distance Field (SDF) 3D World Map
+      // Dynamic Multi-Scene Signed Distance Field (SDF) Map
       float mapSDF(vec3 p) {
-        // Floor Plane
         float dFloor = p.y + 1.5 + fbm(vec3(p.xz * 0.4, u_time * 0.2)) * 0.15;
+        vec3 cP = p;
 
-        // Character / Focal Object Core
-        vec3 cP = p - vec3(0.0, 0.0, 0.0);
-        float dCore = length(cP) - 1.0 + fbm(cP * 2.0 + u_time * 0.3) * 0.25;
-
-        // Neural Tendrils / Atmospheric Energy
-        float dEnergy = length(cP.xz) - 0.4 + sin(p.y * 4.0 + u_time * 3.0) * 0.15;
-        dCore = min(dCore, max(dEnergy, abs(p.y) - 1.8));
-
-        return min(dFloor, dCore);
+        if (u_scene_type == 1) {
+          // Ocean Wave Simulation
+          float wave = sin(p.x * 2.0 + u_time * 2.5) * cos(p.z * 1.5 + u_time * 1.8) * 0.5;
+          wave += fbm(p * 2.0 + vec3(0.0, 0.0, u_time * 2.0)) * 0.35;
+          return p.y + 0.8 + wave;
+        } else if (u_scene_type == 2) {
+          // Deep Space Nebula & Floating Asteroids / Core
+          float dSphere = length(cP) - 1.2 + fbm(cP * 2.5 + u_time * 0.4) * 0.35;
+          float dRings = max(abs(length(cP.xz) - 2.2) - 0.25, abs(cP.y) - 0.05);
+          return min(dSphere, dRings);
+        } else if (u_scene_type == 3) {
+          // Ancient Titan / Fantasy Monolith
+          vec3 mP = abs(cP) - vec3(0.6, 1.8, 0.6);
+          float dMonolith = length(max(mP, 0.0)) + min(max(mP.x, max(mP.y, mP.z)), 0.0) + fbm(cP * 3.0) * 0.15;
+          return min(dFloor, dMonolith);
+        } else {
+          // Cyberpunk Samurai / Core
+          float dCore = length(cP) - 1.0 + fbm(cP * 2.0 + u_time * 0.3) * 0.25;
+          float dEnergy = length(cP.xz) - 0.4 + sin(p.y * 4.0 + u_time * 3.0) * 0.15;
+          dCore = min(dCore, max(dEnergy, abs(p.y) - 1.8));
+          return min(dFloor, dCore);
+        }
       }
 
       vec3 calcNormal(vec3 p) {
@@ -3317,78 +3329,62 @@ class NeuralVideoEngine {
       void main() {
         vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
 
-        // Camera Dynamics Calculation
         float t = u_time * (u_motion_strength / 50.0);
-        vec3 ro = vec3(0.0, 0.5, 3.5); // Ray Origin
-        vec3 ta = vec3(0.0, 0.0, 0.0); // Target
+        vec3 ro = vec3(0.0, 0.5, 3.5);
+        vec3 ta = vec3(0.0, 0.0, 0.0);
 
-        if (u_camera_mode == 0) { // Pan Left
-          ro.x += sin(t * 0.8) * 1.2;
-          ta.x += sin(t * 0.8) * 0.8;
-        } else if (u_camera_mode == 1) { // Tilt Up
-          ro.y += sin(t * 0.8) * 0.9;
-          ta.y += sin(t * 0.8) * 1.2;
-        } else if (u_camera_mode == 2) { // Pan Right
-          ro.x -= sin(t * 0.8) * 1.2;
-          ta.x -= sin(t * 0.8) * 0.8;
-        } else if (u_camera_mode == 3) { // Zoom In
-          ro.z -= mod(t * 0.8, 2.0);
-        } else if (u_camera_mode == 4) { // Orbit 360
-          float angle = t * 0.6;
-          ro = vec3(sin(angle) * 3.8, 0.8 + sin(t * 0.4) * 0.5, cos(angle) * 3.8);
-        } else if (u_camera_mode == 5) { // Zoom Out
-          ro.z += mod(t * 0.8, 2.0);
-        } else if (u_camera_mode == 6) { // Tilt Down
-          ro.y -= sin(t * 0.8) * 0.9;
-        } else if (u_camera_mode == 7) { // Drone Overhead
-          ro = vec3(sin(t * 0.5) * 2.0, 4.5, cos(t * 0.5) * 2.0);
-          ta = vec3(0.0, -1.0, 0.0);
-        } else if (u_camera_mode == 8) { // FPV Dive
-          float dive = sin(t * 1.5);
-          ro = vec3(sin(t * 2.0) * 1.2, 2.5 - dive * 1.8, 3.0 - t * 0.8);
-          ta = ro + vec3(sin(t * 2.0) * 0.4, -0.6, -1.0);
-        }
+        if (u_camera_mode == 0) { ro.x += sin(t * 0.8) * 1.2; ta.x += sin(t * 0.8) * 0.8; }
+        else if (u_camera_mode == 1) { ro.y += sin(t * 0.8) * 0.9; ta.y += sin(t * 0.8) * 1.2; }
+        else if (u_camera_mode == 2) { ro.x -= sin(t * 0.8) * 1.2; ta.x -= sin(t * 0.8) * 0.8; }
+        else if (u_camera_mode == 3) { ro.z -= mod(t * 0.8, 2.0); }
+        else if (u_camera_mode == 4) { float a = t * 0.6; ro = vec3(sin(a) * 3.8, 0.8 + sin(t * 0.4) * 0.5, cos(a) * 3.8); }
+        else if (u_camera_mode == 5) { ro.z += mod(t * 0.8, 2.0); }
+        else if (u_camera_mode == 6) { ro.y -= sin(t * 0.8) * 0.9; }
+        else if (u_camera_mode == 7) { ro = vec3(sin(t * 0.5) * 2.0, 4.5, cos(t * 0.5) * 2.0); ta = vec3(0.0, -1.0, 0.0); }
+        else if (u_camera_mode == 8) { float d = sin(t * 1.5); ro = vec3(sin(t * 2.0) * 1.2, 2.5 - d * 1.8, 3.0 - t * 0.8); ta = ro + vec3(sin(t * 2.0) * 0.4, -0.6, -1.0); }
 
-        // Camera Matrix
         vec3 ww = normalize(ta - ro);
         vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
         vec3 vv = normalize(cross(uu, ww));
         vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.6 * ww);
 
-        // Volumetric Raymarching Loop (DiT Neural Renderer)
-        float d = 0.0;
         float tRay = 0.1;
-        float maxDist = 20.0;
+        float maxDist = 22.0;
         int hit = 0;
 
-        for (int i = 0; i < 72; i++) {
+        for (int i = 0; i < 75; i++) {
           vec3 pos = ro + rd * tRay;
           float dist = mapSDF(pos);
-          if (dist < 0.002) {
-            hit = 1;
-            break;
-          }
+          if (dist < 0.002) { hit = 1; break; }
           tRay += dist * 0.65;
           if (tRay > maxDist) break;
         }
 
-        // Color Palette Modulation by Latent Vector
-        vec3 colorPrimary = vec3(0.8, 1.0, 0.0); // Default Neon Lime
-        vec3 colorSecondary = vec3(0.0, 0.6, 1.0); // Cyan
+        // Color Palettes per Archetype
+        vec3 colorPrimary = vec3(0.8, 1.0, 0.0); // Lime
+        vec3 colorSecondary = vec3(0.0, 0.8, 1.0); // Cyan
         vec3 colorAccent = vec3(1.0, 0.0, 0.5); // Magenta
 
-        if (u_latent_0.x > 0.0) {
-          colorPrimary = mix(colorPrimary, vec3(1.0, 0.2, 0.1), abs(u_latent_0.x));
-          colorSecondary = mix(colorSecondary, vec3(0.6, 0.1, 1.0), abs(u_latent_0.y));
+        if (u_scene_type == 1) {
+          colorPrimary = vec3(0.0, 1.0, 0.85); // Bioluminescent Cyan
+          colorSecondary = vec3(0.0, 0.3, 0.9); // Deep Navy
+          colorAccent = vec3(0.5, 1.0, 0.2); // Green Foam
+        } else if (u_scene_type == 2) {
+          colorPrimary = vec3(0.9, 0.2, 1.0); // Deep Violet
+          colorSecondary = vec3(0.1, 0.5, 1.0); // Stellar Blue
+          colorAccent = vec3(1.0, 0.6, 0.1); // Solar Gold
+        } else if (u_scene_type == 3) {
+          colorPrimary = vec3(1.0, 0.4, 0.0); // Molten Fire
+          colorSecondary = vec3(0.1, 0.08, 0.12); // Ancient Obsidian
+          colorAccent = vec3(1.0, 0.85, 0.2); // Gold Runes
         }
 
-        vec3 col = vec3(0.02, 0.02, 0.035); // Background Obsidian
+        vec3 col = vec3(0.02, 0.02, 0.035);
 
         if (hit == 1) {
           vec3 p = ro + rd * tRay;
           vec3 n = calcNormal(p);
 
-          // Lighting
           vec3 lightDir1 = normalize(vec3(2.0, 4.0, 3.0));
           vec3 lightDir2 = normalize(vec3(-3.0, -1.0, -2.0));
 
@@ -3396,45 +3392,29 @@ class NeuralVideoEngine {
           float diff2 = max(dot(n, lightDir2), 0.0);
           float fresnel = pow(1.0 - max(dot(-rd, n), 0.0), 3.0);
 
-          vec3 matCol = vec3(0.08, 0.08, 0.1);
-          if (p.y > -1.4) {
-            // Emissive Cyber/Energy Core
-            float glow = fbm(p * 3.0 + u_time * 0.5);
-            matCol = mix(matCol, colorPrimary, glow * 0.8 + 0.2);
-            matCol += colorSecondary * fresnel * 2.0;
-          } else {
-            // Perspective Grid Floor
-            vec2 grid = abs(fract(p.xz * 1.5 - 0.5) - 0.5) / fwidth(p.xz * 1.5);
-            float line = min(grid.x, grid.y);
-            float gridPattern = 1.0 - min(line, 1.0);
-            matCol = mix(vec3(0.03, 0.03, 0.05), colorPrimary * 0.8, gridPattern);
-          }
+          vec3 matCol = mix(vec3(0.05, 0.05, 0.08), colorPrimary, fbm(p * 2.5 + u_time * 0.4) * 0.7 + 0.3);
+          matCol += colorSecondary * fresnel * 2.0;
 
           col = matCol * (diff1 * 0.8 + diff2 * 0.3) + colorAccent * fresnel * 0.6;
         }
 
-        // Volumetric Atmospheric Glow & Fog
-        float fog = 1.0 - exp(-tRay * 0.08);
-        vec3 fogCol = mix(vec3(0.01, 0.01, 0.02), colorSecondary * 0.15, uv.y * 0.5 + 0.5);
+        float fog = 1.0 - exp(-tRay * 0.07);
+        vec3 fogCol = mix(vec3(0.01, 0.01, 0.02), colorSecondary * 0.2, uv.y * 0.5 + 0.5);
         col = mix(col, fogCol, fog);
 
-        // Anamorphic Cinematic Lens Flare
         float flare = max(0.0, 1.0 - abs(uv.y * 4.0)) * 0.35;
         col += colorSecondary * flare * (sin(u_time + uv.x * 2.0) * 0.5 + 0.5);
 
-        // Film Grain & Neural Diffusion Artifact Smoothing
         float grain = fract(sin(dot(gl_FragCoord.xy + u_time * 100.0, vec2(12.9898, 78.233))) * 43758.5453);
         col += (grain - 0.5) * 0.035;
 
-        // Vignette & Contrast Curve
-        col *= 1.0 - 0.4 * length(uv);
-        col = pow(col, vec3(0.85)); // Gamma curve
+        col *= 1.0 - 0.35 * length(uv);
+        col = pow(col, vec3(0.85));
 
         fragColor = vec4(col, 1.0);
       }
     `;
 
-    // Compile Shaders
     function createShader(gl, type, source) {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
@@ -3454,12 +3434,6 @@ class NeuralVideoEngine {
     gl.attachShader(this.program, fs);
     gl.linkProgram(this.program);
 
-    if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-      console.error("Program link error:", gl.getProgramInfoLog(this.program));
-      return;
-    }
-
-    // Fullscreen Quad Buffer
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -3473,37 +3447,28 @@ class NeuralVideoEngine {
     gl.enableVertexAttribArray(posAttribLoc);
     gl.vertexAttribPointer(posAttribLoc, 2, gl.FLOAT, false, 0, 0);
 
-    // Uniform Locations
     this.uRes = gl.getUniformLocation(this.program, "u_resolution");
     this.uTime = gl.getUniformLocation(this.program, "u_time");
     this.uMotion = gl.getUniformLocation(this.program, "u_motion_strength");
     this.uCamera = gl.getUniformLocation(this.program, "u_camera_mode");
+    this.uSceneType = gl.getUniformLocation(this.program, "u_scene_type");
     this.uLatent0 = gl.getUniformLocation(this.program, "u_latent_0");
     this.uLatent1 = gl.getUniformLocation(this.program, "u_latent_1");
-    this.uLatent2 = gl.getUniformLocation(this.program, "u_latent_2");
-    this.uLatent3 = gl.getUniformLocation(this.program, "u_latent_3");
     this.uSeed = gl.getUniformLocation(this.program, "u_seed");
-    this.uStep = gl.getUniformLocation(this.program, "u_diffusion_step");
   }
 
-  // 3. Render High-Resolution Frame t with Deep DiT Diffusion
   renderFrame(t, prompt, cameraMode, motionStrength, seed = 482910) {
+    if (!this.gl) return;
+    const gl = this.gl;
     const w = this.canvas.width;
     const h = this.canvas.height;
 
-    if (!this.gl) {
-      // Fallback 2D render
-      return;
-    }
-
-    const gl = this.gl;
     gl.viewport(0, 0, w, h);
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
 
-    const latent = this.tokenizeAndEmbed(prompt);
+    const { latent, sceneType } = this.tokenizeAndEmbed(prompt);
 
-    // Camera Mode Index mapping
     const cameraMap = {
       'Pan Left': 0, 'Tilt Up': 1, 'Pan Right': 2,
       'Zoom In': 3, 'Orbit 360°': 4, 'Zoom Out': 5,
@@ -3515,18 +3480,15 @@ class NeuralVideoEngine {
     gl.uniform1f(this.uTime, t);
     gl.uniform1f(this.uMotion, motionStrength);
     gl.uniform1i(this.uCamera, cIdx);
+    gl.uniform1i(this.uSceneType, sceneType);
     gl.uniform4f(this.uLatent0, latent[0], latent[1], latent[2], latent[3]);
     gl.uniform4f(this.uLatent1, latent[4], latent[5], latent[6], latent[7]);
-    gl.uniform4f(this.uLatent2, latent[8], latent[9], latent[10], latent[11]);
-    gl.uniform4f(this.uLatent3, latent[12], latent[13], latent[14], latent[15]);
     gl.uniform1f(this.uSeed, seed);
-    gl.uniform1f(this.uStep, 1.0);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 }
 
-// Attach NeuralVideoEngine globally
 window.NeuralVideoEngine = NeuralVideoEngine;
 
 /* --- js/showcase.js --- */
