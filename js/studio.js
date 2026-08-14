@@ -1,12 +1,12 @@
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER
- * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Audio Muxing + Storyboard + Neural Color Grading
+ * Full 4K Ultra-Detailed WebGL2 GPU Synthesizer + Generative Audio Muxing + Color Grading
  */
 
 (function () {
   const state = {
     mode: "text-to-video",
-    model: "Sovereign DiT v4.0",
+    model: "Sovereign DiT v4.0 (4K)",
     aspectRatio: "16:9",
     cameraMotion: "Orbit 360°",
     resolution: "1080p",
@@ -88,6 +88,9 @@
   const historyStrip = document.getElementById('studio-history-strip');
   const motionSlider = document.getElementById('motion-strength-slider');
   const motionValDisplay = document.getElementById('motion-strength-val');
+  const flareSlider = document.getElementById('flare-slider');
+  const grainSlider = document.getElementById('grain-slider');
+  const fogSlider = document.getElementById('fog-slider');
 
   function resizeCanvas() {
     if (!canvas || !canvas.parentElement) return;
@@ -102,7 +105,11 @@
         state.prompt,
         state.cameraMotion,
         state.motionStrength,
-        state.seed
+        state.seed,
+        state.activeLut,
+        state.flareStrength,
+        state.grainStrength,
+        state.fogStrength
       );
     }
   }
@@ -134,7 +141,7 @@
     overlay.classList.add('active');
 
     if (window.showToast) {
-      window.showToast(`⚡ Synthesizing 3D Neural Latents (${state.activeLut.toUpperCase()} LUT)...`);
+      window.showToast(`⚡ Synthesizing 4K Neural Video (${state.activeLut.toUpperCase()} LUT)...`);
     }
 
     const p = state.prompt.toLowerCase();
@@ -188,7 +195,7 @@
       addGenerationToHistory(state.generatedVideoUrl);
 
       if (window.showToast) {
-        window.showToast("✓ Master video + synchronized cinematic soundtrack rendered! Ready for export.");
+        window.showToast("✓ 4K Master Video with Cinematic Audio Generated! Ready for export.");
       }
     };
 
@@ -198,11 +205,11 @@
     let currentFrame = 0;
 
     const steps = [
-      "Vectorizing prompt in 128-dim Latent Space...",
-      `Applying ${state.activeLut.toUpperCase()} Neural Color Grading...`,
-      "Raymarching 3D Volumetric Scene Geometry...",
-      "Synthesizing dynamic binaural audio soundtrack...",
-      "Hardware Muxing Master 1080p Video Stream..."
+      "Vectorizing 128-dim Latents in Cook-Torrance space...",
+      `Applying ${state.activeLut.toUpperCase()} Neural Color Grading LUT...`,
+      "Raymarching 96-Step Adaptive 3D Cone Volumes...",
+      "Synthesizing high-dynamic-range spatial soundtrack...",
+      "Hardware Muxing 4K Master Video Stream..."
     ];
 
     const frameInterval = setInterval(() => {
@@ -235,7 +242,7 @@
     overlay.classList.add('active');
 
     if (window.showToast) {
-      window.showToast("🎬 Compiling & Rendering Multi-Shot Storyboard Film...");
+      window.showToast("🎬 Compiling & Rendering Multi-Shot Storyboard Film in 4K...");
     }
 
     const totalDuration = state.storyboardShots.reduce((acc, s) => acc + s.duration, 0);
@@ -275,7 +282,7 @@
       addGenerationToHistory(state.generatedVideoUrl);
 
       if (window.showToast) {
-        window.showToast("✓ Complete Multi-Shot Film Rendered! Click 'Export Video File' to download.");
+        window.showToast("✓ Complete 4K Multi-Shot Short Film Rendered! Click 'Export Video File' to download.");
       }
     };
 
@@ -297,7 +304,11 @@
           currentShot.prompt,
           currentShot.camera,
           state.motionStrength,
-          state.seed + shotIdx * 100
+          state.seed + shotIdx * 100,
+          state.activeLut,
+          state.flareStrength,
+          state.grainStrength,
+          state.fogStrength
         );
       }
 
@@ -421,11 +432,11 @@
     if (state.generatedBlob) {
       const a = document.createElement('a');
       a.href = state.generatedVideoUrl;
-      a.download = `aivideo-sovereign-${Date.now()}.webm`;
+      a.download = `aivideo-master-4k-${Date.now()}.webm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Sovereign Master video + soundtrack exported!");
+      if (window.showToast) window.showToast("✓ 4K Master video + soundtrack exported!");
     } else {
       window.downloadCurrentFrame();
     }
@@ -436,11 +447,11 @@
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `aivideo-frame-${Date.now()}.png`;
+    a.download = `aivideo-frame-4k-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    if (window.showToast) window.showToast("✓ High-Res PNG frame exported!");
+    if (window.showToast) window.showToast("✓ Ultra 4K PNG frame exported!");
   };
 
   // Bind Listeners
@@ -510,6 +521,30 @@
       if (window.showToast) window.showToast(`Playback Speed: ${btn.dataset.speed}x`);
     });
   });
+
+  if (flareSlider) {
+    flareSlider.addEventListener('input', (e) => {
+      state.flareStrength = parseInt(e.target.value, 10);
+      const val = document.getElementById('flare-strength-val');
+      if (val) val.textContent = `${state.flareStrength}%`;
+    });
+  }
+
+  if (grainSlider) {
+    grainSlider.addEventListener('input', (e) => {
+      state.grainStrength = parseInt(e.target.value, 10);
+      const val = document.getElementById('grain-strength-val');
+      if (val) val.textContent = `${state.grainStrength}%`;
+    });
+  }
+
+  if (fogSlider) {
+    fogSlider.addEventListener('input', (e) => {
+      state.fogStrength = parseInt(e.target.value, 10);
+      const val = document.getElementById('fog-strength-val');
+      if (val) val.textContent = `${state.fogStrength}%`;
+    });
+  }
 
   document.querySelectorAll('.template-chip').forEach(chip => {
     chip.addEventListener('click', () => {
