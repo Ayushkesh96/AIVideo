@@ -1,6 +1,6 @@
 /**
  * AIVIDEO SOVEREIGN STUDIO CONTROLLER
- * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Generative Cinematic Audio Muxing
+ * Full 3D Multi-Scene WebGL2 GPU Synthesizer + Generative Audio Muxing + Multi-Shot Storyboard Editor
  */
 
 (function () {
@@ -20,7 +20,32 @@
     currentTime: 0,
     generatedVideoUrl: null,
     generatedBlob: null,
-    history: []
+    history: [],
+    // Storyboard Shots Chain
+    storyboardShots: [
+      {
+        id: 1,
+        title: "Establishing Shot",
+        prompt: "Wide aerial tracking shot of futuristic Neo-Tokyo skyline under crimson neon lightning and rain, anamorphic 8k",
+        camera: "Drone Overhead",
+        duration: 4
+      },
+      {
+        id: 2,
+        title: "Focal Character Shot",
+        prompt: "Cinematic close-up of cybernetic samurai with glowing crimson katana in rain-soaked Neo-Tokyo alley, volumetric steam",
+        camera: "Orbit 360°",
+        duration: 5
+      },
+      {
+        id: 3,
+        title: "Action Climax Shot",
+        prompt: "Dynamic high-speed FPV dive through exploding neon holographic signs and glowing cyber particles",
+        camera: "FPV Dive",
+        duration: 4
+      }
+    ],
+    currentShotIndex: 0
   };
 
   const canvas = document.getElementById('studio-viewport-canvas');
@@ -97,7 +122,7 @@
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // Generate 3D Neural Video with Synchronized Generative Audio
+  // Generate Single Shot with Generative Audio
   function startSovereignVideoGeneration() {
     if (state.isGenerating || !canvas) return;
     state.isGenerating = true;
@@ -109,23 +134,18 @@
       window.showToast("⚡ Synthesizing 3D Neural Latents & Audio Foley...");
     }
 
-    // Determine scene archetype for audio
     const p = state.prompt.toLowerCase();
     let sType = 0;
     if (p.includes('ocean') || p.includes('wave') || p.includes('water')) sType = 1;
     else if (p.includes('space') || p.includes('galaxy') || p.includes('star')) sType = 2;
     else if (p.includes('ancient') || p.includes('temple') || p.includes('dragon')) sType = 3;
 
-    // Start Audio Synthesizer
     let audioStream = null;
     if (audioEngine) {
       audioStream = audioEngine.playCinematicSoundscape(sType, state.duration);
     }
 
-    // Video Canvas Stream
     const videoStream = canvas.captureStream(state.fps);
-    
-    // Combine Video + Audio tracks if available
     let combinedStream = videoStream;
     if (audioStream && audioStream.getAudioTracks().length > 0) {
       combinedStream = new MediaStream([
@@ -204,6 +224,102 @@
     }, 1000 / state.fps);
   }
 
+  // Render Full Multi-Shot Storyboard Sequence Chained Film
+  window.renderFullStoryboardFilm = function () {
+    if (state.isGenerating || !canvas) return;
+    state.isGenerating = true;
+    state.isPlaying = false;
+    recordedChunks = [];
+    overlay.classList.add('active');
+
+    if (window.showToast) {
+      window.showToast("🎬 Compiling & Rendering Multi-Shot Storyboard Film...");
+    }
+
+    const totalDuration = state.storyboardShots.reduce((acc, s) => acc + s.duration, 0);
+    let audioStream = null;
+    if (audioEngine) {
+      audioStream = audioEngine.playCinematicSoundscape(0, totalDuration);
+    }
+
+    const videoStream = canvas.captureStream(state.fps);
+    let combinedStream = videoStream;
+    if (audioStream && audioStream.getAudioTracks().length > 0) {
+      combinedStream = new MediaStream([
+        ...videoStream.getVideoTracks(),
+        ...audioStream.getAudioTracks()
+      ]);
+    }
+
+    try {
+      mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+    } catch (e) {
+      mediaRecorder = new MediaRecorder(videoStream);
+    }
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      state.generatedBlob = blob;
+      state.generatedVideoUrl = URL.createObjectURL(blob);
+
+      overlay.classList.remove('active');
+      state.isGenerating = false;
+      state.currentTime = 0;
+      state.isPlaying = true;
+      addGenerationToHistory(state.generatedVideoUrl);
+
+      if (window.showToast) {
+        window.showToast("✓ Complete Multi-Shot Film Rendered! Click 'Export Video File' to download.");
+      }
+    };
+
+    mediaRecorder.start();
+
+    let shotIdx = 0;
+    let shotTime = 0;
+    const totalFrames = totalDuration * state.fps;
+    let currentTotalFrame = 0;
+
+    const interval = setInterval(() => {
+      currentTotalFrame++;
+      const currentShot = state.storyboardShots[shotIdx];
+      shotTime += 1 / state.fps;
+
+      // Render active shot
+      if (neuralEngine) {
+        neuralEngine.renderFrame(
+          shotTime,
+          currentShot.prompt,
+          currentShot.camera,
+          state.motionStrength,
+          state.seed + shotIdx * 100
+        );
+      }
+
+      if (hudMotion) hudMotion.textContent = `Shot ${shotIdx + 1}: ${currentShot.camera}`;
+
+      const renderProgress = Math.min(Math.floor((currentTotalFrame / totalFrames) * 100), 100);
+      if (progressFill) progressFill.style.width = `${renderProgress}%`;
+      if (renderStatus) renderStatus.textContent = `Rendering Shot ${shotIdx + 1}/${state.storyboardShots.length}: ${currentShot.title} (${renderProgress}%)`;
+
+      if (shotTime >= currentShot.duration) {
+        shotIdx++;
+        shotTime = 0;
+      }
+
+      if (currentTotalFrame >= totalFrames || shotIdx >= state.storyboardShots.length) {
+        clearInterval(interval);
+        setTimeout(() => {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        }, 200);
+      }
+    }, 1000 / state.fps);
+  };
+
   function addGenerationToHistory(videoUrl) {
     const item = {
       id: Date.now(),
@@ -240,15 +356,76 @@
     });
   }
 
+  // Render Storyboard Strip UI
+  function renderStoryboardStrip() {
+    const strip = document.getElementById('storyboard-shots-strip');
+    if (!strip) return;
+    strip.innerHTML = '';
+
+    state.storyboardShots.forEach((shot, index) => {
+      const card = document.createElement('div');
+      card.className = `shot-card ${index === state.currentShotIndex ? 'active' : ''}`;
+      card.innerHTML = `
+        <div class="shot-card-header">
+          <span class="shot-number-badge">SHOT ${index + 1}</span>
+          <span class="shot-camera-tag">${shot.camera}</span>
+        </div>
+        <div style="font-weight:700; font-size:0.85rem; color:#fff;">${shot.title}</div>
+        <div class="shot-prompt-preview">${shot.prompt}</div>
+        <div class="shot-card-footer">
+          <span style="font-size:0.72rem; color:var(--text-muted);">${shot.duration}s</span>
+          <button class="btn btn-dark btn-sm" style="padding:2px 8px; font-size:0.7rem;" onclick="window.loadShotToEditor(${index})">Edit Shot</button>
+        </div>
+      `;
+      strip.appendChild(card);
+    });
+
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-shot-btn';
+    addBtn.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Add Shot</span>
+    `;
+    addBtn.onclick = () => {
+      const newShot = {
+        id: Date.now(),
+        title: `Shot ${state.storyboardShots.length + 1}`,
+        prompt: state.prompt,
+        camera: state.cameraMotion,
+        duration: 4
+      };
+      state.storyboardShots.push(newShot);
+      renderStoryboardStrip();
+      if (window.showToast) window.showToast(`✓ Added Shot ${state.storyboardShots.length} to Storyboard!`);
+    };
+    strip.appendChild(addBtn);
+  }
+
+  window.loadShotToEditor = function (index) {
+    state.currentShotIndex = index;
+    const shot = state.storyboardShots[index];
+    if (shot) {
+      if (promptInput) promptInput.value = shot.prompt;
+      state.prompt = shot.prompt;
+      state.cameraMotion = shot.camera;
+      cameraBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.camera === shot.camera);
+      });
+      if (hudMotion) hudMotion.textContent = shot.camera;
+      renderStoryboardStrip();
+      if (window.showToast) window.showToast(`Editing Shot ${index + 1}: ${shot.title}`);
+    }
+  };
+
   window.downloadCurrentVideoFile = function () {
     if (state.generatedBlob) {
       const a = document.createElement('a');
       a.href = state.generatedVideoUrl;
-      a.download = `aivideo-master-${Date.now()}.webm`;
+      a.download = `aivideo-sovereign-${Date.now()}.webm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Master video + audio exported & downloaded!");
+      if (window.showToast) window.showToast("✓ Sovereign Master video + soundtrack exported!");
     } else {
       window.downloadCurrentFrame();
     }
@@ -274,6 +451,10 @@
       modeTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       state.mode = tab.dataset.mode || 'text-to-video';
+      const sbContainer = document.getElementById('storyboard-suite-container');
+      if (sbContainer) {
+        sbContainer.style.display = state.mode === 'storyboard' ? 'block' : 'none';
+      }
       if (window.showToast) window.showToast(`Switched mode to: ${tab.textContent.trim()}`);
     });
   });
@@ -378,6 +559,7 @@
     if (!audioEngine && window.CinemaAudioEngine) {
       audioEngine = new window.CinemaAudioEngine();
     }
+    renderStoryboardStrip();
     state.isPlaying = true;
     previewLoop();
     addGenerationToHistory(null);

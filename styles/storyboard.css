@@ -1,0 +1,124 @@
+/* ==========================================================================
+   AIVIDEO STORYBOARD & MULTI-SHOT TIMELINE SUITE STYLES
+   ========================================================================== */
+
+.storyboard-container {
+  margin-top: 24px;
+  background: #111116;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.storyboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.storyboard-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shot-cards-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.shot-card {
+  background: #17171e;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.shot-card.active {
+  border-color: var(--accent-lime);
+  background: #1c1c26;
+  box-shadow: 0 0 16px rgba(204, 255, 0, 0.15);
+}
+
+.shot-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shot-number-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--accent-lime);
+  background: rgba(204, 255, 0, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.shot-camera-tag {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.shot-prompt-preview {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shot-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.add-shot-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-shot-btn:hover {
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+  background: rgba(204, 255, 0, 0.05);
+}
+
+/* Audio Visualizer Canvas on HUD */
+.audio-visualizer-canvas {
+  width: 90px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
