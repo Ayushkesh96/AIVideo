@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="aivideo-build" content="ae33c3ef7466">
+  <meta name="aivideo-build" content="f53833d348ee">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Higgsfield AI — AI-native creative suite (Self-Sufficient Video Platform)</title>
@@ -3919,6 +3919,338 @@ button {
   }
 }
 
+/* --- styles/song-studio.css --- */
+/* ==========================================================================
+   SONG STUDIO — lyrics/structure editor, style controls, player, library
+   ========================================================================== */
+
+.song-studio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .song-studio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.song-writer-panel,
+.song-player-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+/* --- Section list -------------------------------------------------------- */
+
+.song-sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.song-section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.song-section-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.song-section-type {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent-lime);
+  background: rgba(204, 255, 0, 0.1);
+  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+}
+
+.song-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.song-section-actions button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius-xs);
+  transition: color 0.15s, background 0.15s;
+}
+
+.song-section-actions button:hover {
+  color: var(--text-white);
+  background: var(--bg-card-hover);
+}
+
+.song-section-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.song-section-actions button:disabled:hover {
+  background: none;
+}
+
+.song-section-lyrics {
+  width: 100%;
+  margin-top: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  padding: 8px 10px;
+  min-height: 56px;
+  resize: vertical;
+}
+
+.song-section-lyrics:focus {
+  outline: none;
+  border-color: var(--accent-lime);
+}
+
+.song-section-lyrics::placeholder {
+  color: var(--text-dim);
+}
+
+.song-section-instrumental-note {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.song-sections-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 16px 8px;
+  text-align: center;
+  border: 1px dashed var(--border-card);
+  border-radius: var(--radius-md);
+}
+
+/* --- Add-section chips ---------------------------------------------------- */
+
+.song-add-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.song-add-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  color: var(--text-sub);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.song-add-chip:hover {
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+/* --- Style controls -------------------------------------------------------- */
+
+.song-style-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.song-style-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.song-style-grid input,
+.song-style-grid select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 8px 10px;
+}
+
+.song-style-grid input:focus,
+.song-style-grid select:focus {
+  outline: none;
+  border-color: var(--accent-lime);
+}
+
+.song-output-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.song-radio-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.song-radio-pill input {
+  accent-color: var(--accent-lime);
+}
+
+/* --- Progress -------------------------------------------------------------- */
+
+.song-progress-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.song-progress-box .render-spinner {
+  margin: 0 auto 12px;
+}
+
+.song-progress-box .render-progress-bar {
+  width: 100%;
+  margin: 0 auto 10px;
+}
+
+/* --- Now playing ------------------------------------------------------------ */
+
+.song-now-playing {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.song-track-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.song-track-tab {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-sub);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.song-track-tab.active {
+  background: rgba(204, 255, 0, 0.12);
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+/* --- Library ---------------------------------------------------------------- */
+
+.song-library-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.song-library-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 20px 8px;
+  text-align: center;
+}
+
+.song-library-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.song-library-item:hover {
+  border-color: var(--border-card-hover);
+}
+
+.song-library-item-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-library-item-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.song-library-item-remove {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.song-library-item-remove:hover {
+  color: var(--accent-magenta);
+}
+
 </style>
 </head>
 <body>
@@ -3943,7 +4275,7 @@ button {
         <div class="nav-divider"></div>
         <a href="#studio" class="nav-link-item">Image</a>
         <a href="#studio" class="nav-link-item">Video</a>
-        <a href="#studio" class="nav-link-item">Audio</a>
+        <a href="#song-studio" class="nav-link-item">Audio</a>
         <a href="#studio" class="nav-link-item">
           Edit <span class="badge-layers">Layers</span>
         </a>
@@ -4629,6 +4961,126 @@ button {
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SONG STUDIO — self-hosted lyrics + style -> full song generation
+       ========================================================================== -->
+  <section class="section" id="song-studio" style="padding-top:20px;">
+    <div class="container-fluid">
+
+      <div class="filmos-workspace-header" style="border-radius: var(--radius-lg); margin-bottom: 20px;">
+        <div class="filmos-project-badge">
+          <div class="project-folder-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:800; font-size:1.05rem; color:#fff;">Song Studio</span>
+              <span class="badge badge-lime" style="font-size:0.65rem;">NEW</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Lyrics, style and vocals — full songs from a self-hosted model</div>
+          </div>
+        </div>
+
+        <span id="song-provider-badge" class="provider-badge">CHECKING…</span>
+      </div>
+
+      <div class="song-studio-grid">
+
+        <!-- WRITER PANEL -->
+        <div class="song-writer-panel">
+          <div class="studio-panel-title">
+            <span>Title</span>
+          </div>
+          <input id="song-title-input" type="text" class="prompt-textarea" style="min-height:auto; padding:10px 14px;" placeholder="Untitled" maxlength="120">
+
+          <div class="studio-panel-title" style="margin-top:18px;">
+            <span>Lyrics &amp; Structure</span>
+            <span id="song-section-count" style="font-size:0.72rem; color:var(--text-muted);">0 sections</span>
+          </div>
+          <div id="song-sections-list" class="song-sections-list"></div>
+          <div class="song-add-section-row">
+            <span style="font-size:0.72rem;color:var(--text-muted);margin-right:2px;">+ Add:</span>
+            <button class="song-add-chip" type="button" data-type="intro">Intro</button>
+            <button class="song-add-chip" type="button" data-type="verse">Verse</button>
+            <button class="song-add-chip" type="button" data-type="prechorus">Pre-Chorus</button>
+            <button class="song-add-chip" type="button" data-type="chorus">Chorus</button>
+            <button class="song-add-chip" type="button" data-type="bridge">Bridge</button>
+            <button class="song-add-chip" type="button" data-type="instrumental">Instrumental</button>
+            <button class="song-add-chip" type="button" data-type="outro">Outro</button>
+          </div>
+
+          <div class="studio-panel-title" style="margin-top:18px;">
+            <span>Style</span>
+          </div>
+          <div class="song-style-grid">
+            <label>Genre
+              <input id="song-genre-input" type="text" list="song-genre-list" placeholder="Pop, Rock, Jazz...">
+            </label>
+            <datalist id="song-genre-list"></datalist>
+            <label>Mood
+              <input id="song-emotion-input" type="text" placeholder="Happy, melancholic, uplifting...">
+            </label>
+            <label>Voice
+              <select id="song-gender-select">
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="auto">Auto</option>
+              </select>
+            </label>
+            <label>Timbre
+              <input id="song-timbre-input" type="text" placeholder="warm, breathy, powerful...">
+            </label>
+            <label>Instruments
+              <input id="song-instruments-input" type="text" placeholder="piano, guitar, synths...">
+            </label>
+            <label>BPM
+              <input id="song-bpm-input" type="number" min="40" max="220" value="120">
+            </label>
+          </div>
+          <textarea id="song-custom-style-input" class="prompt-textarea" style="margin-top:10px; min-height:50px;" placeholder="Additional style notes (optional)" maxlength="400"></textarea>
+
+          <div class="song-output-mode-row">
+            <span style="font-size:0.78rem;color:var(--text-secondary);">Output:</span>
+            <label class="song-radio-pill"><input type="radio" name="song-output-mode" value="mixed" checked> Full Mix</label>
+            <label class="song-radio-pill"><input type="radio" name="song-output-mode" value="separate"> Full Mix + Stems</label>
+          </div>
+
+          <button id="song-generate-btn" class="btn btn-lime btn-lg" style="width:100%; margin-top:18px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Generate Song</span>
+          </button>
+        </div>
+
+        <!-- PLAYER + LIBRARY PANEL -->
+        <div class="song-player-panel">
+          <div id="song-progress-box" class="song-progress-box" style="display:none;">
+            <div class="render-spinner" style="border-top-color:var(--accent-lime);"></div>
+            <div class="render-progress-bar">
+              <div id="song-progress-fill" class="render-progress-fill" style="background:linear-gradient(90deg, var(--accent-lime), var(--accent-cyan));"></div>
+            </div>
+            <div id="song-status-text" class="render-status-text">Queued...</div>
+          </div>
+
+          <div id="song-now-playing" class="song-now-playing" style="display:none;">
+            <div class="studio-panel-title">
+              <span id="song-now-playing-title">—</span>
+            </div>
+            <div id="song-track-tabs" class="song-track-tabs"></div>
+            <audio id="song-audio-player" controls style="width:100%;"></audio>
+          </div>
+
+          <div class="studio-panel-title">
+            <span>Library</span>
+          </div>
+          <div id="song-library-list" class="song-library-list">
+            <div class="song-library-empty">No songs yet — generate one to see it here.</div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -9020,6 +9472,527 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('DOMContentLoaded', initStudio);
+})();
+
+/* --- js/song-studio.js --- */
+/**
+ * SONG STUDIO CONTROLLER
+ *
+ * A second, independent creative pipeline alongside the video studio:
+ * structured lyrics (intro/verse/chorus/bridge/outro sections) plus style
+ * controls, generated into a full song with vocals via a self-hosted
+ * SongGeneration Studio server (api/_providers/songgen.js).
+ *
+ * There is no on-device fallback here the way the video studio has one —
+ * song generation with real vocals needs a real model, there's no honest
+ * procedural substitute for singing. Without SONGGEN_URL configured, the
+ * panel says so plainly rather than pretending to work.
+ */
+
+(function () {
+  const SECTION_LABELS = {
+    intro: 'Intro',
+    verse: 'Verse',
+    prechorus: 'Pre-Chorus',
+    chorus: 'Chorus',
+    bridge: 'Bridge',
+    instrumental: 'Instrumental',
+    outro: 'Outro'
+  };
+  const VOCAL_TYPES = new Set(['verse', 'chorus', 'bridge', 'prechorus']);
+
+  const LIBRARY_STORAGE_KEY = 'aivideo-song-library-v1';
+  const MAX_LIBRARY_ITEMS = 30;
+
+  // Songs take noticeably longer than a video clip to render (the reference
+  // server's own docs say 3-6 minutes), so the poll backoff and ceiling are
+  // both longer than the video studio's.
+  const POLL_START_MS = 2500;
+  const POLL_MAX_MS = 6000;
+  const POLL_GROWTH = 1.2;
+  const MAX_WAIT_MS = 15 * 60 * 1000;
+
+  let sections = [];
+  let sectionSeq = 0;
+  let generating = false;
+  let currentTracks = null;
+  let activeTrackIndex = 0;
+  let library = [];
+
+  function defaultSections() {
+    return [
+      { id: ++sectionSeq, type: 'intro', lyrics: '' },
+      { id: ++sectionSeq, type: 'verse', lyrics: '' },
+      { id: ++sectionSeq, type: 'chorus', lyrics: '' },
+      { id: ++sectionSeq, type: 'verse', lyrics: '' },
+      { id: ++sectionSeq, type: 'chorus', lyrics: '' },
+      { id: ++sectionSeq, type: 'outro', lyrics: '' }
+    ];
+  }
+
+  function initSongStudio() {
+    if (!document.getElementById('song-studio')) return; // not on this page
+    sections = defaultSections();
+    loadLibrary();
+    renderSections();
+    renderLibrary();
+    bindControls();
+    refreshSongProviderStatus();
+  }
+
+  function bindControls() {
+    document.querySelectorAll('.song-add-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sections.push({ id: ++sectionSeq, type: btn.dataset.type, lyrics: '' });
+        renderSections();
+      });
+    });
+
+    const genBtn = document.getElementById('song-generate-btn');
+    if (genBtn) genBtn.addEventListener('click', startSongGeneration);
+  }
+
+  // --- Provider status -------------------------------------------------------
+
+  async function refreshSongProviderStatus() {
+    const badge = document.getElementById('song-provider-badge');
+    let caps = null;
+    try {
+      const res = await fetch('/api/song-providers', { headers: { Accept: 'application/json' } });
+      caps = res.ok ? await res.json() : null;
+    } catch (err) {
+      caps = null;
+    }
+
+    populateGenreList((caps && caps.genres) || []);
+
+    if (!badge) return;
+    if (caps && caps.configured) {
+      badge.textContent = caps.label || 'SongGeneration Studio';
+      badge.classList.add('is-live');
+      badge.classList.remove('is-besteffort', 'is-error');
+      badge.title = `Self-hosted song generation is active: ${caps.label}.`;
+    } else {
+      badge.textContent = 'NOT CONFIGURED';
+      badge.classList.remove('is-live', 'is-besteffort');
+      badge.classList.add('is-error');
+      badge.title =
+        'No song generation server is configured. Set SONGGEN_URL to a running ' +
+        'SongGeneration Studio instance (https://github.com/6Morpheus6/SongGeneration-Studio) ' +
+        '— see docs/self-hosting.md. There is no free fallback for this: real vocals need a real model.';
+    }
+  }
+
+  function populateGenreList(genres) {
+    const list = document.getElementById('song-genre-list');
+    if (!list) return;
+    list.innerHTML = '';
+    genres.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g;
+      list.appendChild(opt);
+    });
+  }
+
+  // --- Section editor ----------------------------------------------------------
+
+  function renderSections() {
+    const list = document.getElementById('song-sections-list');
+    const count = document.getElementById('song-section-count');
+    if (count) count.textContent = `${sections.length} section${sections.length === 1 ? '' : 's'}`;
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (!sections.length) {
+      const empty = document.createElement('div');
+      empty.className = 'song-sections-empty';
+      empty.textContent = 'Add a section to start writing.';
+      list.appendChild(empty);
+      return;
+    }
+
+    sections.forEach((section, idx) => {
+      list.appendChild(buildSectionCard(section, idx));
+    });
+  }
+
+  function buildSectionCard(section, idx) {
+    const isVocal = VOCAL_TYPES.has(section.type);
+    const label = SECTION_LABELS[section.type] || section.type;
+
+    const card = document.createElement('div');
+    card.className = 'song-section-card';
+
+    const head = document.createElement('div');
+    head.className = 'song-section-card-head';
+
+    const typeTag = document.createElement('span');
+    typeTag.className = 'song-section-type';
+    typeTag.textContent = label;
+    head.appendChild(typeTag);
+
+    const actions = document.createElement('div');
+    actions.className = 'song-section-actions';
+
+    const upBtn = makeActionButton('↑', 'Move up', idx === 0, () => {
+      if (idx > 0) {
+        [sections[idx - 1], sections[idx]] = [sections[idx], sections[idx - 1]];
+        renderSections();
+      }
+    });
+    const downBtn = makeActionButton('↓', 'Move down', idx === sections.length - 1, () => {
+      if (idx < sections.length - 1) {
+        [sections[idx + 1], sections[idx]] = [sections[idx], sections[idx + 1]];
+        renderSections();
+      }
+    });
+    const removeBtn = makeActionButton('✕', 'Remove', false, () => {
+      sections.splice(idx, 1);
+      renderSections();
+    });
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(removeBtn);
+    head.appendChild(actions);
+    card.appendChild(head);
+
+    if (isVocal) {
+      const textarea = document.createElement('textarea');
+      textarea.className = 'song-section-lyrics';
+      textarea.placeholder = `${label} lyrics — one line per line...`;
+      textarea.value = section.lyrics || '';
+      textarea.addEventListener('input', () => { section.lyrics = textarea.value; });
+      card.appendChild(textarea);
+    } else {
+      const note = document.createElement('div');
+      note.className = 'song-section-instrumental-note';
+      note.textContent = 'Instrumental — no lyrics';
+      card.appendChild(note);
+    }
+
+    return card;
+  }
+
+  function makeActionButton(symbol, title, disabled, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = symbol;
+    btn.title = title;
+    btn.disabled = disabled;
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
+  // --- Generation pipeline -------------------------------------------------
+
+  function collectSongRequest() {
+    const titleInput = document.getElementById('song-title-input');
+    const outputModeEl = document.querySelector('input[name="song-output-mode"]:checked');
+
+    return {
+      title: (titleInput && titleInput.value.trim()) || 'Untitled',
+      sections: sections.map(s => ({
+        type: s.type,
+        lyrics: VOCAL_TYPES.has(s.type) ? (s.lyrics || '') : undefined
+      })),
+      gender: valueOf('song-gender-select', 'female'),
+      timbre: valueOf('song-timbre-input', ''),
+      genre: valueOf('song-genre-input', ''),
+      emotion: valueOf('song-emotion-input', ''),
+      instruments: valueOf('song-instruments-input', ''),
+      customStyle: valueOf('song-custom-style-input', ''),
+      bpm: parseInt(valueOf('song-bpm-input', '120'), 10) || 120,
+      outputMode: outputModeEl ? outputModeEl.value : 'mixed'
+    };
+  }
+
+  function valueOf(id, fallback) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : fallback;
+  }
+
+  async function startSongGeneration() {
+    if (generating) return;
+
+    if (!sections.length) {
+      if (window.showToast) window.showToast('⚠ Add at least one section before generating.');
+      return;
+    }
+    const hasVocalLyrics = sections.some(s => VOCAL_TYPES.has(s.type) && s.lyrics && s.lyrics.trim());
+    const allInstrumental = sections.every(s => !VOCAL_TYPES.has(s.type));
+    if (!hasVocalLyrics && !allInstrumental) {
+      if (window.showToast) {
+        window.showToast('⚠ Add lyrics to at least one verse/chorus/bridge, or make every section instrumental.');
+      }
+      return;
+    }
+
+    generating = true;
+    setGenerateButtonEnabled(false);
+    showProgress(0.02, 'Submitting to the song server...');
+
+    const req = collectSongRequest();
+    let created;
+    try {
+      const res = await fetch('/api/song-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req)
+      });
+      created = await res.json();
+    } catch (err) {
+      created = { success: false, error: `Could not reach the generation API: ${err.message}` };
+    }
+
+    if (!created || !created.success || !created.job) {
+      finishWithError(
+        (created && created.error) || 'The song server did not accept this request.',
+        created && created.hint
+      );
+      return;
+    }
+
+    showProgress(0.05, 'Queued on your GPU...');
+    await pollUntilDone(created.job, req);
+  }
+
+  async function pollUntilDone(jobId, req) {
+    const startedAt = Date.now();
+    let wait = POLL_START_MS;
+
+    while (Date.now() - startedAt < MAX_WAIT_MS) {
+      await sleep(wait);
+      wait = Math.min(POLL_MAX_MS, Math.round(wait * POLL_GROWTH));
+
+      let status;
+      try {
+        const res = await fetch(`/api/song-status?job=${encodeURIComponent(jobId)}`, {
+          headers: { Accept: 'application/json' }
+        });
+        status = await res.json();
+      } catch (err) {
+        continue; // a dropped poll isn't a dead job — the next tick usually recovers
+      }
+      if (!status) continue;
+
+      if (status.status === 'succeeded' && Array.isArray(status.tracks) && status.tracks.length) {
+        finishWithSuccess(req.title, status.tracks, req.outputMode);
+        return;
+      }
+      if (status.status === 'failed') {
+        finishWithError(status.error || 'Song generation failed.');
+        return;
+      }
+
+      const progress = Number.isFinite(status.progress) ? status.progress : 0.4;
+      showProgress(Math.max(0.05, Math.min(0.97, progress)), status.detail || describeSongPhase(status.status));
+    }
+
+    finishWithError(`The song server did not finish within ${Math.round(MAX_WAIT_MS / 60000)} minutes.`);
+  }
+
+  function describeSongPhase(status) {
+    return status === 'queued' ? 'Queued on your GPU...' : 'Composing vocals and instrumentation...';
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function setGenerateButtonEnabled(enabled) {
+    const btn = document.getElementById('song-generate-btn');
+    if (btn) btn.disabled = !enabled;
+  }
+
+  function showProgress(fraction, text) {
+    const box = document.getElementById('song-progress-box');
+    const fill = document.getElementById('song-progress-fill');
+    const status = document.getElementById('song-status-text');
+    if (box) box.style.display = 'block';
+    if (fill) fill.style.width = `${Math.round(fraction * 100)}%`;
+    if (status) status.textContent = text;
+  }
+
+  function hideProgress() {
+    const box = document.getElementById('song-progress-box');
+    if (box) box.style.display = 'none';
+  }
+
+  function finishWithError(message, hint) {
+    generating = false;
+    setGenerateButtonEnabled(true);
+    hideProgress();
+    if (window.showToast) window.showToast(`⚠ ${message}${hint ? ' — ' + hint : ''}`);
+  }
+
+  function finishWithSuccess(title, tracks, outputMode) {
+    generating = false;
+    setGenerateButtonEnabled(true);
+    hideProgress();
+
+    showNowPlaying(title, tracks);
+    addToLibrary({ title, tracks, outputMode, createdAt: Date.now() });
+
+    if (window.showToast) window.showToast(`✓ "${title}" is ready.`);
+  }
+
+  // --- Player ------------------------------------------------------------------
+
+  function showNowPlaying(title, tracks) {
+    const panel = document.getElementById('song-now-playing');
+    const titleEl = document.getElementById('song-now-playing-title');
+    const tabsEl = document.getElementById('song-track-tabs');
+    if (!panel) return;
+
+    panel.style.display = 'block';
+    if (titleEl) titleEl.textContent = title || 'Untitled';
+
+    currentTracks = tracks;
+    activeTrackIndex = 0;
+
+    if (tabsEl) {
+      tabsEl.innerHTML = '';
+      if (tracks.length > 1) {
+        tracks.forEach((t, idx) => {
+          const tab = document.createElement('button');
+          tab.type = 'button';
+          tab.className = 'song-track-tab' + (idx === 0 ? ' active' : '');
+          tab.textContent = t.label;
+          tab.addEventListener('click', () => selectTrack(idx));
+          tabsEl.appendChild(tab);
+        });
+      }
+    }
+
+    playTrack(0);
+  }
+
+  function selectTrack(idx) {
+    if (!currentTracks || !currentTracks[idx]) return;
+    activeTrackIndex = idx;
+    const tabsEl = document.getElementById('song-track-tabs');
+    if (tabsEl) {
+      Array.from(tabsEl.children).forEach((tab, i) => tab.classList.toggle('active', i === idx));
+    }
+    playTrack(idx);
+  }
+
+  function playTrack(idx) {
+    const player = document.getElementById('song-audio-player');
+    if (!player || !currentTracks || !currentTracks[idx]) return;
+    player.src = currentTracks[idx].url;
+    const playPromise = player.play();
+    if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+  }
+
+  // --- Library -------------------------------------------------------------------
+  //
+  // Persisted client-side only. The reference SongGeneration Studio server
+  // keeps generations in memory with no database of its own, so a library
+  // entry's track URLs go stale if that server restarts — the same
+  // limitation the reference server itself has, not one this adds.
+
+  function loadLibrary() {
+    try {
+      const raw = localStorage.getItem(LIBRARY_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      library = Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      library = [];
+    }
+  }
+
+  function saveLibrary() {
+    try {
+      localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library.slice(0, MAX_LIBRARY_ITEMS)));
+    } catch (err) {
+      // Storage full or unavailable (private browsing) — the session still
+      // works, it just won't remember the library across a reload.
+    }
+  }
+
+  function addToLibrary(entry) {
+    library.unshift(entry);
+    library = library.slice(0, MAX_LIBRARY_ITEMS);
+    saveLibrary();
+    renderLibrary();
+  }
+
+  function removeFromLibrary(idx) {
+    library.splice(idx, 1);
+    saveLibrary();
+    renderLibrary();
+  }
+
+  function renderLibrary() {
+    const list = document.getElementById('song-library-list');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (!library.length) {
+      const empty = document.createElement('div');
+      empty.className = 'song-library-empty';
+      empty.textContent = 'No songs yet — generate one to see it here.';
+      list.appendChild(empty);
+      return;
+    }
+
+    library.forEach((entry, idx) => {
+      list.appendChild(buildLibraryItem(entry, idx));
+    });
+  }
+
+  function buildLibraryItem(entry, idx) {
+    const item = document.createElement('div');
+    item.className = 'song-library-item';
+
+    const info = document.createElement('div');
+    info.style.minWidth = '0';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'song-library-item-title';
+    titleEl.textContent = entry.title || 'Untitled';
+
+    const trackCount = Array.isArray(entry.tracks) ? entry.tracks.length : 0;
+    const metaEl = document.createElement('div');
+    metaEl.className = 'song-library-item-meta';
+    metaEl.textContent = `${formatRelativeTime(entry.createdAt)} · ${trackCount} track${trackCount === 1 ? '' : 's'}`;
+
+    info.appendChild(titleEl);
+    info.appendChild(metaEl);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'song-library-item-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove from library';
+    removeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeFromLibrary(idx);
+    });
+
+    item.appendChild(info);
+    item.appendChild(removeBtn);
+    item.addEventListener('click', () => showNowPlaying(entry.title, entry.tracks));
+
+    return item;
+  }
+
+  function formatRelativeTime(ts) {
+    if (!Number.isFinite(ts)) return '';
+    const diffSec = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (diffSec < 60) return 'just now';
+    const diffMin = Math.round(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.round(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return `${Math.round(diffHr / 24)}d ago`;
+  }
+
+  window.addEventListener('DOMContentLoaded', initSongStudio);
 })();
 
 /* --- js/film-ui.js --- */

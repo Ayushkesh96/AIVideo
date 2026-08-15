@@ -29,7 +29,8 @@ const CSS_ORDER = [
   'styles/director.css',
   'styles/presets.css',
   'styles/community.css',
-  'styles/pricing.css'
+  'styles/pricing.css',
+  'styles/song-studio.css'
 ];
 
 // Explicit, because load order is load-bearing: film-os defines the state
@@ -43,6 +44,7 @@ const JS_ORDER = [
   'js/neural-engine.js',
   'js/showcase.js',
   'js/studio.js',
+  'js/song-studio.js',
   'js/film-ui.js',
   'js/presets.js',
   'js/projects.js',
