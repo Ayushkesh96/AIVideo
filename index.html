@@ -2528,17 +2528,21 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  min-width: 0;
+  width: 100%;
 }
 
 .playback-controls {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .timeline-scrubber {
   flex: 1;
-  height: 5px;
+  min-width: 120px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
   cursor: pointer;
