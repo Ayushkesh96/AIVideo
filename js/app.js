@@ -129,7 +129,9 @@
     contestSubmit.addEventListener('click', (e) => {
       e.preventDefault();
       closeModals();
-      window.showToast("✓ Short film submitted to Global Film Festival! Jury will review.");
+      // There is no submission backend, so claiming a film was submitted and
+      // will be reviewed is simply untrue.
+      window.showToast("This form isn't connected to a submission service yet.");
     });
   }
 
