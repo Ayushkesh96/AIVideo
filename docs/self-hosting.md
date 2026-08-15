@@ -187,9 +187,29 @@ curl https://your-app.vercel.app/api/video-providers
 
 `active` should be `selfhosted` and `keyless` should be `false`. `providers`
 will include an entry with `id: "selfhosted"` whose `models` array lists both
-bundled options. If generation fails, the studio badge turns red and its
-tooltip carries ComfyUI's own error — including per-node validation failures,
-which is usually a missing model file or a renamed node.
+bundled options.
+
+That only confirms `COMFYUI_URL` is *set* — not that ComfyUI is actually up or
+has the model files the workflow needs. For that:
+
+```bash
+curl https://your-app.vercel.app/api/video-selfhost-health
+```
+
+This calls your ComfyUI box for real: a `/system_stats` reachability check,
+plus one `/object_info` lookup per node type in the active workflow, cross-
+checked against the filenames the graph actually references. A clean setup
+reports `"ok": true`; otherwise `missingNodes` names any custom node ComfyUI
+doesn't recognize (not installed) and `missingFiles` names any model weight
+the graph references that isn't in ComfyUI's `models/` folders. The studio
+runs this automatically on load and downgrades the badge — amber for "reachable
+but incomplete", red for "unreachable" — with the same detail in its tooltip,
+so you don't have to `curl` this by hand to see it.
+
+If generation itself still fails despite `ok: true`, the studio badge turns
+red and its tooltip carries ComfyUI's own error — including per-node
+validation failures, which usually means a parameter the health check doesn't
+inspect (a resolution or duration the model can't produce, for instance).
 
 ## Cost, honestly
 

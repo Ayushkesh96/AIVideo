@@ -184,6 +184,63 @@ function viewUrl(file) {
   return `${baseUrl()}/view?${params}`;
 }
 
+// Widget fields across ComfyUI's standard loader nodes that hold a filename
+// ComfyUI resolves from its models/ folder — the file a job actually needs to
+// find on disk before it can run. Not an exhaustive list of every loader any
+// custom node could define, but it covers every node the bundled workflows
+// use and most community ones, since these are the stable core loader nodes.
+const FILENAME_FIELDS = new Set(['ckpt_name', 'unet_name', 'clip_name', 'vae_name', 'lora_name']);
+
+/**
+ * Reads what a workflow graph actually needs from the ComfyUI instance that
+ * will run it: every node class it uses (so a missing custom node is
+ * detectable) and every model filename it references (so a missing weight
+ * is). Pure and graph-only — no network — which is what makes this testable
+ * without a live ComfyUI box, and what makes it work for a custom
+ * COMFYUI_WORKFLOW just as well as for a bundled one.
+ */
+function graphRequirements(graph) {
+  const nodeTypes = new Set();
+  const files = [];
+
+  Object.entries(graph).forEach(([nodeId, node]) => {
+    if (!node || typeof node.class_type !== 'string') return;
+    nodeTypes.add(node.class_type);
+
+    const inputs = node.inputs || {};
+    Object.entries(inputs).forEach(([field, value]) => {
+      if (FILENAME_FIELDS.has(field) && typeof value === 'string' && value) {
+        files.push({ nodeId, classType: node.class_type, field, filename: value });
+      }
+    });
+  });
+
+  return { nodeTypes: Array.from(nodeTypes), files };
+}
+
+/** GET {host}/object_info/{classType} — undefined if ComfyUI doesn't know the class at all. */
+async function fetchObjectInfo(host, headers, classType) {
+  try {
+    const res = await requestJson(
+      `${host}/object_info/${encodeURIComponent(classType)}`,
+      { headers, timeoutMs: 10000 }
+    );
+    return res && res[classType] ? res[classType] : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/** The combo (dropdown) choices ComfyUI reports for one required input field. */
+function comboChoices(objectInfo, field) {
+  const spec = objectInfo && objectInfo.input && objectInfo.input.required && objectInfo.input.required[field];
+  return spec && Array.isArray(spec[0]) ? spec[0] : null;
+}
+
+function bytesToGB(bytes) {
+  return Number.isFinite(bytes) ? Math.round((bytes / 1024 / 1024 / 1024) * 10) / 10 : null;
+}
+
 const provider = {
   id: 'selfhosted',
   label: 'Self-hosted (ComfyUI)',
@@ -223,6 +280,85 @@ const provider = {
       }))
     };
   },
+
+  /**
+   * Live readiness check against the actual ComfyUI box, not just "is a URL
+   * configured". `capabilities()` is synchronous and answers instantly from
+   * env vars alone, so it can claim a provider is ready when the GPU box is
+   * off or missing the model weights the graph needs — this is what a
+   * generation would actually hit, checked in advance instead of found out
+   * 45 seconds into a submitted job.
+   *
+   * Never throws: every failure mode (box unreachable, workflow file broken,
+   * a node or file missing) is a normal, reportable outcome, not a bug.
+   */
+  async checkHealth() {
+    const host = baseUrl();
+    if (!host) return { configured: false, reachable: false };
+
+    let stats;
+    try {
+      stats = await requestJson(`${host}/system_stats`, { headers: authHeaders(), timeoutMs: 8000 });
+    } catch (err) {
+      return {
+        configured: true,
+        reachable: false,
+        error: `Could not reach ComfyUI at ${host}: ${err.message}`
+      };
+    }
+
+    const device = stats && Array.isArray(stats.devices) ? stats.devices[0] : null;
+    const vramTotalGB = device ? bytesToGB(device.vram_total) : null;
+    const vramFreeGB = device ? bytesToGB(device.vram_free) : null;
+
+    let graph;
+    try {
+      graph = loadWorkflow();
+    } catch (err) {
+      return {
+        configured: true,
+        reachable: true,
+        ok: false,
+        error: `The workflow could not be loaded: ${err.message}`,
+        vramTotalGB,
+        vramFreeGB
+      };
+    }
+
+    const { nodeTypes, files } = graphRequirements(graph);
+    const infoByType = {};
+    await Promise.all(nodeTypes.map(async classType => {
+      infoByType[classType] = await fetchObjectInfo(host, authHeaders(), classType);
+    }));
+
+    const missingNodes = nodeTypes.filter(t => !infoByType[t]);
+    const missingFiles = [];
+    files.forEach(({ nodeId, classType, field, filename }) => {
+      const info = infoByType[classType];
+      if (!info) return; // already reported as a missing node — don't double up
+      const choices = comboChoices(info, field);
+      // No enum list back from ComfyUI for this field means it isn't a
+      // dropdown-of-files input after all (a custom node can reuse a
+      // standard field name for something else) — nothing to check.
+      if (choices && choices.indexOf(filename) === -1) {
+        missingFiles.push({ nodeId, classType, field, filename });
+      }
+    });
+
+    return {
+      configured: true,
+      reachable: true,
+      ok: missingNodes.length === 0 && missingFiles.length === 0,
+      missingNodes,
+      missingFiles,
+      vramTotalGB,
+      vramFreeGB
+    };
+  },
+
+  // Exposed for testing — pure and network-free, so it's the part of this
+  // file that can actually be verified without a live ComfyUI box.
+  graphRequirements,
 
   async submit(input) {
     const host = baseUrl();

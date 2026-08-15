@@ -359,6 +359,41 @@ function withStubProvider(behaviour, fn) {
     }
   }));
 
+  await testAsync('graphRequirements reads node types and model filenames from a graph', async () => {
+    const graph = {
+      '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'model.safetensors' } },
+      '2': { class_type: 'CLIPTextEncode', inputs: { text: 'hello', clip: ['1', 1] } },
+      '3': { class_type: 'VAEDecode', inputs: { samples: ['2', 0], vae: ['1', 2] } }
+    };
+    const req = selfhosted.graphRequirements(graph);
+    assert.deepStrictEqual(req.nodeTypes.sort(), ['CLIPTextEncode', 'CheckpointLoaderSimple', 'VAEDecode']);
+    assert.strictEqual(req.files.length, 1);
+    assert.strictEqual(req.files[0].filename, 'model.safetensors');
+    assert.strictEqual(req.files[0].classType, 'CheckpointLoaderSimple');
+  });
+
+  await testAsync('graphRequirements finds every model filename in both bundled workflows', async () => {
+    const fsMod = require('fs');
+    const EXPECTED = {
+      'ltx-video-t2v.json': ['ltx-video-2b-v0.9.5.safetensors', 't5xxl_fp16.safetensors'],
+      'wan2.1-t2v-1.3b.json': [
+        'wan2.1_t2v_1.3B_fp16.safetensors', 'umt5_xxl_fp8_e4m3fn_scaled.safetensors', 'wan_2.1_vae.safetensors'
+      ]
+    };
+    Object.entries(EXPECTED).forEach(([name, expectedFiles]) => {
+      const graph = JSON.parse(fsMod.readFileSync(path.join(__dirname, '..', 'workflows', name), 'utf8'));
+      const req = selfhosted.graphRequirements(graph);
+      const found = req.files.map(f => f.filename).sort();
+      assert.deepStrictEqual(found, expectedFiles.sort(), `${name}: unexpected file list ${JSON.stringify(found)}`);
+    });
+  });
+
+  await testAsync('checkHealth reports unconfigured without attempting any network call', async () => {
+    delete process.env.COMFYUI_URL;
+    const health = await selfhosted.checkHealth();
+    assert.deepStrictEqual(health, { configured: false, reachable: false });
+  });
+
   await testAsync('the proxy only accepts urls on the configured ComfyUI host', async () => {
     process.env.COMFYUI_URL = 'https://gpu.example.com';
     try {

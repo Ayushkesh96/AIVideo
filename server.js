@@ -21,6 +21,7 @@ const ROUTES = {
   '/api/video-status': require('./api/video-status'),
   '/api/video-proxy': require('./api/video-proxy'),
   '/api/video-providers': require('./api/video-providers'),
+  '/api/video-selfhost-health': require('./api/video-selfhost-health'),
   '/api/version': require('./api/version')
 };
 

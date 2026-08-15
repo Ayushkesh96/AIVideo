@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="aivideo-build" content="5ca0ab09c9bb">
+  <meta name="aivideo-build" content="ae33c3ef7466">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Higgsfield AI — AI-native creative suite (Self-Sufficient Video Platform)</title>
@@ -7792,6 +7792,12 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         badge.classList.add('is-live');
         badge.classList.remove('is-besteffort', 'is-error');
         badge.title = `Real text-to-video is active: ${active.activeModelLabel} via ${active.label}. Max ${active.maxResolution}p.`;
+
+        // A configured self-hosted box can still be off, or missing the model
+        // weights the workflow needs — capabilities() only knows COMFYUI_URL
+        // is set, not that a generation would actually succeed. Check for
+        // real, in the background, and downgrade the badge if it can't.
+        if (active.id === 'selfhosted') refreshSelfHostedHealth(active);
       } else {
         // The default, fully working state — no key, no account, no cost.
         badge.textContent = 'FREE ENGINE · ON-DEVICE';
@@ -7815,6 +7821,53 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         ? ''
         : `No reachable model renders above ${maxRes || 0}p — this falls back to the local engine at that size.`;
     });
+  }
+
+  /**
+   * Verifies a self-hosted box for real, in the background: is it actually
+   * reachable, and does it have every custom node and model file the active
+   * workflow needs. Downgrades the badge from an optimistic green to amber
+   * (unverified but might work) or red (confirmed broken) with the specific
+   * reason — "missing wan2.1_t2v_1.3B_fp16.safetensors" is something the user
+   * can fix in seconds; "ComfyUI refused this request" after a 45s wait is not.
+   */
+  async function refreshSelfHostedHealth(active) {
+    let health;
+    try {
+      const res = await fetch('/api/video-selfhost-health', { headers: { Accept: 'application/json' } });
+      health = res.ok ? await res.json() : null;
+    } catch (err) {
+      health = null;
+    }
+    if (!health || !health.reachable) {
+      const badge = document.getElementById('studio-provider-badge');
+      if (!badge) return;
+      badge.classList.remove('is-live', 'is-besteffort');
+      badge.classList.add('is-error');
+      badge.textContent = `${active.label} · UNREACHABLE`;
+      badge.title = health && health.error
+        ? `${active.label} is configured but not answering:\n\n${health.error}\n\nGenerations will fall back to the free on-device engine.`
+        : `${active.label} is configured but did not answer a health check. Generations will fall back to the free on-device engine.`;
+      return;
+    }
+
+    if (health.ok) return; // fully verified — the optimistic green badge already set was correct
+
+    const badge = document.getElementById('studio-provider-badge');
+    if (!badge) return;
+    badge.classList.remove('is-live', 'is-error');
+    badge.classList.add('is-besteffort');
+
+    const problems = [];
+    (health.missingNodes || []).forEach(n => problems.push(`custom node "${n}" is not installed`));
+    (health.missingFiles || []).forEach(f => problems.push(`model file "${f.filename}" was not found`));
+
+    badge.textContent = `${active.label} · SETUP INCOMPLETE`;
+    badge.title = problems.length
+      ? `${active.label} is reachable, but the active workflow won't run as-is:\n\n` +
+        problems.map(p => `• ${p}`).join('\n') +
+        '\n\nSee docs/self-hosting.md. Generations will fall back to the free on-device engine until this is fixed.'
+      : `${active.label} is reachable but a generation may still fail — see docs/self-hosting.md.`;
   }
 
   function activeAspectRatio() {

@@ -7,6 +7,7 @@
     "api/video-proxy.js": { "maxDuration": 60 },
     "api/video-status.js": { "maxDuration": 20 },
     "api/video-providers.js": { "maxDuration": 10 },
+    "api/video-selfhost-health.js": { "maxDuration": 30 },
     "api/version.js": { "maxDuration": 10 }
   }
 }
