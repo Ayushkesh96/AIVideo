@@ -9,6 +9,7 @@ Three engines, tried in order. The first one that answers wins:
 
 | | Engine | Needs a key | What it can do |
 |---|---|---|---|
+| 0 | **Your own GPU** — LTX-Video, Wan 2.2, CogVideoX via ComfyUI | no (needs hardware) | Open weights you run yourself. No per-clip fee, no upstream policy. See [docs/self-hosting.md](docs/self-hosting.md) |
 | 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | yes | Genuinely depicts the prompt, including motion, up to 4K |
 | 2 | **Pollinations, anonymously** | **no** | A real video model, attempted with no credentials at all |
 | 3 | **Local keyframe engine** | no | Generates stills for the prompt and animates them under a virtual camera |

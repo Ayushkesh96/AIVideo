@@ -281,6 +281,63 @@ function withStubProvider(behaviour, fn) {
     }
   });
 
+  // --- self-hosted (ComfyUI) ------------------------------------------------
+
+  console.log('\nself-hosted ComfyUI adapter');
+
+  const selfhosted = providers.byId('selfhosted');
+
+  await testAsync('self-hosted outranks metered providers when configured', () => withNoKeys(async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    process.env.FAL_KEY = 'test-key';
+    try {
+      const caps = video.capabilities();
+      assert.strictEqual(caps.active, 'selfhosted', 'your own GPU should win over a metered API');
+    } finally {
+      delete process.env.COMFYUI_URL;
+      delete process.env.FAL_KEY;
+    }
+  }));
+
+  await testAsync('the shipped workflow parses and exposes the injection points', async () => {
+    const fsMod = require('fs');
+    const graph = JSON.parse(
+      fsMod.readFileSync(path.join(__dirname, '..', 'workflows', 'ltx-video-t2v.json'), 'utf8')
+    );
+    const titles = Object.keys(graph).map(id => graph[id]._meta && graph[id]._meta.title);
+    ['AIVIDEO_PROMPT', 'AIVIDEO_NEGATIVE', 'AIVIDEO_LATENT', 'AIVIDEO_SAMPLER'].forEach(t => {
+      assert.ok(titles.indexOf(t) >= 0, `workflow is missing the ${t} node`);
+    });
+  });
+
+  await testAsync('the proxy only accepts urls on the configured ComfyUI host', async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    try {
+      assert.strictEqual(selfhosted.ownsUrl('https://gpu.example.com/view?filename=a.mp4'), true);
+      // A completed job must never be able to point the proxy elsewhere.
+      assert.strictEqual(selfhosted.ownsUrl('https://evil.example.com/view?filename=a.mp4'), false);
+    } finally {
+      delete process.env.COMFYUI_URL;
+    }
+  });
+
+  await testAsync('an untitled workflow fails loudly instead of rendering the wrong thing', async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    process.env.COMFYUI_WORKFLOW = JSON.stringify({
+      '1': { class_type: 'CLIPTextEncode', inputs: { text: 'hardcoded' }, _meta: { title: 'Untitled' } }
+    });
+    try {
+      await assert.rejects(
+        () => selfhosted.submit(video.normalizeInput({ prompt: 'a fox' })),
+        /AIVIDEO_PROMPT/,
+        'a workflow with no injection point must be reported, not silently run'
+      );
+    } finally {
+      delete process.env.COMFYUI_URL;
+      delete process.env.COMFYUI_WORKFLOW;
+    }
+  });
+
   // --- bundle freshness -----------------------------------------------------
 
   console.log('\nbundle');

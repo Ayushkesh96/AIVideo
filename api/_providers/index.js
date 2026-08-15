@@ -18,14 +18,16 @@ const google = require('./google');
 const runway = require('./runway');
 const luma = require('./luma');
 const pollinations = require('./pollinations');
+const selfhosted = require('./selfhosted');
 
-// Order is the auto-selection preference: quality-per-call first, cheap and
-// fast last. Whichever has a key wins.
+// Order is the auto-selection preference.
 //
-// Pollinations is last and always "configured" — it needs no key, so it acts
-// as a real-model attempt for deployments that have set up nothing at all,
-// ahead of the purely local fallback. Any keyed provider outranks it.
-const REGISTRY = [google, fal, replicate, runway, luma, pollinations];
+// Self-hosted comes first: if you are running your own GPU, that is a
+// deliberate choice and it should not be silently outranked by a metered API.
+// Then the keyed providers by quality-per-call. Pollinations is last and
+// always "configured" — it needs no key, so it acts as a real-model attempt
+// for deployments that have set up nothing at all.
+const REGISTRY = [selfhosted, google, fal, replicate, runway, luma, pollinations];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
 // Veo operation names contain slashes and dots; everything else is opaque ids.
