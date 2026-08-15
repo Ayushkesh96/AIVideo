@@ -25,12 +25,16 @@
   let usedAiKeyframes = false;
   let recordingExtension = 'webm';
 
-  // How many stills to request per clip. Enough to carry a shot without making
-  // the user wait through a dozen model round-trips.
   // Chained keyframes are fetched sequentially — each one edits the previous —
-  // so this is a direct trade of wait time against how continuous the clip
-  // looks. Six is where the motion reads without the wait becoming absurd.
-  const KEYFRAMES_PER_CLIP = 6;
+  // so frame count trades wait time against how continuous the clip looks.
+  //
+  // Scaled to clip length rather than fixed: a 10s clip built from six stills
+  // holds each one for nearly two seconds, which reads as a slideshow no matter
+  // how well they are chained. Roughly one frame per 0.8s keeps the dwell short
+  // enough to read as motion, capped so the wait stays bearable.
+  function keyframesForDuration(seconds) {
+    return Math.max(5, Math.min(12, Math.round(seconds / 0.8)));
+  }
 
   // MP4 first — it plays everywhere the user is likely to take the file.
   // WebM/VP9 is the fallback for browsers that can't mux H.264.
@@ -828,7 +832,7 @@
         if (renderStatus) renderStatus.textContent = 'Sampling latent keyframes from the model...';
 
         const frames = await aiSynth.fetchKeyframes(prompt, {
-          count: KEYFRAMES_PER_CLIP,
+          count: keyframesForDuration(activeDuration()),
           seed: 4829103,
           width: canvas.width,
           height: canvas.height,
