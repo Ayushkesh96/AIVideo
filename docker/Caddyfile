@@ -1,0 +1,23 @@
+# Reverse proxy in front of ComfyUI, requiring the bearer token AIVideo sends
+# as COMFYUI_TOKEN. ComfyUI itself has no authentication and its API can read
+# and write files on the box — see docker/README.md — so this is what makes
+# it safe to expose the compose stack's port to the internet at all.
+{
+	auto_https off
+}
+
+:{$LISTEN_PORT:8188} {
+	@authorized header Authorization "Bearer {$COMFYUI_TOKEN}"
+	handle @authorized {
+		reverse_proxy comfyui:8188 {
+			# ComfyUI queues can run for minutes; the default proxy timeout
+			# would cut the connection long before a video job finishes.
+			transport http {
+				read_timeout 0
+			}
+		}
+	}
+	handle {
+		respond "Unauthorized" 401
+	}
+}

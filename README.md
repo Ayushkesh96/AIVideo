@@ -11,7 +11,7 @@ Two engines, tried in order. The first one available wins:
 
 | | Engine | Needs | What it can do |
 |---|---|---|---|
-| 0 | **Your own GPU** — LTX-Video, Wan 2.2, CogVideoX via ComfyUI | hardware, no fees | Open weights you run yourself. No per-clip cost, no upstream policy. See [docs/self-hosting.md](docs/self-hosting.md) |
+| 0 | **Your own GPU** — LTX-Video and Wan 2.1 bundled, Wan 2.2/HunyuanVideo/CogVideoX via ComfyUI's template gallery | hardware, no fees | Open weights you run yourself. No per-clip cost, no upstream policy. `docker/` has a one-command setup. See [docs/self-hosting.md](docs/self-hosting.md) |
 | 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | an API key (paid) | Genuinely depicts the prompt, including motion, up to 4K |
 | 2 | **Free on-device engine** | nothing | Renders a cinematic procedural scene for the prompt in your browser — camera moves, grading, grain, atmosphere — and records it to a real video file |
 
@@ -92,6 +92,8 @@ js/
   neural-engine.js    free on-device engine: procedural scene renderer
   post-fx.js          shared finishing pass — grade, atmosphere, grain
   studio.js           studio controller and generation pipeline
+workflows/            bundled ComfyUI graphs (API format) for the self-hosted engine
+docker/               one-command ComfyUI + authenticated proxy via Docker Compose
 ```
 
 Generation is two-phase because video models take 30s to several minutes and a

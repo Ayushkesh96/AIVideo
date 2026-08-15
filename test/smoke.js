@@ -280,16 +280,84 @@ function withStubProvider(behaviour, fn) {
     }
   }));
 
-  await testAsync('the shipped workflow parses and exposes the injection points', async () => {
+  await testAsync('every bundled workflow parses and exposes the injection points', async () => {
     const fsMod = require('fs');
-    const graph = JSON.parse(
-      fsMod.readFileSync(path.join(__dirname, '..', 'workflows', 'ltx-video-t2v.json'), 'utf8')
-    );
-    const titles = Object.keys(graph).map(id => graph[id]._meta && graph[id]._meta.title);
-    ['AIVIDEO_PROMPT', 'AIVIDEO_NEGATIVE', 'AIVIDEO_LATENT', 'AIVIDEO_SAMPLER'].forEach(t => {
-      assert.ok(titles.indexOf(t) >= 0, `workflow is missing the ${t} node`);
+    const WORKFLOW_FILES = ['ltx-video-t2v.json', 'wan2.1-t2v-1.3b.json'];
+    WORKFLOW_FILES.forEach(name => {
+      const graph = JSON.parse(
+        fsMod.readFileSync(path.join(__dirname, '..', 'workflows', name), 'utf8')
+      );
+      const titles = Object.keys(graph).map(id => graph[id]._meta && graph[id]._meta.title);
+      ['AIVIDEO_PROMPT', 'AIVIDEO_NEGATIVE', 'AIVIDEO_LATENT', 'AIVIDEO_SAMPLER'].forEach(t => {
+        assert.ok(titles.indexOf(t) >= 0, `${name} is missing the ${t} node`);
+      });
+
+      // Every socket input (an [id, outputIndex] pair) must reference a node
+      // that actually exists in this graph — a dangling reference is a job
+      // ComfyUI will reject at submit time, not something worth shipping.
+      Object.entries(graph).forEach(([id, node]) => {
+        Object.entries(node.inputs || {}).forEach(([field, value]) => {
+          if (Array.isArray(value)) {
+            const [refId] = value;
+            assert.ok(graph[refId], `${name}: node ${id}.${field} references missing node ${refId}`);
+          }
+        });
+      });
+
+      // A KSampler-family node must never carry control_after_generate — it
+      // is a frontend-only widget, not a real backend input, and including it
+      // in the API-format prompt risks ComfyUI rejecting the job.
+      Object.values(graph).forEach(node => {
+        assert.ok(
+          !('control_after_generate' in (node.inputs || {})),
+          `${name}: control_after_generate must not appear in API-format inputs`
+        );
+      });
     });
   });
+
+  await testAsync('COMFYUI_MODEL selects which bundled workflow and label are active', () => withNoKeys(async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    try {
+      process.env.COMFYUI_MODEL = 'wan2.1';
+      let caps = selfhosted.capabilities();
+      assert.strictEqual(caps.activeModel, 'wan2.1');
+      assert.match(caps.activeModelLabel, /Wan 2\.1/);
+
+      delete process.env.COMFYUI_MODEL;
+      caps = selfhosted.capabilities();
+      assert.strictEqual(caps.activeModel, 'ltx', 'ltx is the default when COMFYUI_MODEL is unset');
+      assert.match(caps.activeModelLabel, /LTX-Video/);
+
+      // An explicit label override always wins over the bundled default.
+      process.env.COMFYUI_MODEL_LABEL = 'My Tuned LTX Box';
+      caps = selfhosted.capabilities();
+      assert.strictEqual(caps.activeModelLabel, 'My Tuned LTX Box');
+      delete process.env.COMFYUI_MODEL_LABEL;
+
+      // capabilities().models always lists every bundled option, regardless
+      // of which one is active, so the caller can see what's available.
+      assert.deepStrictEqual(caps.models.map(m => m.key).sort(), ['ltx', 'wan2.1']);
+    } finally {
+      delete process.env.COMFYUI_URL;
+      delete process.env.COMFYUI_MODEL;
+    }
+  }));
+
+  await testAsync('a custom COMFYUI_WORKFLOW override reports generic capabilities, not a bundled model\'s', () => withNoKeys(async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    process.env.COMFYUI_WORKFLOW = JSON.stringify({
+      '1': { class_type: 'CLIPTextEncode', inputs: { text: 'x' }, _meta: { title: 'AIVIDEO_PROMPT' } }
+    });
+    try {
+      const caps = selfhosted.capabilities();
+      assert.strictEqual(caps.activeModel, 'comfyui', 'a custom graph is not one of the named bundled models');
+      assert.strictEqual(caps.activeModelLabel, 'Open-weight model', 'must not claim a bundled model\'s specs for an unknown graph');
+    } finally {
+      delete process.env.COMFYUI_URL;
+      delete process.env.COMFYUI_WORKFLOW;
+    }
+  }));
 
   await testAsync('the proxy only accepts urls on the configured ComfyUI host', async () => {
     process.env.COMFYUI_URL = 'https://gpu.example.com';

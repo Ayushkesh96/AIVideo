@@ -1,0 +1,56 @@
+# Brings up a GPU-backed ComfyUI reachable from the AIVideo deployment.
+#
+#   comfyui  — the actual model server. Not published to the host; only the
+#              proxy can reach it, on the compose-internal network.
+#   proxy    — Caddy, requiring the Authorization bearer token AIVideo sends
+#              as COMFYUI_TOKEN. This is what the docs mean by "do not expose
+#              ComfyUI directly" — ComfyUI itself has no authentication.
+#
+# Usage: see docker/README.md.
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aivideo-comfyui
+    volumes:
+      - ${MODELS_PATH:-./models}:/app/ComfyUI/models
+      - ${OUTPUT_PATH:-./output}:/app/ComfyUI/output
+      - ${INPUT_PATH:-./input}:/app/ComfyUI/input
+      - ${USER_DATA_PATH:-./user}:/app/ComfyUI/user
+    environment:
+      # Extra git URLs to install on top of the VideoHelperSuite baked into
+      # the image, comma-separated. Example for Wan/HunyuanVideo LoRA support:
+      #   EXTRA_CUSTOM_NODES=https://github.com/kijai/ComfyUI-KJNodes
+      #
+      # Not a volume mount: custom_nodes/ ships VideoHelperSuite pre-installed
+      # in the image, and a bind mount there would hide it. entrypoint.sh
+      # re-clones (or fast-forward pulls) this list into the container's own
+      # filesystem on every start instead — a few seconds of git clone, not a
+      # real cost, and it can't shadow what the image already has.
+      - EXTRA_CUSTOM_NODES=${EXTRA_CUSTOM_NODES:-}
+      - COMFYUI_EXTRA_ARGS=${COMFYUI_EXTRA_ARGS:-}
+      # Helps with VRAM fragmentation on long sessions.
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2-alpine
+    container_name: aivideo-comfyui-proxy
+    depends_on:
+      - comfyui
+    ports:
+      - "${LISTEN_PORT:-8188}:${LISTEN_PORT:-8188}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      - COMFYUI_TOKEN=${COMFYUI_TOKEN:?set COMFYUI_TOKEN in docker/.env — see docker/.env.example}
+      - LISTEN_PORT=${LISTEN_PORT:-8188}
+    restart: unless-stopped

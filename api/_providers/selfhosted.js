@@ -2,22 +2,26 @@
  * Self-hosted open-source model adapter (ComfyUI backend).
  *
  * This is the "own the generation" path: instead of renting a closed model per
- * clip, the studio drives a ComfyUI server you run, executing open-weight
- * video models — Wan 2.2, LTX-Video, HunyuanVideo, CogVideoX. No per-clip fee,
- * no upstream content policy, and the weights are Apache-2.0 for Wan and
- * LTX-Video.
+ * clip, the studio drives a ComfyUI server you run. Two open models are
+ * bundled ready-to-run (COMFYUI_MODEL: 'ltx' or 'wan2.1' — see
+ * BUNDLED_MODELS below); bigger ones (Wan 2.2, HunyuanVideo, CogVideoX) are
+ * documented in docs/self-hosting.md via COMFYUI_WORKFLOW instead of bundled
+ * here, because their graphs are complex enough that hand-authoring one
+ * without being able to execute and verify it would risk shipping something
+ * subtly wrong. No per-clip fee, no upstream content policy either way.
  *
  * It needs a GPU. That is the whole cost of owning it: Vercel functions have no
  * GPU, so COMFYUI_URL must point at a machine that does (a rented RunPod/Modal
- * box, or your own card). See docs/self-hosting.md.
+ * box, or your own card — docker/ has a one-command local setup). See
+ * docs/self-hosting.md.
  *
  * Protocol:
  *   POST {host}/prompt              { prompt: <workflow>, client_id } -> { prompt_id }
  *   GET  {host}/history/{prompt_id} -> { <id>: { status, outputs } }
  *   GET  {host}/view?filename=&subfolder=&type= -> the media bytes
  *
- * Workflows are version-sensitive, so the shipped one is a starting point, not
- * a promise: export your own from ComfyUI in API format and point
+ * Workflows are version-sensitive, so the bundled ones are a starting point,
+ * not a promise: export your own from ComfyUI in API format and point
  * COMFYUI_WORKFLOW at it. Parameters are injected by node title, which survives
  * node ids changing when you edit the graph.
  */
@@ -34,6 +38,31 @@ const NODE_TITLES = {
   latent: 'AIVIDEO_LATENT',
   sampler: 'AIVIDEO_SAMPLER'
 };
+
+// Bundled, ready-to-run workflows. Each is a verified starting point for one
+// open model — see docs/self-hosting.md for how these were built and what
+// they need in models/. COMFYUI_MODEL picks one; COMFYUI_WORKFLOW (a file
+// path or inline JSON) overrides it entirely for a custom graph.
+const BUNDLED_MODELS = {
+  ltx: {
+    file: 'ltx-video-t2v.json',
+    label: 'LTX-Video 2B (self-hosted)',
+    fps: 24,
+    defaultMaxHeight: 1080
+  },
+  'wan2.1': {
+    file: 'wan2.1-t2v-1.3b.json',
+    label: 'Wan 2.1 T2V 1.3B (self-hosted)',
+    fps: 16,
+    defaultMaxHeight: 720
+  }
+};
+const DEFAULT_MODEL_KEY = 'ltx';
+
+function activeBundledModel() {
+  const key = (process.env.COMFYUI_MODEL || DEFAULT_MODEL_KEY).trim().toLowerCase();
+  return BUNDLED_MODELS[key] || BUNDLED_MODELS[DEFAULT_MODEL_KEY];
+}
 
 let cachedWorkflow = null;
 
@@ -65,7 +94,7 @@ function loadWorkflow() {
   } else {
     const file = override
       ? path.resolve(override)
-      : path.join(__dirname, '..', '..', 'workflows', 'ltx-video-t2v.json');
+      : path.join(__dirname, '..', '..', 'workflows', activeBundledModel().file);
     source = fs.readFileSync(file, 'utf8');
   }
 
@@ -109,9 +138,10 @@ function applyInputs(graph, input) {
     const latent = graph[latentId].inputs;
     latent.width = input.width;
     latent.height = input.height;
-    // Video latents count frames, not seconds. 24fps is the common default for
-    // these models; FRAME_RATE lets a workflow at another rate stay correct.
-    const fps = parseInt(process.env.COMFYUI_FPS, 10) || 24;
+    // Video latents count frames, not seconds. Each bundled model has its own
+    // native frame rate (Wan 2.1 trains at 16fps, LTX-Video at 24fps); an
+    // explicit COMFYUI_FPS always wins, for a custom workflow at another rate.
+    const fps = parseInt(process.env.COMFYUI_FPS, 10) || activeBundledModel().fps;
     if (latent.length !== undefined) latent.length = input.durationSec * fps + 1;
     if (latent.num_frames !== undefined) latent.num_frames = input.durationSec * fps + 1;
     if (latent.batch_size !== undefined) latent.batch_size = 1;
@@ -164,20 +194,33 @@ const provider = {
   },
 
   capabilities() {
-    const model = (process.env.COMFYUI_MODEL_LABEL || 'Open-weight model').trim();
+    // A custom COMFYUI_WORKFLOW override means the running graph isn't one of
+    // the bundled models, so its specs can't be assumed — fall back to a
+    // generic label and a permissive ceiling instead of claiming figures that
+    // may not describe what's actually running.
+    const isCustom = Boolean((process.env.COMFYUI_WORKFLOW || '').trim());
+    const bundled = activeBundledModel();
+    const defaultLabel = isCustom ? 'Open-weight model' : bundled.label;
+    const defaultMaxHeight = isCustom ? 2160 : bundled.defaultMaxHeight;
+
     return {
       id: 'selfhosted',
       label: 'Self-hosted (ComfyUI)',
       configured: provider.isConfigured(),
       selfHosted: true,
-      activeModel: 'comfyui',
-      activeModelLabel: model,
-      // Your GPU, your ceiling. 4K is offered because nothing upstream forbids
-      // it; whether it fits in VRAM is a question for your hardware.
-      maxResolution: parseInt(process.env.COMFYUI_MAX_HEIGHT, 10) || 2160,
+      activeModel: isCustom ? 'comfyui' : Object.keys(BUNDLED_MODELS).find(k => BUNDLED_MODELS[k] === bundled),
+      activeModelLabel: (process.env.COMFYUI_MODEL_LABEL || defaultLabel).trim(),
+      // Your GPU, your ceiling — this is a starting default, not a hard cap.
+      // 4K is reachable because nothing upstream forbids it; whether it fits
+      // in VRAM is a question for your hardware.
+      maxResolution: parseInt(process.env.COMFYUI_MAX_HEIGHT, 10) || defaultMaxHeight,
       durations: [2, 3, 4, 5, 6, 8, 10, 12],
       audio: false,
-      models: []
+      models: Object.keys(BUNDLED_MODELS).map(key => ({
+        key,
+        label: BUNDLED_MODELS[key].label,
+        maxResolution: BUNDLED_MODELS[key].defaultMaxHeight
+      }))
     };
   },
 
