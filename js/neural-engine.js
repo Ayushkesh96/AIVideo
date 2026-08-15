@@ -342,6 +342,213 @@ class HyperRealisticNeuralVideoEngine {
   }
 
   // =========================================================================
+  // 1B. HYPER-REALISTIC DOG SYNTHESIZER (fur, floppy ears, wag, happy bounce)
+  // =========================================================================
+  drawRealisticDog(ctx, w, h, cx, cy, t, speedFactor, p) {
+    const isHusky = p.includes('husky') || p.includes('wolf');
+    const isGolden = p.includes('golden');
+    // "dancing"/"energetic"/etc. drive a bigger, faster bounce so the motion
+    // actually reads as the prompt describes, not just an idle stand.
+    const isLively = p.includes('danc') || p.includes('energetic') || p.includes('happy') || p.includes('excited') || p.includes('playful') || p.includes('jump');
+
+    const bounceAmp = isLively ? 26 : 8;
+    const bounceSpeed = isLively ? 5.5 : 2.0;
+    const bouncePhase = t * bounceSpeed * speedFactor;
+    const bounce = Math.abs(Math.sin(bouncePhase)) * bounceAmp;
+    const sway = Math.sin(bouncePhase * 0.5) * (isLively ? 30 : 10);
+    const tilt = Math.sin(bouncePhase * 0.5) * (isLively ? 0.2 : 0.05);
+
+    const tailWag = Math.sin(t * 9 * speedFactor) * 0.9;
+    const earFlopL = Math.sin(bouncePhase + 0.3) * 10;
+    const earFlopR = Math.sin(bouncePhase - 0.3) * 10;
+    const blink = Math.sin(t * 0.85) > 0.95;
+    const pant = 4 + Math.sin(t * 5 * speedFactor) * 3;
+
+    const hx = cx + sway;
+    const hy = cy - bounce;
+
+    let furA, furB, furC;
+    if (isHusky) { furA = '#e7e9ec'; furB = '#8b93a0'; furC = '#3d434f'; }
+    else if (isGolden) { furA = '#f7d488'; furB = '#dba24a'; furC = '#96661c'; }
+    else { furA = '#d9a468'; furB = '#a9713a'; furC = '#5c3616'; }
+
+    // Cheerful indoor backdrop with party-light bokeh.
+    const bgGrad = ctx.createRadialGradient(cx, cy * 0.85, 60, cx, cy, Math.max(w, h));
+    bgGrad.addColorStop(0, '#2a1f3d');
+    bgGrad.addColorStop(0.55, '#171126');
+    bgGrad.addColorStop(1, '#08050f');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    const partyColors = ['rgba(255,120,180,0.22)', 'rgba(120,200,255,0.2)', 'rgba(255,210,100,0.22)', 'rgba(150,255,180,0.18)'];
+    for (let b = 0; b < 8; b++) {
+      const bx = (cx - 260 + b * 75 + Math.sin(t * 0.6 + b) * 26) % w;
+      const by = (cy - 160 + Math.cos(t * 0.5 + b * 1.3) * 40);
+      const bGrad = ctx.createRadialGradient(bx, by, 4, bx, by, 40);
+      bGrad.addColorStop(0, partyColors[b % partyColors.length]);
+      bGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = bGrad;
+      ctx.beginPath();
+      ctx.arc(bx, by, 40, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Ground shadow — shrinks as the bounce lifts the dog, to sell the hop.
+    ctx.fillStyle = `rgba(0,0,0,${Math.max(0.08, 0.35 - bounce / 100)})`;
+    ctx.beginPath();
+    ctx.ellipse(cx + sway * 0.6, cy + 195, 100 - bounce * 0.6, 22 - bounce * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(tilt);
+    ctx.translate(-hx, -hy);
+
+    // Wagging tail.
+    ctx.save();
+    ctx.translate(hx - 95, hy + 150);
+    ctx.rotate(0.9 + tailWag);
+    const tailGrad = ctx.createLinearGradient(0, 0, 70, 0);
+    tailGrad.addColorStop(0, furB);
+    tailGrad.addColorStop(1, furA);
+    ctx.fillStyle = tailGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.quadraticCurveTo(50, -30, 78, -2);
+    ctx.quadraticCurveTo(50, 14, 0, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Body / torso.
+    const bodyGrad = ctx.createRadialGradient(hx, hy + 140, 20, hx, hy + 150, 140);
+    bodyGrad.addColorStop(0, furA);
+    bodyGrad.addColorStop(0.55, furB);
+    bodyGrad.addColorStop(1, furC);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(hx - 95, hy + 250);
+    ctx.quadraticCurveTo(hx - 100, hy + 100, hx - 55, hy + 75);
+    ctx.lineTo(hx + 55, hy + 75);
+    ctx.quadraticCurveTo(hx + 100, hy + 100, hx + 95, hy + 250);
+    ctx.closePath();
+    ctx.fill();
+
+    // Front paws — alternate lifting when lively, selling a dance step.
+    const pawLiftL = isLively ? Math.max(0, Math.sin(bouncePhase)) * 40 : 0;
+    const pawLiftR = isLively ? Math.max(0, -Math.sin(bouncePhase)) * 40 : 0;
+    ctx.fillStyle = furB;
+    ctx.beginPath();
+    ctx.ellipse(hx - 55, hy + 240 - pawLiftL, 20, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(hx + 55, hy + 240 - pawLiftR, 20, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Chest fluff.
+    const chestGrad = ctx.createRadialGradient(hx, hy + 110, 10, hx, hy + 110, 60);
+    chestGrad.addColorStop(0, '#fffaf0');
+    chestGrad.addColorStop(0.6, '#f0e6d2');
+    chestGrad.addColorStop(1, 'rgba(240,230,210,0)');
+    ctx.fillStyle = chestGrad;
+    ctx.beginPath();
+    ctx.ellipse(hx, hy + 110, 50, 42, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Floppy ears.
+    [-1, 1].forEach(side => {
+      const flop = side < 0 ? earFlopL : earFlopR;
+      ctx.save();
+      ctx.translate(hx + side * 62, hy - 45);
+      ctx.rotate(side * 0.35 + flop * 0.02);
+      const earGrad = ctx.createLinearGradient(0, -10, 0, 70);
+      earGrad.addColorStop(0, furB);
+      earGrad.addColorStop(1, furC);
+      ctx.fillStyle = earGrad;
+      ctx.beginPath();
+      ctx.moveTo(-18, -10);
+      ctx.quadraticCurveTo(-26 + flop * 0.3, 45, 0, 72);
+      ctx.quadraticCurveTo(24 + flop * 0.3, 45, 18, -10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // Head.
+    const headGrad = ctx.createRadialGradient(hx - 15, hy - 20, 20, hx, hy - 5, 82);
+    headGrad.addColorStop(0, furA);
+    headGrad.addColorStop(0.55, furB);
+    headGrad.addColorStop(1, furC);
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(hx, hy - 5, 72, 65, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Muzzle.
+    const muzzleGrad = ctx.createRadialGradient(hx, hy + 32, 6, hx, hy + 32, 46);
+    muzzleGrad.addColorStop(0, '#fffaf0');
+    muzzleGrad.addColorStop(0.65, '#f0e6d2');
+    muzzleGrad.addColorStop(1, 'rgba(230,220,200,0)');
+    ctx.fillStyle = muzzleGrad;
+    ctx.beginPath();
+    ctx.ellipse(hx, hy + 34, 34, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nose.
+    ctx.fillStyle = '#1c1310';
+    ctx.beginPath();
+    ctx.ellipse(hx, hy + 16, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Happy open-mouth smile.
+    ctx.strokeStyle = '#1c1310';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(hx, hy + 25);
+    ctx.quadraticCurveTo(hx - 20, hy + 44, hx - 34, hy + 38);
+    ctx.moveTo(hx, hy + 25);
+    ctx.quadraticCurveTo(hx + 20, hy + 44, hx + 34, hy + 38);
+    ctx.stroke();
+
+    // Panting tongue.
+    ctx.fillStyle = '#f472a0';
+    ctx.beginPath();
+    ctx.moveTo(hx - 8, hy + 30);
+    ctx.quadraticCurveTo(hx, hy + 30 + pant * 6, hx + 8, hy + 30);
+    ctx.quadraticCurveTo(hx + 6, hy + 20 + pant * 5, hx, hy + 22 + pant * 4);
+    ctx.quadraticCurveTo(hx - 6, hy + 20 + pant * 5, hx - 8, hy + 30);
+    ctx.fill();
+
+    // Eyes.
+    const eyeY = hy - 12;
+    const eyeSpacing = 28;
+    [-eyeSpacing, eyeSpacing].forEach(ox => {
+      const ex = hx + ox;
+      ctx.fillStyle = '#0f0a08';
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY, 13, blink ? 1.5 : 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (!blink) {
+        ctx.fillStyle = isHusky ? '#5ec8e8' : '#5c3410';
+        ctx.beginPath();
+        ctx.ellipse(ex, eyeY, 10, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(ex, eyeY, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(ex - 3, eyeY - 3, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    ctx.restore();
+  }
+
+  // =========================================================================
   // 2. HYPER-REALISTIC CYBERPUNK NEO-TOKYO VEHICLE CHASE
   // =========================================================================
   drawRealisticVehicle(ctx, w, h, cx, cy, t, speedFactor, p) {
@@ -716,6 +923,8 @@ class HyperRealisticNeuralVideoEngine {
     // Render Subject
     if (subject.type === 'cat') {
       this.drawRealisticCat(ctx, w, h, cx, cy, t, speedFactor, prompt);
+    } else if (subject.type === 'dog') {
+      this.drawRealisticDog(ctx, w, h, cx, cy, t, speedFactor, prompt);
     } else if (subject.type === 'vehicle') {
       this.drawRealisticVehicle(ctx, w, h, cx, cy, t, speedFactor, prompt);
     } else if (subject.type === 'space') {
