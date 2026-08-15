@@ -1,10 +1,16 @@
 # Brings up a GPU-backed ComfyUI reachable from the AIVideo deployment.
 #
-#   comfyui  — the actual model server. Not published to the host; only the
-#              proxy can reach it, on the compose-internal network.
-#   proxy    — Caddy, requiring the Authorization bearer token AIVideo sends
-#              as COMFYUI_TOKEN. This is what the docs mean by "do not expose
-#              ComfyUI directly" — ComfyUI itself has no authentication.
+#   comfyui   — the actual model server. Not published to the host; only the
+#               proxy can reach it, on the compose-internal network.
+#   proxy     — Caddy, requiring the Authorization bearer token AIVideo sends
+#               as COMFYUI_TOKEN. This is what the docs mean by "do not
+#               expose ComfyUI directly" — ComfyUI itself has no auth.
+#   cogvideox — a separate, optional model server (not ComfyUI-based — see
+#               cogvideox-server/README.md for why). Behind a `profile` so
+#               plain `docker compose up` doesn't start it: a single GPU
+#               can't usefully run this and ComfyUI at once, and most people
+#               only want one or the other. Start it explicitly with
+#               `docker compose --profile cogvideox up cogvideox`.
 #
 # Usage: see docker/README.md.
 services:
@@ -53,4 +59,40 @@ services:
     environment:
       - COMFYUI_TOKEN=${COMFYUI_TOKEN:?set COMFYUI_TOKEN in docker/.env — see docker/.env.example}
       - LISTEN_PORT=${LISTEN_PORT:-8188}
+    restart: unless-stopped
+
+  cogvideox:
+    profiles: ["cogvideox"]
+    build:
+      context: ./cogvideox-server
+      dockerfile: Dockerfile
+    container_name: aivideo-cogvideox
+    ports:
+      - "${COGVIDEOX_PORT:-8189}:8189"
+    volumes:
+      - ${COGVIDEOX_HF_CACHE_PATH:-./cogvideox-hf-cache}:/app/hf-cache
+      - ${COGVIDEOX_OUTPUT_PATH:-./cogvideox-output}:/app/output
+    environment:
+      # THUDM/CogVideoX-2b (the default) is the one documented to fit under
+      # 10GB VRAM with CPU offload — see docker/cogvideox-server/README.md.
+      # THUDM/CogVideoX-5b is noticeably better and needs more.
+      - COGVIDEOX_MODEL=${COGVIDEOX_MODEL:-THUDM/CogVideoX-2b}
+      - COGVIDEOX_FULL_GPU=${COGVIDEOX_FULL_GPU:-}
+      # Own bearer-token auth built in (see server.py) — no reverse proxy
+      # needed the way ComfyUI's setup above requires one. Deliberately NOT
+      # a required (":?") variable: this service is profile-gated, but
+      # Compose interpolates every service's environment block regardless of
+      # which profile is active, so making it required here would break
+      # plain `docker compose up` for people who only want ComfyUI and never
+      # set COGVIDEOX_TOKEN at all. server.py itself refuses to start
+      # without a token instead — see its own check.
+      - COGVIDEOX_TOKEN=${COGVIDEOX_TOKEN:-}
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     restart: unless-stopped

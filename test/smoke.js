@@ -422,6 +422,65 @@ function withStubProvider(behaviour, fn) {
     }
   });
 
+  // --- self-hosted (CogVideoX) ------------------------------------------------
+
+  console.log('\nself-hosted CogVideoX adapter');
+
+  const cogvideox = providers.byId('cogvideox');
+
+  await testAsync('cogvideox outranks metered providers when configured', () => withNoKeys(async () => {
+    process.env.COGVIDEOX_URL = 'https://gpu.example.com:8189';
+    process.env.FAL_KEY = 'test-key';
+    try {
+      const caps = video.capabilities();
+      assert.strictEqual(caps.active, 'cogvideox', 'your own GPU should win over a metered API');
+    } finally {
+      delete process.env.COGVIDEOX_URL;
+      delete process.env.FAL_KEY;
+    }
+  }));
+
+  await testAsync('the ComfyUI adapter wins when both self-hosted options are configured', () => withNoKeys(async () => {
+    process.env.COMFYUI_URL = 'https://gpu.example.com';
+    process.env.COGVIDEOX_URL = 'https://gpu.example.com:8189';
+    try {
+      const caps = video.capabilities();
+      assert.strictEqual(caps.active, 'selfhosted', 'registry order is the deterministic tiebreak');
+    } finally {
+      delete process.env.COMFYUI_URL;
+      delete process.env.COGVIDEOX_URL;
+    }
+  }));
+
+  await testAsync('frameCountFor always returns 4k+1 frames near the requested duration', () => {
+    // CogVideoX requires exactly this frame-count shape; getting it wrong
+    // doesn't error upstream, it silently mis-times the clip, so this is
+    // worth pinning down rather than trusting by inspection.
+    [2, 5, 6, 8, 12].forEach(durationSec => {
+      const frames = cogvideox.frameCountFor(durationSec);
+      assert.strictEqual((frames - 1) % 4, 0, `${frames} frames is not of the form 4k+1`);
+      // Within half a second of the requested duration at 8fps.
+      assert.ok(Math.abs(frames / 8 - durationSec) <= 0.5, `${frames} frames is too far from ${durationSec}s`);
+    });
+  });
+
+  await testAsync('capabilities and ownsUrl behave with no COGVIDEOX_URL set', () => withNoKeys(async () => {
+    delete process.env.COGVIDEOX_URL;
+    const caps = cogvideox.capabilities();
+    assert.strictEqual(caps.configured, false);
+    assert.strictEqual(cogvideox.ownsUrl('https://gpu.example.com:8189/videos/a.mp4'), false);
+  }));
+
+  await testAsync('the proxy only accepts urls on the configured CogVideoX host', async () => {
+    process.env.COGVIDEOX_URL = 'https://gpu.example.com:8189';
+    try {
+      assert.strictEqual(cogvideox.ownsUrl('https://gpu.example.com:8189/videos/a.mp4'), true);
+      assert.strictEqual(cogvideox.ownsUrl('https://evil.example.com/videos/a.mp4'), false);
+    } finally {
+      delete process.env.COGVIDEOX_URL;
+    }
+  });
+
   // --- bundle freshness -----------------------------------------------------
 
   console.log('\nbundle');

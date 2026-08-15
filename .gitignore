@@ -5,3 +5,5 @@ node_modules/
 *.log
 skills.zip
 push-all.js
+__pycache__/
+*.pyc

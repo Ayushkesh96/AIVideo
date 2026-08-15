@@ -6,6 +6,10 @@ login, and its API can read and write files on the box, so it must never be
 exposed directly. See [`../docs/self-hosting.md`](../docs/self-hosting.md) for
 the full picture (which model to pick, VRAM needs, non-Docker setup).
 
+Looking for CogVideoX instead of LTX-Video/Wan? That's a separate, optional
+service in the same `docker-compose.yml` — see
+[`cogvideox-server/README.md`](cogvideox-server/README.md).
+
 ## Requirements
 
 - A Linux host with an NVIDIA GPU (8 GB+ VRAM to start)

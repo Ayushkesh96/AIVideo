@@ -12,20 +12,29 @@ models. This repo already has that layer. What follows swaps the rented model
 underneath it for one you run, via [ComfyUI](https://github.com/comfyanonymous/ComfyUI),
 the standard open-source node editor for diffusion models.
 
-## Two ways to start, both wired
+## Three ways to start, all wired
 
-This repo ships two ready-to-run workflows. Pick with `COMFYUI_MODEL`:
+Two backends, three ready-to-run models. Two run through ComfyUI (pick with
+`COMFYUI_MODEL`); the third, CogVideoX, doesn't have a mature ComfyUI path
+(see [Bigger models](#bigger-models-wan-22-hunyuanvideo-cogvideox) for why)
+and runs through its own small server instead
+([`docker/cogvideox-server/`](../docker/cogvideox-server/)).
 
-| `COMFYUI_MODEL` | Model | Params | License | VRAM (realistic) | Character |
+| Backend | Model | Params | License | VRAM (realistic) | Character |
 |---|---|---|---|---|---|
-| `ltx` (default) | **LTX-Video 2B** | 2B | Apache 2.0 | **8–12 GB** | Fastest, good motion |
-| `wan2.1` | **Wan 2.1 T2V** | 1.3B | Apache 2.0 | **6–8 GB** | Slower per clip, often steadier subjects/faces |
+| ComfyUI, `COMFYUI_MODEL=ltx` (default) | **LTX-Video 2B** | 2B | Apache 2.0 | **8–12 GB** | Fastest, good motion |
+| ComfyUI, `COMFYUI_MODEL=wan2.1` | **Wan 2.1 T2V** | 1.3B | Apache 2.0 | **6–8 GB** | Slower per clip, often steadier subjects/faces |
+| Standalone, `COGVIDEOX_URL` | **CogVideoX-2b** | 2B | Apache 2.0 | **~8–10 GB** with CPU offload | Behind the other two on motion quality; a genuinely different model if you want to compare |
 
-**Start with whichever fits your card; both run on a single consumer GPU.**
-They're genuinely different models, not tiers of the same one — worth trying
-both on the same prompt if you have the VRAM for either.
+**Start with whichever fits your card; all three run on a single consumer
+GPU.** They're genuinely different models, not tiers of one — worth trying
+more than one on the same prompt if you have the VRAM.
 
-For anything beyond these two, see [Bigger models](#bigger-models-wan-22-hunyuanvideo-cogvideox) below.
+Both self-hosted backends outrank every metered provider once configured —
+if you set up two, the ComfyUI one wins as the deterministic tiebreak (see
+[`api/_providers/index.js`](../api/_providers/index.js)).
+
+For anything beyond these three, see [Bigger models](#bigger-models-wan-22-hunyuanvideo-cogvideox) below.
 
 ## The one hard requirement
 
@@ -43,6 +52,8 @@ Options, cheapest first:
 
 ### Fast path: Docker Compose
 
+For LTX-Video or Wan 2.1 (ComfyUI):
+
 ```bash
 cd docker
 cp .env.example .env   # set COMFYUI_TOKEN — openssl rand -hex 32
@@ -52,6 +63,17 @@ docker compose up -d --build
 Brings up ComfyUI plus an authenticated reverse proxy in front of it (ComfyUI
 itself has no login). Full walkthrough, including where to download the model
 weights, in [`docker/README.md`](../docker/README.md).
+
+For CogVideoX instead:
+
+```bash
+cd docker
+cp .env.example .env   # set COGVIDEOX_TOKEN — openssl rand -hex 32
+docker compose --profile cogvideox up -d --build cogvideox
+```
+
+No model download step needed — the server pulls the weights itself on first
+request. Details in [`docker/cogvideox-server/README.md`](../docker/cogvideox-server/README.md).
 
 ### Manual path
 
@@ -91,12 +113,19 @@ match.
 
 ### Point the app at it
 
-In Vercel → Settings → Environment Variables:
+In Vercel → Settings → Environment Variables, for ComfyUI:
 
 ```
 COMFYUI_URL=https://your-gpu-box.example.com
 COMFYUI_TOKEN=whatever-your-proxy-requires
 COMFYUI_MODEL=ltx            # or wan2.1 — picks the bundled workflow
+```
+
+or for the standalone CogVideoX server:
+
+```
+COGVIDEOX_URL=https://your-gpu-box.example.com:8189
+COGVIDEOX_TOKEN=whatever COGVIDEOX_TOKEN you set on the server
 ```
 
 Redeploy. The Render Engine badge turns green and reads your model's label.
@@ -128,7 +157,13 @@ ComfyUI ships them correctly instead:
 |---|---|---|---|---|
 | **Wan 2.2 (14B)** | 14B | Apache 2.0 | **~20 GB** fp8-scaled on a 24 GB card; far less with the 4-step LoRA (~90s/clip vs ~9min) | Best photorealism of the open models, especially faces |
 | **HunyuanVideo 1.5** | ~8B | Tencent (territorial limits — read it) | 24–40 GB | Strong motion, licence needs care |
-| **CogVideoX** | 5B | Apache 2.0 | 12–18 GB | Community wrapper node ([kijai/ComfyUI-CogVideoXWrapper](https://github.com/kijai/ComfyUI-CogVideoXWrapper)), not in ComfyUI's built-in template gallery |
+| **CogVideoX-5b** | 5B | Apache 2.0 | ~16–18 GB | The bigger sibling of the bundled 2b — see [`docker/cogvideox-server/`](../docker/cogvideox-server/), set `COGVIDEOX_MODEL=THUDM/CogVideoX-5b` |
+
+CogVideoX-2b is bundled and ready to run — see the table above — via a
+standalone server rather than ComfyUI (a ComfyUI wrapper node for it exists,
+[kijai/ComfyUI-CogVideoXWrapper](https://github.com/kijai/ComfyUI-CogVideoXWrapper),
+but isn't in ComfyUI's own template gallery). The 5b variant just needs a
+config change, `COGVIDEOX_MODEL=THUDM/CogVideoX-5b`, on the same server.
 
 The VRAM figures above (except CogVideoX, estimated) come from ComfyUI's own
 published numbers for the fp8-scaled repackaged weights on an RTX 4090 — a lot
@@ -185,12 +220,14 @@ first will carry it by mistake.
 curl https://your-app.vercel.app/api/video-providers
 ```
 
-`active` should be `selfhosted` and `keyless` should be `false`. `providers`
-will include an entry with `id: "selfhosted"` whose `models` array lists both
+`active` should be `selfhosted` (ComfyUI) or `cogvideox`, and `keyless` should
+be `false`. `providers` will include an entry with `id: "selfhosted"` whose `models` array lists both
 bundled options.
 
 That only confirms `COMFYUI_URL` is *set* — not that ComfyUI is actually up or
-has the model files the workflow needs. For that:
+has the model files the workflow needs. For that (ComfyUI only — the
+CogVideoX server doesn't have an equivalent preflight check yet; `curl` its
+own `/health` route directly to confirm it's up):
 
 ```bash
 curl https://your-app.vercel.app/api/video-selfhost-health

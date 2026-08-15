@@ -18,15 +18,19 @@ const google = require('./google');
 const runway = require('./runway');
 const luma = require('./luma');
 const selfhosted = require('./selfhosted');
+const cogvideox = require('./cogvideox');
 
 // Order is the auto-selection preference.
 //
 // Self-hosted comes first: if you are running your own GPU, that is a
 // deliberate choice and it should not be silently outranked by a metered API.
-// Then the keyed providers by quality-per-call. Every provider is opt-in via
-// its key; with nothing configured the studio runs entirely on the free
+// Two self-hosted adapters exist (ComfyUI and a standalone CogVideoX server)
+// because they're genuinely different backends, not tiers of one — both rank
+// above every metered provider regardless of which one you've set up. Then
+// the keyed providers by quality-per-call. Every provider is opt-in via its
+// key; with nothing configured the studio runs entirely on the free
 // on-device engine and makes no upstream calls at all.
-const REGISTRY = [selfhosted, google, fal, replicate, runway, luma];
+const REGISTRY = [selfhosted, cogvideox, google, fal, replicate, runway, luma];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
 // Veo operation names contain slashes and dots; everything else is opaque ids.

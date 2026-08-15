@@ -1,0 +1,14 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+diffusers==0.31.0
+# Pinned per pinokiofactory/cogstudio's install script, which found CogVideoX
+# needs this exact transformers version rather than whatever diffusers'
+# unpinned dependency resolution picks.
+transformers==4.50.3
+tiktoken
+protobuf
+accelerate==1.2.1
+sentencepiece==0.2.0
+imageio==2.36.1
+imageio-ffmpeg==0.5.1
+pydantic==2.10.4
