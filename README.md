@@ -23,6 +23,17 @@ not a diffusion model. It composes a scene *inspired by* the prompt; it cannot
 photorealistically depict arbitrary text. For that, add a key (engine 1) or
 point it at your own GPU (engine 0).
 
+## Song Studio (nav → Audio)
+
+A second, independent pipeline: structured lyrics (intro/verse/chorus/
+bridge/outro) and style controls (genre, mood, voice, instruments, BPM) —
+generated into a full song with vocals, via a self-hosted
+[SongGeneration Studio](https://github.com/6Morpheus6/SongGeneration-Studio)
+server. Unlike video, there's no free on-device fallback here — there's no
+honest procedural substitute for singing — so it needs `SONGGEN_URL`
+configured to do anything. `docker/` has a one-command setup. See
+[docs/song-generation.md](docs/song-generation.md).
+
 ## Enabling real video generation
 
 Set **one** of these in your environment (Vercel → Project → Settings →
@@ -87,14 +98,25 @@ api/
   video-status.js     GET   one poll tick
   video-proxy.js      GET   streams key-gated media without exposing the key
   video-providers.js  GET   which models are reachable
+  _song.js             audio counterpart to _video.js — one provider, no registry
+  _providers/songgen.js talks to a self-hosted SongGeneration Studio server
+  song-create.js       POST  submit a song generation, returns a job id
+  song-status.js       GET   one poll tick
+  song-proxy.js        GET   streams a finished track without exposing the token
+  song-providers.js    GET   configured state + genre vocabulary
 js/
   video-engine.js     client: submit, poll with backoff, resolve to a blob
   neural-engine.js    free on-device engine: procedural scene renderer
   post-fx.js          shared finishing pass — grade, atmosphere, grain
-  studio.js           studio controller and generation pipeline
-workflows/            bundled ComfyUI graphs (API format) for the self-hosted engine
-docker/               one-command ComfyUI + authenticated proxy via Docker Compose
+  studio.js           video studio controller and generation pipeline
+  song-studio.js      song studio controller: sections, style, player, library
+workflows/            bundled ComfyUI graphs (API format) for the self-hosted video engine
+docker/               one-command setup (Docker Compose) for every self-hosted engine
 ```
+
+See [docs/self-hosting.md](docs/self-hosting.md) (video) and
+[docs/song-generation.md](docs/song-generation.md) (audio) for the full
+picture on either self-hosted pipeline.
 
 Generation is two-phase because video models take 30s to several minutes and a
 serverless function cannot hold a request open that long. `create` submits and

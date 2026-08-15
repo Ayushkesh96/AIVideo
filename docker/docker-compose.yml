@@ -11,6 +11,12 @@
 #               can't usefully run this and ComfyUI at once, and most people
 #               only want one or the other. Start it explicitly with
 #               `docker compose --profile cogvideox up cogvideox`.
+#   songgen /
+#   songgen-proxy — the Song Studio backend (audio, not video — see
+#               songgen-server/README.md). Also profile-gated, and also
+#               behind its own Caddy proxy: it has no auth of its own,
+#               same reasoning as ComfyUI. Start with
+#               `docker compose --profile songgen up songgen songgen-proxy`.
 #
 # Usage: see docker/README.md.
 services:
@@ -95,4 +101,47 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    restart: unless-stopped
+
+  songgen:
+    profiles: ["songgen"]
+    build:
+      context: ./songgen-server
+      dockerfile: Dockerfile
+    container_name: aivideo-songgen
+    volumes:
+      # Model weights (~15GB) live here so a restart doesn't re-download
+      # them — entrypoint.sh checks for a marker file before pulling.
+      - ${SONGGEN_WEIGHTS_PATH:-./songgen-weights}:/app/app
+      - ${SONGGEN_HF_CACHE_PATH:-./songgen-hf-cache}:/app/hf-cache
+    environment:
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  songgen-proxy:
+    profiles: ["songgen"]
+    image: caddy:2-alpine
+    container_name: aivideo-songgen-proxy
+    depends_on:
+      - songgen
+    ports:
+      - "${SONGGEN_LISTEN_PORT:-8190}:${SONGGEN_LISTEN_PORT:-8190}"
+    volumes:
+      - ./songgen-server/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      # Same reasoning as COGVIDEOX_TOKEN above for why this isn't ":?
+      # required" here — songgen-server/entrypoint.sh doesn't itself check
+      # for a token (unlike cogvideox's server.py), so an operator who
+      # starts this profile without setting SONGGEN_TOKEN gets an
+      # always-401 proxy rather than an accidentally-open one; still safe,
+      # just needs the token set to actually work.
+      - SONGGEN_TOKEN=${SONGGEN_TOKEN:-}
+      - LISTEN_PORT=${SONGGEN_LISTEN_PORT:-8190}
     restart: unless-stopped

@@ -1,0 +1,23 @@
+# Same reasoning as ../Caddyfile: SongGeneration Studio has no authentication
+# of its own and its API can read/write files on the box, so this is what
+# makes exposing its port safe. Requires the bearer token AIVideo sends as
+# SONGGEN_TOKEN.
+{
+	auto_https off
+}
+
+:{$LISTEN_PORT:8190} {
+	@authorized header Authorization "Bearer {$SONGGEN_TOKEN}"
+	handle @authorized {
+		reverse_proxy songgen:8190 {
+			# A song takes minutes to render; the default proxy timeout would
+			# cut the connection long before that finishes.
+			transport http {
+				read_timeout 0
+			}
+		}
+	}
+	handle {
+		respond "Unauthorized" 401
+	}
+}

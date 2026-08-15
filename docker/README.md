@@ -10,6 +10,11 @@ Looking for CogVideoX instead of LTX-Video/Wan? That's a separate, optional
 service in the same `docker-compose.yml` — see
 [`cogvideox-server/README.md`](cogvideox-server/README.md).
 
+Looking for Song Studio (full songs with vocals, not video at all)? Also a
+separate service pair here — see
+[`songgen-server/README.md`](songgen-server/README.md) and
+[`../docs/song-generation.md`](../docs/song-generation.md).
+
 ## Requirements
 
 - A Linux host with an NVIDIA GPU (8 GB+ VRAM to start)
