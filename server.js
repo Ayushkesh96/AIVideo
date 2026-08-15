@@ -23,7 +23,8 @@ const ROUTES = {
   '/api/video-status': require('./api/video-status'),
   '/api/video-proxy': require('./api/video-proxy'),
   '/api/video-providers': require('./api/video-providers'),
-  '/api/version': require('./api/version')
+  '/api/version': require('./api/version'),
+  '/api/diag': require('./api/diag')
 };
 
 let PORT = parseInt(process.env.PORT, 10) || 5173;
