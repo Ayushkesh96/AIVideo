@@ -1408,16 +1408,24 @@ button {
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
 .camera-rig-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .camera-rig-btn {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: #171720;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
@@ -1459,45 +1467,67 @@ button {
   overflow: hidden;
 }
 
-.timeline-header-docked {
+.nle-header {
   display: flex;
-  align-items: center;
+  flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
   margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  min-width: 0;
   width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
-.timeline-title-group {
+.nle-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nle-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nle-title-group svg {
+  color: var(--accent-lime);
+  flex-shrink: 0;
+}
+
+.nle-title {
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: -0.01em;
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.timeline-title-group svg {
-  color: var(--accent-lime);
-  flex-shrink: 0;
+.nle-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.timeline-actions-docked {
+.nle-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.timeline-actions-docked .btn {
+.nle-actions .btn {
   white-space: nowrap;
 }
 
@@ -1507,6 +1537,7 @@ button {
   gap: 8px;
   min-width: 0;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .timeline-track-lane {
@@ -1555,6 +1586,20 @@ button {
   white-space: nowrap;
   min-width: 0;
   scrollbar-width: thin;
+  scrollbar-color: rgba(204, 255, 0, 0.4) transparent;
+}
+
+.track-clips-area::-webkit-scrollbar {
+  height: 4px;
+}
+
+.track-clips-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.track-clips-area::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-lime);
 }
 
 /* Individual Timeline Clip Blocks with Truncated Text & Title Tooltips */
@@ -1574,8 +1619,7 @@ button {
   transition: all 0.15s ease;
   user-select: none;
   flex-shrink: 0;
-  max-width: 280px;
-  overflow: hidden;
+  min-width: fit-content;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -1787,23 +1831,31 @@ button {
 /* Model Selector */
 .model-pill-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   background: var(--bg-body);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
   padding: 3px;
-  gap: 2px;
+  gap: 3px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .model-pill-btn {
-  padding: 7px 8px;
+  padding: 7px 4px;
   border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--text-secondary);
   text-align: center;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .model-pill-btn.active {
@@ -1817,10 +1869,14 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .prompt-textarea {
   width: 100%;
+  box-sizing: border-box;
   height: 95px;
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
@@ -1842,6 +1898,8 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .template-chip {
@@ -1853,27 +1911,34 @@ button {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .template-chip:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Camera Matrix */
+/* Camera Controller Grid */
 .camera-controller {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .camera-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin-top: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .camera-btn {
@@ -1882,20 +1947,27 @@ button {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px 4px;
+  padding: 8px 2px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camera-btn svg {
   width: 16px;
   height: 16px;
   stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .camera-btn:hover {
@@ -1914,6 +1986,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .slider-row {
@@ -1921,11 +1995,14 @@ button {
   align-items: center;
   justify-content: space-between;
   font-size: 0.78rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .custom-slider {
   -webkit-appearance: none;
   width: 100%;
+  box-sizing: border-box;
   height: 4px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.12);
@@ -1949,21 +2026,34 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ratio-group {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .ratio-btn {
-  padding: 4px 9px;
+  padding: 5px 2px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-subtle);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ratio-btn.active {
@@ -2319,32 +2409,95 @@ button {
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .compositor-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compositor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.compositor-icon-slot {
+  width: 32px;
+  height: 32px;
+  background: rgba(204, 255, 0, 0.1);
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-lime);
+  flex-shrink: 0;
+}
+
+.compositor-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.compositor-title {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compositor-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lut-pill-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 8px;
   margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .lut-btn {
   background: #1c1c24;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  padding: 4px 12px;
-  font-size: 0.74rem;
+  padding: 6px 12px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   transition: all 0.15s ease;
   cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .lut-btn:hover {
@@ -2360,25 +2513,29 @@ button {
 
 .compositor-sliders-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .speed-ramp-selector {
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .speed-btn {
   background: #1a1a22;
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: 3px 8px;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .speed-btn.active {
@@ -3798,16 +3955,23 @@ button {
           <!-- Neural Layer FX Compositor & Color Grading Panel -->
           <div class="compositor-panel">
             <div class="compositor-header">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-                <span style="font-weight:800; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em;">Neural Color Grading & FX Compositor</span>
+              <div class="compositor-title-row">
+                <div class="compositor-icon-slot">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                </div>
+                <div class="compositor-title-text">
+                  <div class="compositor-title">Color Grading & FX</div>
+                  <div class="compositor-subtitle">Neural LUTs, Speed Ramping & Atmosphere</div>
+                </div>
               </div>
               <div class="speed-ramp-selector">
                 <span style="font-size:0.72rem; color:var(--text-muted); margin-right:4px;">Speed:</span>
-                <button class="speed-btn" data-speed="0.5">0.5x</button>
-                <button class="speed-btn active" data-speed="1.0">1.0x</button>
-                <button class="speed-btn" data-speed="2.0">2.0x</button>
-                <button class="speed-btn" data-speed="4.0">4.0x</button>
+                <div class="speed-btn-group">
+                  <button class="speed-btn" data-speed="0.5">0.5x</button>
+                  <button class="speed-btn active" data-speed="1.0">1.0x</button>
+                  <button class="speed-btn" data-speed="2.0">2.0x</button>
+                  <button class="speed-btn" data-speed="4.0">4.0x</button>
+                </div>
               </div>
             </div>
 
@@ -3903,12 +4067,15 @@ button {
 
       <!-- BOTTOM: MULTI-TRACK NLE TIMELINE SEQUENCER (FULL WIDTH DOCKED) -->
       <div id="filmos-timeline-container" class="filmos-timeline-container">
-        <div class="timeline-header-docked">
-          <div class="timeline-title-group">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12H2M12 2v20"/><rect x="2" y="2" width="20" height="20" rx="2.18"/></svg>
-            <span>Multi-Track NLE Video Sequencer (Video • Voice • Music • Captions)</span>
+        <div class="nle-header">
+          <div class="nle-title-row">
+            <div class="nle-title-group">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12H2M12 2v20"/><rect x="2" y="2" width="20" height="20" rx="2.18"/></svg>
+              <h2 class="nle-title">Multi-Track NLE Sequencer</h2>
+            </div>
+            <span class="nle-subtitle">Video • Voice • Music • Captions</span>
           </div>
-          <div class="timeline-actions-docked">
+          <div class="nle-actions">
             <button class="btn btn-dark btn-sm" onclick="window.showToast('Audio/Music Synchronizer Active')">🎵 Mux Audio</button>
             <button class="btn btn-lime btn-sm" onclick="window.renderFullStoryboardFilm()">
               🎬 Export Master Timeline Film

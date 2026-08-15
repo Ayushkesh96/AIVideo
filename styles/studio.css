@@ -72,23 +72,31 @@
 /* Model Selector */
 .model-pill-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   background: var(--bg-body);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
   padding: 3px;
-  gap: 2px;
+  gap: 3px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .model-pill-btn {
-  padding: 7px 8px;
+  padding: 7px 4px;
   border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--text-secondary);
   text-align: center;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .model-pill-btn.active {
@@ -102,10 +110,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .prompt-textarea {
   width: 100%;
+  box-sizing: border-box;
   height: 95px;
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
@@ -127,6 +139,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .template-chip {
@@ -138,27 +152,34 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .template-chip:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Camera Matrix */
+/* Camera Controller Grid */
 .camera-controller {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .camera-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin-top: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .camera-btn {
@@ -167,20 +188,27 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px 4px;
+  padding: 8px 2px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camera-btn svg {
   width: 16px;
   height: 16px;
   stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .camera-btn:hover {
@@ -199,6 +227,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .slider-row {
@@ -206,11 +236,14 @@
   align-items: center;
   justify-content: space-between;
   font-size: 0.78rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .custom-slider {
   -webkit-appearance: none;
   width: 100%;
+  box-sizing: border-box;
   height: 4px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.12);
@@ -234,21 +267,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ratio-group {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .ratio-btn {
-  padding: 4px 9px;
+  padding: 5px 2px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-subtle);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ratio-btn.active {

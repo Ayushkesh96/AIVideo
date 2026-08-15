@@ -8,32 +8,95 @@
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .compositor-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compositor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.compositor-icon-slot {
+  width: 32px;
+  height: 32px;
+  background: rgba(204, 255, 0, 0.1);
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-lime);
+  flex-shrink: 0;
+}
+
+.compositor-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.compositor-title {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compositor-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lut-pill-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 8px;
   margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .lut-btn {
   background: #1c1c24;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  padding: 4px 12px;
-  font-size: 0.74rem;
+  padding: 6px 12px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   transition: all 0.15s ease;
   cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .lut-btn:hover {
@@ -49,25 +112,29 @@
 
 .compositor-sliders-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .speed-ramp-selector {
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .speed-btn {
   background: #1a1a22;
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: 3px 8px;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .speed-btn.active {
