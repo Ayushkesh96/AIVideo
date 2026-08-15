@@ -1,7 +1,6 @@
-const https = require('https');
+const { fetchKeyframe } = require('./_keyframe');
 
 module.exports = async (req, res) => {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -20,46 +19,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { prompt = 'Cinematic cyberpunk samurai in rain 8k', cameraMotion = 'Orbit 360°' } = req.body || {};
-    const cleanPrompt = encodeURIComponent(prompt.trim());
-    const pollaiUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}%20cinematic%208k%20hyperrealistic%20masterpiece%20photorealistic?width=1280&height=720&nologo=true&seed=${Math.floor(Math.random()*999999)}`;
-
-    https.get(pollaiUrl, (proxyRes) => {
-      if (proxyRes.statusCode >= 300 && proxyRes.statusCode < 400 && proxyRes.headers.location) {
-        https.get(proxyRes.headers.location, (redirectRes) => {
-          const chunks = [];
-          redirectRes.on('data', chunk => chunks.push(chunk));
-          redirectRes.on('end', () => {
-            const buffer = Buffer.concat(chunks);
-            res.status(200).json({
-              success: true,
-              type: 'ai_diffusion_keyframe',
-              dataUrl: `data:image/jpeg;base64,${buffer.toString('base64')}`,
-              prompt,
-              cameraMotion
-            });
-          });
-        }).on('error', (err) => {
-          res.status(200).json({ success: false, fallback: true, error: err.message });
-        });
-      } else {
-        const chunks = [];
-        proxyRes.on('data', chunk => chunks.push(chunk));
-        proxyRes.on('end', () => {
-          const buffer = Buffer.concat(chunks);
-          res.status(200).json({
-            success: true,
-            type: 'ai_diffusion_keyframe',
-            dataUrl: `data:image/jpeg;base64,${buffer.toString('base64')}`,
-            prompt,
-            cameraMotion
-          });
-        });
-      }
-    }).on('error', (err) => {
-      res.status(200).json({ success: false, fallback: true, error: err.message });
+    const body = req.body || {};
+    const result = await fetchKeyframe({
+      prompt: body.prompt,
+      seed: body.seed,
+      width: body.width,
+      height: body.height,
+      shotProgress: body.shotProgress,
+      cameraMotion: body.cameraMotion
     });
+
+    // Always 200: an unreachable model is a fallback signal for the studio,
+    // not a client error.
+    res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
