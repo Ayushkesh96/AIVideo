@@ -109,7 +109,19 @@ function get(url, redirectsLeft) {
 
       if (statusCode !== 200) {
         res.resume();
-        return reject(new Error(`upstream responded ${statusCode}`));
+        // Name the failure. A bare status code reaches the user as "service
+        // unreachable", which sends them looking for a network problem when
+        // the service answered clearly.
+        const reason = statusCode === 401
+          ? 'Pollinations rejected the key (401) — invalid or revoked'
+          : statusCode === 402
+            ? 'Pollinations balance is empty (402) — top up at enter.pollinations.ai'
+            : statusCode === 403
+              ? 'Pollinations refused this model for your key (403)'
+              : statusCode === 429
+                ? 'Pollinations rate limit reached (429)'
+                : `Pollinations responded ${statusCode}`;
+        return reject(new Error(reason));
       }
 
       const contentType = headers['content-type'] || '';

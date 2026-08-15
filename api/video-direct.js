@@ -18,6 +18,11 @@ const https = require('https');
 const { URL } = require('url');
 const { applyCors, resolveStream } = require('./_video');
 
+/** Whether a credential was configured at all, which changes what a 401 means. */
+function hasKey() {
+  return Boolean((process.env.POLLINATIONS_KEY || process.env.POLLINATIONS_API_KEY || '').trim());
+}
+
 const MAX_REDIRECTS = 4;
 // Must stay under the function's maxDuration (see vercel.json) or the platform
 // kills the invocation and the caller gets an opaque 504 instead of a reason.
@@ -57,11 +62,24 @@ function pipeUpstream(url, headers, res, redirectsLeft) {
         return pipeUpstream(next.toString(), forwarded, res, redirectsLeft - 1);
       }
 
-      if (status === 401 || status === 402 || status === 403) {
+      // These three mean completely different things and need opposite
+      // responses from the user. Collapsing them into one "set a key" message
+      // told people with a working key to go set the key they already had.
+      if (status === 401) {
         upstream.resume();
-        // The expected outcome when anonymous access is not permitted for this
-        // model; say so plainly so the studio can explain the fallback.
-        return fail(res, 200, 'This model requires a Pollinations key (free at enter.pollinations.ai). Set POLLINATIONS_KEY to enable it.');
+        return fail(res, 200, hasKey()
+          ? 'Pollinations rejected the key (401) — it is invalid, revoked, or was pasted with stray whitespace. Replace POLLINATIONS_KEY and redeploy.'
+          : 'No Pollinations key is set. Get a free one at enter.pollinations.ai and set POLLINATIONS_KEY.');
+      }
+
+      if (status === 402) {
+        upstream.resume();
+        return fail(res, 200, 'Pollinations balance is empty (402). Video costs far more pollen than images — top up or wait for the free allowance to reset at enter.pollinations.ai.');
+      }
+
+      if (status === 403) {
+        upstream.resume();
+        return fail(res, 200, 'Pollinations refused this model for your key (403). It may need paid pollen — try a cheaper model via POLLINATIONS_VIDEO_MODEL.');
       }
 
       if (status === 429) {

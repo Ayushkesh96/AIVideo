@@ -826,6 +826,7 @@
     // Pull the model keyframes BEFORE recording starts, so the whole recorded
     // window is real footage rather than a loading screen.
     usedAiKeyframes = false;
+    let keyframeError = null;
     if (aiSynth) {
       try {
         if (progressFill) progressFill.style.width = '0%';
@@ -850,12 +851,17 @@
         usedAiKeyframes = frames.length > 0;
       } catch (err) {
         console.warn('Keyframe synthesis unavailable, using on-device engine:', err);
+        // Keep the upstream reason. "Unreachable" is almost never accurate —
+        // the service is reachable and is telling us why it refused.
+        keyframeError = err && err.message ? err.message : null;
       }
 
       if (!usedAiKeyframes) {
         aiSynth.reset();
         if (window.showToast) {
-          window.showToast('⚠ Model service unreachable — rendering on-device instead.');
+          window.showToast(keyframeError
+            ? `⚠ Stills unavailable: ${keyframeError}`
+            : '⚠ Stills unavailable — rendering on-device instead.');
         }
       }
     }
