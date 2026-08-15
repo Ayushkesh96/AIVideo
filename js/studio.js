@@ -90,6 +90,7 @@
     resizeCanvas();
     startPreviewLoop();
     renderGenerationReel();
+    updateProjectHeader();
     refreshProviderStatus();
   }
 
@@ -230,6 +231,57 @@
    * Keeps the viewport HUD honest. The resolution pill was hardcoded markup,
    * so it read "1080p • 30 FPS" even while rendering a 4K portrait frame.
    */
+  /**
+   * Repaints every studio control from the current project state. Used after
+   * swapping projects, where each panel would otherwise still be showing the
+   * previous project's values.
+   */
+  function reloadStudioFromState() {
+    releaseRealVideo();
+    hideRealVideo();
+    generatedBlob = null;
+    generatedVideoUrl = null;
+    if (aiSynth) aiSynth.reset();
+
+    loadActiveShotData();
+    resizeCanvas();
+    renderGenerationReel();
+    updateProjectHeader();
+
+    const promptInput = document.getElementById('studio-prompt-input');
+    const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
+    if (promptInput) promptInput.value = (shot && shot.prompt) || '';
+  }
+
+  /**
+   * The project name and the "N Scenes • N Shots • N Elements" line were fixed
+   * markup describing the demo film, so they stayed wrong for every real
+   * project.
+   */
+  function updateProjectHeader() {
+    if (!window.FilmOS || !window.FilmOS.state) return;
+    const state = window.FilmOS.state;
+
+    const nameEl = document.getElementById('filmos-project-name');
+    if (nameEl) nameEl.textContent = state.name || 'Untitled Project';
+
+    const statsEl = document.getElementById('filmos-project-stats');
+    if (statsEl) {
+      const scenes = (state.scenes || []).length;
+      const shots = (state.scenes || []).reduce((n, s) => n + ((s.shots || []).length), 0);
+      const elements = Object.keys(state.elements || {})
+        .reduce((n, key) => n + ((state.elements[key] || []).length), 0);
+      const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+      statsEl.textContent =
+        `Filmmaking Production Operating System • ${plural(scenes, 'Scene')} • ${plural(shots, 'Shot')} • ${plural(elements, 'Element')}`;
+    }
+  }
+
+  // film-ui.js also repaints this header after its own edits. Exposing the one
+  // implementation stops the two from disagreeing — they previously wrote the
+  // same line with different wording.
+  window.updateProjectHeader = updateProjectHeader;
+
   function updateHud() {
     const resTag = document.getElementById('hud-res-tag');
     if (resTag && canvas) {
@@ -626,10 +678,23 @@
     const overlay = document.getElementById('studio-rendering-overlay');
     const progressFill = document.getElementById('render-progress-fill');
     const renderStatus = document.getElementById('render-status-text');
-    if (overlay) overlay.classList.add('active');
 
     const promptInput = document.getElementById('studio-prompt-input');
-    let prompt = promptInput ? promptInput.value.trim() : "cinematic shot";
+    let prompt = promptInput ? promptInput.value.trim() : '';
+
+    // Checked before the overlay goes up. A new project now starts with an
+    // empty prompt box, so this is the first thing an impatient click hits —
+    // and generating from "" burns a model call to render nothing.
+    if (!prompt) {
+      isGenerating = false;
+      isPlaying = true;
+      if (promptInput) promptInput.focus();
+      if (window.showToast) window.showToast('⚠ Describe the shot you want before generating.');
+      return;
+    }
+
+    if (overlay) overlay.classList.add('active');
+
     if (window.FilmOS) {
       prompt = window.FilmOS.resolveMentions(prompt);
       window.FilmOS.updateActiveShot({ prompt: promptInput.value });
@@ -1159,6 +1224,35 @@
         if (window.FilmOS) window.FilmOS.updateActiveShot({ duration: renderDuration });
       });
     });
+
+    // New Project / Load Example. The studio used to open already filled with
+    // a fictional demo film, with no way to clear it.
+    const newProjectBtn = document.getElementById('filmos-new-project-btn');
+    if (newProjectBtn) {
+      newProjectBtn.addEventListener('click', () => {
+        if (!window.FilmOS || !window.FilmOS.newProject) return;
+        // Destructive and not undoable, so it asks first.
+        const hasWork = (window.FilmOS.state.generationReel || []).length > 0 ||
+          (window.FilmOS.getActiveShot() && window.FilmOS.getActiveShot().prompt);
+        if (hasWork && !window.confirm('Clear this project and start from an empty shot?')) return;
+
+        window.FilmOS.newProject();
+        reloadStudioFromState();
+        if (window.showToast) window.showToast('✓ New project — the studio is empty and ready.');
+      });
+    }
+
+    const loadDemoBtn = document.getElementById('filmos-load-demo-btn');
+    if (loadDemoBtn) {
+      loadDemoBtn.addEventListener('click', () => {
+        if (!window.FilmOS || !window.FilmOS.loadDemoProject) return;
+        if (!window.confirm('Replace the current project with the bundled example?')) return;
+
+        window.FilmOS.loadDemoProject();
+        reloadStudioFromState();
+        if (window.showToast) window.showToast('✓ Example project loaded.');
+      });
+    }
 
     // "+ Add @Element" — the modal and its save handler already existed, but
     // nothing opened it, so the button did nothing at all.

@@ -4177,10 +4177,10 @@ button {
           </div>
           <div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span id="filmos-project-name" style="font-weight:800; font-size:1.05rem; color:#fff;">Midnight Runner: Tokyo Protocol</span>
+              <span id="filmos-project-name" style="font-weight:800; font-size:1.05rem; color:#fff;">Untitled Project</span>
               <span class="badge badge-lime" style="font-size:0.65rem;">ACTIVE PROJECT</span>
             </div>
-            <div style="font-size:0.75rem; color:var(--text-muted);">Filmmaking Production Operating System • 2 Scenes • 4 Shots • 2 Elements</div>
+            <div id="filmos-project-stats" style="font-size:0.75rem; color:var(--text-muted);">Filmmaking Production Operating System</div>
           </div>
         </div>
 
@@ -4196,6 +4196,14 @@ button {
               <span>🎞️ Multi-Track NLE</span>
             </button>
           </div>
+
+          <button id="filmos-new-project-btn" class="btn btn-dark btn-sm" title="Clear this project and start from an empty shot">
+            <span>+ New Project</span>
+          </button>
+
+          <button id="filmos-load-demo-btn" class="btn btn-dark btn-sm" title="Load the bundled example project to see the tooling filled in">
+            <span>Load Example</span>
+          </button>
 
           <button id="filmos-add-character-btn" class="btn btn-dark btn-sm">
             <span>+ Add @Element</span>
@@ -5731,7 +5739,89 @@ button {
 (function () {
   const STORAGE_KEY = 'filmOS_project';
 
-  const initialProjectData = {
+  // Bumped whenever the shape of a stored project changes in a way that makes
+  // old data wrong to load. v2 is the move away from shipping the demo project
+  // as the default state — anyone carrying the old demo in localStorage gets a
+  // clean project instead of someone else's fictional film.
+  const SCHEMA_VERSION = 2;
+
+  /**
+   * A new, empty project. This is what the studio opens with.
+   *
+   * It carries exactly one blank shot because the studio binds its controls to
+   * an active shot; with no shot at all the prompt box, camera rig and FX
+   * panel would have nothing to write to.
+   */
+  function blankProject() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      id: `proj-${Date.now()}`,
+      name: "Untitled Project",
+      logline: "",
+      synopsis: "",
+      aspectRatio: "16:9",
+      resolution: "1080p",
+      fps: 24,
+      activeModel: "Seedance 2.5 (1080p)",
+      activeSceneId: "scene-01",
+      activeShotId: "shot-01",
+
+      apiConfig: {
+        llmEndpoint: "",
+        llmKey: "",
+        videoGenEndpoint: "",
+        videoGenKey: "",
+        isSimulatedMode: true
+      },
+
+      elements: { characters: [], locations: [], props: [], styles: [] },
+
+      scenes: [
+        {
+          id: "scene-01",
+          number: 1,
+          title: "Scene 1",
+          setting: "",
+          summary: "",
+          shots: [
+            {
+              id: "shot-01",
+              code: "01A",
+              title: "Shot 1",
+              prompt: "",
+              model: "Seedance 2.5 (1080p)",
+              camera: "Orbit 360°",
+              lens: "24mm",
+              rig: "Dolly",
+              motionRig: "Dolly",
+              motionSpeed: 75,
+              aspectRatio: "16:9",
+              fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+              keyframeApproved: false,
+              status: "draft",
+              referenceImage: null,
+              videoUrl: null,
+              duration: 5
+            }
+          ]
+        }
+      ],
+
+      generationReel: [],
+
+      timeline: {
+        playhead: 0,
+        zoom: 1.0,
+        muxAudio: true,
+        tracks: { video: [], voice: [], music: [] }
+      }
+    };
+  }
+
+  // Kept as a showcase, but no longer the state you start in. Loadable from the
+  // studio via FilmOS.loadDemoProject().
+  const DEMO_PROJECT = {
+    schemaVersion: SCHEMA_VERSION,
     id: "proj-tokyo-protocol",
     name: "Midnight Runner: Tokyo Protocol",
     logline: "A rogue courier sprints through rain-soaked Neo-Tokyo to deliver an encrypted neural drive before dawn.",
@@ -5998,12 +6088,32 @@ button {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          return Object.assign({}, initialProjectData, parsed);
+
+          // Anything stored before v2 is the old demo project that used to
+          // ship as the default. Merging it forward would hand the user a
+          // fictional film they never created, so it is discarded.
+          if (parsed && parsed.schemaVersion === SCHEMA_VERSION) {
+            return Object.assign(blankProject(), parsed);
+          }
         }
       } catch (e) {
         console.warn("Could not load stored FilmOS project:", e);
       }
-      return JSON.parse(JSON.stringify(initialProjectData));
+      return blankProject();
+    }
+
+    /** Discards the current project and starts from empty. */
+    newProject() {
+      this.state = blankProject();
+      this.save();
+      return this.state;
+    }
+
+    /** Loads the bundled showcase project, for demoing the tooling. */
+    loadDemoProject() {
+      this.state = JSON.parse(JSON.stringify(DEMO_PROJECT));
+      this.save();
+      return this.state;
     }
 
     save() {
@@ -7830,6 +7940,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     resizeCanvas();
     startPreviewLoop();
     renderGenerationReel();
+    updateProjectHeader();
     refreshProviderStatus();
   }
 
@@ -7970,6 +8081,57 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
    * Keeps the viewport HUD honest. The resolution pill was hardcoded markup,
    * so it read "1080p • 30 FPS" even while rendering a 4K portrait frame.
    */
+  /**
+   * Repaints every studio control from the current project state. Used after
+   * swapping projects, where each panel would otherwise still be showing the
+   * previous project's values.
+   */
+  function reloadStudioFromState() {
+    releaseRealVideo();
+    hideRealVideo();
+    generatedBlob = null;
+    generatedVideoUrl = null;
+    if (aiSynth) aiSynth.reset();
+
+    loadActiveShotData();
+    resizeCanvas();
+    renderGenerationReel();
+    updateProjectHeader();
+
+    const promptInput = document.getElementById('studio-prompt-input');
+    const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
+    if (promptInput) promptInput.value = (shot && shot.prompt) || '';
+  }
+
+  /**
+   * The project name and the "N Scenes • N Shots • N Elements" line were fixed
+   * markup describing the demo film, so they stayed wrong for every real
+   * project.
+   */
+  function updateProjectHeader() {
+    if (!window.FilmOS || !window.FilmOS.state) return;
+    const state = window.FilmOS.state;
+
+    const nameEl = document.getElementById('filmos-project-name');
+    if (nameEl) nameEl.textContent = state.name || 'Untitled Project';
+
+    const statsEl = document.getElementById('filmos-project-stats');
+    if (statsEl) {
+      const scenes = (state.scenes || []).length;
+      const shots = (state.scenes || []).reduce((n, s) => n + ((s.shots || []).length), 0);
+      const elements = Object.keys(state.elements || {})
+        .reduce((n, key) => n + ((state.elements[key] || []).length), 0);
+      const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+      statsEl.textContent =
+        `Filmmaking Production Operating System • ${plural(scenes, 'Scene')} • ${plural(shots, 'Shot')} • ${plural(elements, 'Element')}`;
+    }
+  }
+
+  // film-ui.js also repaints this header after its own edits. Exposing the one
+  // implementation stops the two from disagreeing — they previously wrote the
+  // same line with different wording.
+  window.updateProjectHeader = updateProjectHeader;
+
   function updateHud() {
     const resTag = document.getElementById('hud-res-tag');
     if (resTag && canvas) {
@@ -8366,10 +8528,23 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     const overlay = document.getElementById('studio-rendering-overlay');
     const progressFill = document.getElementById('render-progress-fill');
     const renderStatus = document.getElementById('render-status-text');
-    if (overlay) overlay.classList.add('active');
 
     const promptInput = document.getElementById('studio-prompt-input');
-    let prompt = promptInput ? promptInput.value.trim() : "cinematic shot";
+    let prompt = promptInput ? promptInput.value.trim() : '';
+
+    // Checked before the overlay goes up. A new project now starts with an
+    // empty prompt box, so this is the first thing an impatient click hits —
+    // and generating from "" burns a model call to render nothing.
+    if (!prompt) {
+      isGenerating = false;
+      isPlaying = true;
+      if (promptInput) promptInput.focus();
+      if (window.showToast) window.showToast('⚠ Describe the shot you want before generating.');
+      return;
+    }
+
+    if (overlay) overlay.classList.add('active');
+
     if (window.FilmOS) {
       prompt = window.FilmOS.resolveMentions(prompt);
       window.FilmOS.updateActiveShot({ prompt: promptInput.value });
@@ -8900,6 +9075,35 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       });
     });
 
+    // New Project / Load Example. The studio used to open already filled with
+    // a fictional demo film, with no way to clear it.
+    const newProjectBtn = document.getElementById('filmos-new-project-btn');
+    if (newProjectBtn) {
+      newProjectBtn.addEventListener('click', () => {
+        if (!window.FilmOS || !window.FilmOS.newProject) return;
+        // Destructive and not undoable, so it asks first.
+        const hasWork = (window.FilmOS.state.generationReel || []).length > 0 ||
+          (window.FilmOS.getActiveShot() && window.FilmOS.getActiveShot().prompt);
+        if (hasWork && !window.confirm('Clear this project and start from an empty shot?')) return;
+
+        window.FilmOS.newProject();
+        reloadStudioFromState();
+        if (window.showToast) window.showToast('✓ New project — the studio is empty and ready.');
+      });
+    }
+
+    const loadDemoBtn = document.getElementById('filmos-load-demo-btn');
+    if (loadDemoBtn) {
+      loadDemoBtn.addEventListener('click', () => {
+        if (!window.FilmOS || !window.FilmOS.loadDemoProject) return;
+        if (!window.confirm('Replace the current project with the bundled example?')) return;
+
+        window.FilmOS.loadDemoProject();
+        reloadStudioFromState();
+        if (window.showToast) window.showToast('✓ Example project loaded.');
+      });
+    }
+
     // "+ Add @Element" — the modal and its save handler already existed, but
     // nothing opened it, so the button did nothing at all.
     const addElementBtn = document.getElementById('filmos-add-character-btn');
@@ -9315,18 +9519,19 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
   // 4. Update Header Info
   function updateHeaderCounters() {
+    // Delegates to the studio's implementation so the header has a single
+    // writer. This used to duplicate the logic and target the stats line by
+    // CSS position, so the two disagreed on wording and fought over the same
+    // element depending on which ran last.
+    if (window.updateProjectHeader) {
+      window.updateProjectHeader();
+      return;
+    }
+
+    // Fallback for the case where studio.js hasn't loaded.
     const proj = window.FilmOS.state;
     const nameEl = document.getElementById('filmos-project-name');
     if (nameEl) nameEl.textContent = proj.name;
-
-    let totalShots = 0;
-    proj.scenes.forEach(s => totalShots += s.shots.length);
-    const totalElements = proj.elements.characters.length + proj.elements.locations.length + proj.elements.props.length;
-
-    const descEl = document.querySelector('.filmos-project-badge div div:last-child');
-    if (descEl) {
-      descEl.textContent = `Filmmaking Production Operating System • ${proj.scenes.length} Scenes • ${totalShots} Shots • ${totalElements} Elements`;
-    }
   }
 
   // 5. Prompt @-Mention Autocomplete

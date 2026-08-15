@@ -277,18 +277,19 @@
 
   // 4. Update Header Info
   function updateHeaderCounters() {
+    // Delegates to the studio's implementation so the header has a single
+    // writer. This used to duplicate the logic and target the stats line by
+    // CSS position, so the two disagreed on wording and fought over the same
+    // element depending on which ran last.
+    if (window.updateProjectHeader) {
+      window.updateProjectHeader();
+      return;
+    }
+
+    // Fallback for the case where studio.js hasn't loaded.
     const proj = window.FilmOS.state;
     const nameEl = document.getElementById('filmos-project-name');
     if (nameEl) nameEl.textContent = proj.name;
-
-    let totalShots = 0;
-    proj.scenes.forEach(s => totalShots += s.shots.length);
-    const totalElements = proj.elements.characters.length + proj.elements.locations.length + proj.elements.props.length;
-
-    const descEl = document.querySelector('.filmos-project-badge div div:last-child');
-    if (descEl) {
-      descEl.textContent = `Filmmaking Production Operating System • ${proj.scenes.length} Scenes • ${totalShots} Shots • ${totalElements} Elements`;
-    }
   }
 
   // 5. Prompt @-Mention Autocomplete

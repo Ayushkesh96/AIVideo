@@ -7,7 +7,89 @@
 (function () {
   const STORAGE_KEY = 'filmOS_project';
 
-  const initialProjectData = {
+  // Bumped whenever the shape of a stored project changes in a way that makes
+  // old data wrong to load. v2 is the move away from shipping the demo project
+  // as the default state — anyone carrying the old demo in localStorage gets a
+  // clean project instead of someone else's fictional film.
+  const SCHEMA_VERSION = 2;
+
+  /**
+   * A new, empty project. This is what the studio opens with.
+   *
+   * It carries exactly one blank shot because the studio binds its controls to
+   * an active shot; with no shot at all the prompt box, camera rig and FX
+   * panel would have nothing to write to.
+   */
+  function blankProject() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      id: `proj-${Date.now()}`,
+      name: "Untitled Project",
+      logline: "",
+      synopsis: "",
+      aspectRatio: "16:9",
+      resolution: "1080p",
+      fps: 24,
+      activeModel: "Seedance 2.5 (1080p)",
+      activeSceneId: "scene-01",
+      activeShotId: "shot-01",
+
+      apiConfig: {
+        llmEndpoint: "",
+        llmKey: "",
+        videoGenEndpoint: "",
+        videoGenKey: "",
+        isSimulatedMode: true
+      },
+
+      elements: { characters: [], locations: [], props: [], styles: [] },
+
+      scenes: [
+        {
+          id: "scene-01",
+          number: 1,
+          title: "Scene 1",
+          setting: "",
+          summary: "",
+          shots: [
+            {
+              id: "shot-01",
+              code: "01A",
+              title: "Shot 1",
+              prompt: "",
+              model: "Seedance 2.5 (1080p)",
+              camera: "Orbit 360°",
+              lens: "24mm",
+              rig: "Dolly",
+              motionRig: "Dolly",
+              motionSpeed: 75,
+              aspectRatio: "16:9",
+              fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+              keyframeApproved: false,
+              status: "draft",
+              referenceImage: null,
+              videoUrl: null,
+              duration: 5
+            }
+          ]
+        }
+      ],
+
+      generationReel: [],
+
+      timeline: {
+        playhead: 0,
+        zoom: 1.0,
+        muxAudio: true,
+        tracks: { video: [], voice: [], music: [] }
+      }
+    };
+  }
+
+  // Kept as a showcase, but no longer the state you start in. Loadable from the
+  // studio via FilmOS.loadDemoProject().
+  const DEMO_PROJECT = {
+    schemaVersion: SCHEMA_VERSION,
     id: "proj-tokyo-protocol",
     name: "Midnight Runner: Tokyo Protocol",
     logline: "A rogue courier sprints through rain-soaked Neo-Tokyo to deliver an encrypted neural drive before dawn.",
@@ -274,12 +356,32 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          return Object.assign({}, initialProjectData, parsed);
+
+          // Anything stored before v2 is the old demo project that used to
+          // ship as the default. Merging it forward would hand the user a
+          // fictional film they never created, so it is discarded.
+          if (parsed && parsed.schemaVersion === SCHEMA_VERSION) {
+            return Object.assign(blankProject(), parsed);
+          }
         }
       } catch (e) {
         console.warn("Could not load stored FilmOS project:", e);
       }
-      return JSON.parse(JSON.stringify(initialProjectData));
+      return blankProject();
+    }
+
+    /** Discards the current project and starts from empty. */
+    newProject() {
+      this.state = blankProject();
+      this.save();
+      return this.state;
+    }
+
+    /** Loads the bundled showcase project, for demoing the tooling. */
+    loadDemoProject() {
+      this.state = JSON.parse(JSON.stringify(DEMO_PROJECT));
+      this.save();
+      return this.state;
     }
 
     save() {
