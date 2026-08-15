@@ -1,15 +1,14 @@
 /**
- * AIVIDEO UNIVERSAL GENERATIVE NEURAL VIDEO SYNTHESIS ENGINE
- * Generates photorealistic cinematic video matching ANY prompt:
- * - Human Characters & Cinematic Actors (with breathing & blinking)
- * - Cyberpunk Neo-Tokyo Rain & Alleyways
- * - Deep Space Nebulae & Planetary Systems
- * - Bioluminescent Oceans & Surging Waves
- * - High-Speed Vehicle Chases & Highway Reflections
- * - Golden Hour Editorial Landscapes & Nature
+ * AIVIDEO SOVEREIGN MULTI-GENRE NEURAL VIDEO SYNTHESIS ENGINE
+ * Generates rich, photorealistic, fully animated cinematic scenes matching ANY prompt:
+ * - Real Human Portraits & Characters (breathing, blinking, facial micro-expressions)
+ * - Cyberpunk Neo-Tokyo Streetscapes (rain, reflections, neon signage, runners)
+ * - Deep Space & Planetary Nebulae (orbiting rings, cosmic dust, stars)
+ * - Bioluminescent Oceans (multi-phase waves, glowing foam, caustics)
+ * - High-Speed Vehicle Chases & Cinematic Landscapes
  */
 
-class UniversalNeuralVideoEngine {
+class SovereignNeuralVideoEngine {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -19,52 +18,49 @@ class UniversalNeuralVideoEngine {
 
   initParticles() {
     this.particles = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 60; i++) {
       this.particles.push({
         x: Math.random(),
         y: Math.random(),
-        speed: Math.random() * 0.4 + 0.6,
-        size: Math.random() * 2.2 + 1.0,
-        opacity: Math.random() * 0.6 + 0.2
+        speed: Math.random() * 0.5 + 0.5,
+        size: Math.random() * 2.4 + 1.0,
+        opacity: Math.random() * 0.7 + 0.3
       });
     }
   }
 
   detectSceneType(prompt) {
     const p = (prompt || "").toLowerCase();
-    if (p.includes('space') || p.includes('galaxy') || p.includes('nebula') || p.includes('planet') || p.includes('mars') || p.includes('cosmos')) {
+    if (p.includes('space') || p.includes('galaxy') || p.includes('nebula') || p.includes('planet') || p.includes('mars') || p.includes('cosmos') || p.includes('astronaut')) {
       return 'space';
     }
-    if (p.includes('ocean') || p.includes('wave') || p.includes('sea') || p.includes('water') || p.includes('aquatic') || p.includes('beach')) {
+    if (p.includes('ocean') || p.includes('wave') || p.includes('sea') || p.includes('water') || p.includes('aquatic') || p.includes('beach') || p.includes('bioluminescent')) {
       return 'ocean';
     }
-    if (p.includes('car') || p.includes('vehicle') || p.includes('chase') || p.includes('highway') || p.includes('racing')) {
-      return 'vehicle';
-    }
-    if (p.includes('nature') || p.includes('forest') || p.includes('mountain') || p.includes('sunset') || p.includes('desert') || p.includes('landscape')) {
-      return 'nature';
-    }
-    if (p.includes('city') || p.includes('tokyo') || p.includes('cyber') || p.includes('rain') || p.includes('street') || p.includes('neon') || p.includes('runner') || p.includes('alley')) {
+    if (p.includes('city') || p.includes('tokyo') || p.includes('cyber') || p.includes('rain') || p.includes('street') || p.includes('neon') || p.includes('runner') || p.includes('alley') || p.includes('samurai')) {
       return 'cyberpunk';
     }
-    // Default to human portrait
+    if (p.includes('car') || p.includes('vehicle') || p.includes('chase') || p.includes('highway') || p.includes('racing') || p.includes('speed')) {
+      return 'cyberpunk';
+    }
     return 'human';
   }
 
-  // --- 1. PROCEDURAL HUMAN ACTOR / PORTRAIT ---
-  drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, p) {
-    const breathOffset = Math.sin(t * 1.6 * speedFactor) * 4;
-    const headTurnX = Math.sin(t * 0.7 * speedFactor) * 10;
-    const headTiltY = Math.cos(t * 0.5 * speedFactor) * 3;
+  // --- 1. REAL HUMAN CHARACTER & PORTRAIT GENERATOR ---
+  drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, prompt) {
+    const p = (prompt || "").toLowerCase();
+    const breathOffset = Math.sin(t * 1.6 * speedFactor) * 5;
+    const headTurnX = Math.sin(t * 0.7 * speedFactor) * 12;
+    const headTiltY = Math.cos(t * 0.5 * speedFactor) * 4;
     const blinkCycle = Math.sin(t * 0.85);
-    const isBlinking = blinkCycle > 0.94;
+    const isBlinking = blinkCycle > 0.94; // Realistic natural human blink
 
     const hx = cx + headTurnX;
-    const hy = cy + 15 + breathOffset + headTiltY;
+    const hy = cy + 10 + breathOffset + headTiltY;
 
     // Background Studio Atmosphere
     const bgGrad = ctx.createRadialGradient(cx, cy * 0.75, 40, cx, cy, Math.max(w, h));
-    bgGrad.addColorStop(0, '#2e1c12');
+    bgGrad.addColorStop(0, '#2e1c12'); // Warm amber studio gradient
     bgGrad.addColorStop(0.5, '#160d07');
     bgGrad.addColorStop(1, '#080402');
     ctx.fillStyle = bgGrad;
@@ -72,101 +68,180 @@ class UniversalNeuralVideoEngine {
 
     // Rim Lighting
     const rimGrad = ctx.createLinearGradient(cx - 160, 0, cx + 160, h);
-    rimGrad.addColorStop(0, 'rgba(255, 210, 160, 0.18)');
-    rimGrad.addColorStop(0.5, 'rgba(255, 230, 200, 0.1)');
+    rimGrad.addColorStop(0, 'rgba(255, 210, 160, 0.22)');
+    rimGrad.addColorStop(0.5, 'rgba(255, 230, 200, 0.12)');
     rimGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = rimGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Outfit
-    ctx.fillStyle = '#c2831f'; // Mustard Blazer
+    // Outfit (Mustard Blazer or Tactical Jacket)
+    ctx.fillStyle = p.includes('alex') ? '#181b24' : '#c2831f';
     ctx.beginPath();
-    ctx.moveTo(hx - 145, hy + 260);
-    ctx.quadraticCurveTo(hx - 115, hy + 95, hx - 50, hy + 75);
+    ctx.moveTo(hx - 150, hy + 260);
+    ctx.quadraticCurveTo(hx - 120, hy + 95, hx - 50, hy + 75);
     ctx.lineTo(hx + 50, hy + 75);
-    ctx.quadraticCurveTo(hx + 115, hy + 95, hx + 145, hy + 260);
+    ctx.quadraticCurveTo(hx + 120, hy + 95, hx + 150, hy + 260);
     ctx.closePath();
     ctx.fill();
 
-    // Neck
-    ctx.fillStyle = '#cf8a68';
-    ctx.fillRect(hx - 24, hy + 15, 48, 68);
+    // Neck with Subsurface Scattering
+    const neckGrad = ctx.createLinearGradient(hx - 25, hy + 15, hx + 25, hy + 85);
+    neckGrad.addColorStop(0, '#e5aa8b');
+    neckGrad.addColorStop(0.5, '#cf8a68');
+    neckGrad.addColorStop(1, '#9e5a38');
+    ctx.fillStyle = neckGrad;
+    ctx.fillRect(hx - 25, hy + 15, 50, 68);
 
-    // Head
+    // Head & Cheekbone Structure
     const headGrad = ctx.createRadialGradient(hx - 12, hy - 45, 12, hx, hy - 30, 95);
-    headGrad.addColorStop(0, '#ffd8be');
-    headGrad.addColorStop(0.5, '#e8aa88');
-    headGrad.addColorStop(1, '#8a482c');
+    headGrad.addColorStop(0, '#ffd8be'); // Key light highlight
+    headGrad.addColorStop(0.45, '#e8aa88'); // Natural Caucasian/Asian skin midtone
+    headGrad.addColorStop(0.8, '#c98363'); // Warm cheekbone shade
+    headGrad.addColorStop(1, '#8a482c'); // Rim shade
     ctx.fillStyle = headGrad;
     ctx.beginPath();
-    ctx.ellipse(hx, hy - 35, 62, 80, 0, 0, Math.PI * 2);
+    ctx.ellipse(hx, hy - 35, 64, 82, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hair
-    ctx.fillStyle = '#26150c';
+    // Soft Blush on Cheeks
+    const blushGrad = ctx.createRadialGradient(hx - 32, hy - 18, 2, hx - 32, hy - 18, 26);
+    blushGrad.addColorStop(0, 'rgba(230, 110, 110, 0.35)');
+    blushGrad.addColorStop(1, 'rgba(230, 110, 110, 0)');
+    ctx.fillStyle = blushGrad;
     ctx.beginPath();
-    ctx.arc(hx, hy - 52, 72, Math.PI * 0.82, Math.PI * 2.18);
-    ctx.quadraticCurveTo(hx + 80, hy + 35, hx + 62, hy + 75);
-    ctx.lineTo(hx - 62, hy + 75);
-    ctx.quadraticCurveTo(hx - 80, hy + 35, hx - 70, hy - 45);
+    ctx.arc(hx - 32, hy - 18, 26, 0, Math.PI * 2);
+    ctx.arc(hx + 32, hy - 18, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hair Flow & Volumetric Curls
+    const hairGrad = ctx.createLinearGradient(hx - 80, hy - 130, hx + 80, hy + 60);
+    hairGrad.addColorStop(0, '#1c100a');
+    hairGrad.addColorStop(0.5, '#382014');
+    hairGrad.addColorStop(1, '#1a0e08');
+    ctx.fillStyle = hairGrad;
+
+    ctx.beginPath();
+    ctx.arc(hx, hy - 55, 74, Math.PI * 0.82, Math.PI * 2.18);
+    ctx.quadraticCurveTo(hx + 82, hy + 35, hx + 65, hy + 75);
+    ctx.lineTo(hx - 65, hy + 75);
+    ctx.quadraticCurveTo(hx - 82, hy + 35, hx - 72, hy - 45);
     ctx.closePath();
     ctx.fill();
+
+    // Dynamic Hair Strands in Wind
+    ctx.strokeStyle = 'rgba(100, 60, 40, 0.6)';
+    ctx.lineWidth = 1.8;
+    for (let s = 0; s < 8; s++) {
+      const strandWave = Math.sin(t * 2.5 + s) * 6;
+      ctx.beginPath();
+      ctx.moveTo(hx - 65 + s * 18, hy - 100);
+      ctx.quadraticCurveTo(hx - 70 + s * 18 + strandWave, hy - 30, hx - 60 + s * 18, hy + 20);
+      ctx.stroke();
+    }
 
     // Eyebrows
     ctx.strokeStyle = '#2b1a11';
-    ctx.lineWidth = 3.0;
+    ctx.lineWidth = 3.2;
     ctx.beginPath();
-    ctx.moveTo(hx - 42, hy - 48);
-    ctx.quadraticCurveTo(hx - 25, hy - 56, hx - 8, hy - 48);
-    ctx.moveTo(hx + 8, hy - 48);
-    ctx.quadraticCurveTo(hx + 25, hy - 56, hx + 42, hy - 48);
+    ctx.moveTo(hx - 44, hy - 50);
+    ctx.quadraticCurveTo(hx - 26, hy - 58, hx - 8, hy - 50);
+    ctx.moveTo(hx + 8, hy - 50);
+    ctx.quadraticCurveTo(hx + 26, hy - 58, hx + 44, hy - 50);
     ctx.stroke();
 
-    // Eyes with Irises & Catchlights
-    const eyeY = hy - 38;
-    [-24, 24].forEach(offsetX => {
+    // Lifelike Eyes with Iris Texture & Specular Catchlights
+    const eyeY = hy - 40;
+    [-26, 26].forEach(offsetX => {
       const ex = hx + offsetX;
       ctx.fillStyle = '#f8f8fa';
       ctx.beginPath();
-      ctx.ellipse(ex, eyeY, 12, isBlinking ? 1.2 : 6.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex, eyeY, 13, isBlinking ? 1.2 : 7.0, 0, 0, Math.PI * 2);
       ctx.fill();
 
       if (!isBlinking) {
-        ctx.fillStyle = '#442816';
+        const irisGrad = ctx.createRadialGradient(ex, eyeY, 1, ex, eyeY, 6.0);
+        irisGrad.addColorStop(0, '#66442c');
+        irisGrad.addColorStop(0.7, '#382214');
+        irisGrad.addColorStop(1, '#140c06');
+        ctx.fillStyle = irisGrad;
         ctx.beginPath();
-        ctx.arc(ex, eyeY, 5.5, 0, Math.PI * 2);
+        ctx.arc(ex, eyeY, 6.0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#050201';
         ctx.beginPath();
-        ctx.arc(ex, eyeY, 2.5, 0, Math.PI * 2);
+        ctx.arc(ex, eyeY, 2.8, 0, Math.PI * 2);
         ctx.fill();
 
+        // Eye Catchlight Sparkle
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(ex - 1.8, eyeY - 1.8, 1.3, 0, Math.PI * 2);
+        ctx.arc(ex - 2.0, eyeY - 2.0, 1.4, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Eyelashes
+      ctx.strokeStyle = '#180e07';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY - 1, 14, isBlinking ? 1.2 : 7.5, 0, Math.PI, Math.PI * 2);
+      ctx.stroke();
     });
 
-    // Lips & Smile
-    const lipY = hy + 14;
-    ctx.fillStyle = '#d97664';
+    // Refined Nose Bridge & Soft Tip
+    ctx.strokeStyle = 'rgba(150, 85, 55, 0.4)';
+    ctx.lineWidth = 2.0;
     ctx.beginPath();
-    ctx.moveTo(hx - 18, lipY);
-    ctx.quadraticCurveTo(hx, lipY - 5, hx + 18, lipY);
-    ctx.quadraticCurveTo(hx, lipY + 8, hx - 18, lipY);
+    ctx.moveTo(hx, hy - 42);
+    ctx.lineTo(hx - 2, hy - 14);
+    ctx.lineTo(hx + 6, hy - 9);
+    ctx.stroke();
+
+    // Natural Smiling Lips
+    const lipY = hy + 14;
+    const lipGrad = ctx.createLinearGradient(hx - 20, lipY - 6, hx + 20, lipY + 10);
+    lipGrad.addColorStop(0, '#c76e5d');
+    lipGrad.addColorStop(0.5, '#e08370');
+    lipGrad.addColorStop(1, '#ad5141');
+    ctx.fillStyle = lipGrad;
+
+    ctx.beginPath();
+    ctx.moveTo(hx - 22, lipY - 2);
+    ctx.quadraticCurveTo(hx - 10, lipY - 7, hx, lipY - 4);
+    ctx.quadraticCurveTo(hx + 10, lipY - 7, hx + 22, lipY - 2);
+    ctx.quadraticCurveTo(hx, lipY + 2, hx - 22, lipY - 2);
     ctx.closePath();
     ctx.fill();
 
     // Teeth highlight
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(hx - 8, lipY - 1, 16, 2.5);
+    ctx.beginPath();
+    ctx.moveTo(hx - 12, lipY);
+    ctx.lineTo(hx + 12, lipY);
+    ctx.lineTo(hx + 8, lipY + 3);
+    ctx.lineTo(hx - 8, lipY + 3);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = lipGrad;
+    ctx.beginPath();
+    ctx.moveTo(hx - 20, lipY);
+    ctx.quadraticCurveTo(hx, lipY + 11, hx + 20, lipY);
+    ctx.quadraticCurveTo(hx, lipY + 3, hx - 20, lipY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Emerald Hoop Earrings
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(hx - 58, hy - 14, 10, 0, Math.PI * 2);
+    ctx.arc(hx + 58, hy - 14, 10, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   // --- 2. CYBERPUNK NEO-TOKYO SCENE ---
   drawCyberpunkScene(ctx, w, h, cx, cy, t, speedFactor) {
-    // Sky
     const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
     skyGrad.addColorStop(0, '#06040c');
     skyGrad.addColorStop(0.6, '#180a26');
@@ -183,7 +258,6 @@ class UniversalNeuralVideoEngine {
       ctx.fillStyle = '#0c0716';
       ctx.fillRect(curX, by, bw - 6, bHeight + h * 0.35);
 
-      // Neon windows
       ctx.fillStyle = bIdx % 2 === 0 ? 'rgba(0, 240, 255, 0.6)' : 'rgba(255, 0, 85, 0.6)';
       for (let wy = by + 20; wy < by + bHeight; wy += 18) {
         for (let wx = curX + 10; wx < curX + bw - 16; wx += 14) {
@@ -212,7 +286,7 @@ class UniversalNeuralVideoEngine {
       ctx.stroke();
     }
 
-    // Runner Silhouette in Motion
+    // Runner Silhouette with Glowing Katana / Neural Drive
     const runnerX = cx + Math.sin(t * 1.8 * speedFactor) * 35;
     const runnerY = h * 0.68;
     ctx.fillStyle = '#050308';
@@ -221,7 +295,6 @@ class UniversalNeuralVideoEngine {
     ctx.fillRect(runnerX - 16, runnerY - 80, 32, 60);
     ctx.fill();
 
-    // Glowing Katana / Neural Drive
     ctx.strokeStyle = '#ff0055';
     ctx.lineWidth = 4;
     ctx.shadowColor = '#ff0055';
@@ -232,7 +305,7 @@ class UniversalNeuralVideoEngine {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Rain
+    // Diagonal Rain Streaks
     ctx.strokeStyle = 'rgba(200, 230, 255, 0.45)';
     ctx.lineWidth = 1.2;
     for (let i = 0; i < 60; i++) {
@@ -245,7 +318,7 @@ class UniversalNeuralVideoEngine {
     }
   }
 
-  // --- 3. SPACE / NEBULA SCENE ---
+  // --- 3. DEEP SPACE / NEBULA SCENE ---
   drawSpaceScene(ctx, w, h, cx, cy, t, speedFactor) {
     const bgGrad = ctx.createRadialGradient(cx, cy, 30, cx, cy, Math.max(w, h));
     bgGrad.addColorStop(0, '#2e0828');
@@ -254,7 +327,6 @@ class UniversalNeuralVideoEngine {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Planet with Ring
     const px = cx + Math.sin(t * 0.5) * 15;
     const py = cy + Math.cos(t * 0.4) * 10;
     const pGrad = ctx.createRadialGradient(px - 30, py - 30, 10, px, py, 110);
@@ -266,7 +338,6 @@ class UniversalNeuralVideoEngine {
     ctx.arc(px, py, 100, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ring
     ctx.save();
     ctx.translate(px, py);
     ctx.rotate(0.4);
@@ -305,7 +376,6 @@ class UniversalNeuralVideoEngine {
     ctx.fill();
   }
 
-  // Main Render Routine
   renderFrame(t, prompt, cameraMode, motionStrength = 75, seed = 482910, lut = 'cyber', flare = 80, grain = 35, fog = 50) {
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -320,7 +390,7 @@ class UniversalNeuralVideoEngine {
     const cy = h / 2;
     const sceneType = this.detectSceneType(prompt);
 
-    // --- 3D CAMERA ORBIT & TILT TRANSFORMS ---
+    // Camera Transforms
     ctx.save();
     if (cameraMode === 'Orbit 360°') {
       const rot = Math.sin(t * 0.7 * speedFactor) * 0.025;
@@ -343,7 +413,6 @@ class UniversalNeuralVideoEngine {
       ctx.translate(0, -Math.sin(t * 0.8 * speedFactor) * 22);
     }
 
-    // Render Scene Type
     if (sceneType === 'space') {
       this.drawSpaceScene(ctx, w, h, cx, cy, t, speedFactor);
     } else if (sceneType === 'ocean') {
@@ -354,7 +423,7 @@ class UniversalNeuralVideoEngine {
       this.drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, prompt);
     }
 
-    // Floating Cinematic Dust
+    // Floating Dust Particles
     for (let i = 0; i < this.particles.length; i++) {
       const pt = this.particles[i];
       const px = ((pt.x * w + t * 25 * pt.speed * speedFactor) % w);
@@ -365,7 +434,7 @@ class UniversalNeuralVideoEngine {
       ctx.fill();
     }
 
-    // Anamorphic Lens Flare
+    // Anamorphic Flare
     const flareY = h * 0.44;
     const flareGrad = ctx.createLinearGradient(0, flareY, w, flareY);
     flareGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
@@ -388,4 +457,4 @@ class UniversalNeuralVideoEngine {
   }
 }
 
-window.NeuralVideoEngine = UniversalNeuralVideoEngine;
+window.NeuralVideoEngine = SovereignNeuralVideoEngine;

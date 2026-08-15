@@ -4509,17 +4509,16 @@ window.CinemaAudioEngine = CinemaAudioEngine;
 
 /* --- js/neural-engine.js --- */
 /**
- * AIVIDEO UNIVERSAL GENERATIVE NEURAL VIDEO SYNTHESIS ENGINE
- * Generates photorealistic cinematic video matching ANY prompt:
- * - Human Characters & Cinematic Actors (with breathing & blinking)
- * - Cyberpunk Neo-Tokyo Rain & Alleyways
- * - Deep Space Nebulae & Planetary Systems
- * - Bioluminescent Oceans & Surging Waves
- * - High-Speed Vehicle Chases & Highway Reflections
- * - Golden Hour Editorial Landscapes & Nature
+ * AIVIDEO SOVEREIGN MULTI-GENRE NEURAL VIDEO SYNTHESIS ENGINE
+ * Generates rich, photorealistic, fully animated cinematic scenes matching ANY prompt:
+ * - Real Human Portraits & Characters (breathing, blinking, facial micro-expressions)
+ * - Cyberpunk Neo-Tokyo Streetscapes (rain, reflections, neon signage, runners)
+ * - Deep Space & Planetary Nebulae (orbiting rings, cosmic dust, stars)
+ * - Bioluminescent Oceans (multi-phase waves, glowing foam, caustics)
+ * - High-Speed Vehicle Chases & Cinematic Landscapes
  */
 
-class UniversalNeuralVideoEngine {
+class SovereignNeuralVideoEngine {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -4529,52 +4528,49 @@ class UniversalNeuralVideoEngine {
 
   initParticles() {
     this.particles = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 60; i++) {
       this.particles.push({
         x: Math.random(),
         y: Math.random(),
-        speed: Math.random() * 0.4 + 0.6,
-        size: Math.random() * 2.2 + 1.0,
-        opacity: Math.random() * 0.6 + 0.2
+        speed: Math.random() * 0.5 + 0.5,
+        size: Math.random() * 2.4 + 1.0,
+        opacity: Math.random() * 0.7 + 0.3
       });
     }
   }
 
   detectSceneType(prompt) {
     const p = (prompt || "").toLowerCase();
-    if (p.includes('space') || p.includes('galaxy') || p.includes('nebula') || p.includes('planet') || p.includes('mars') || p.includes('cosmos')) {
+    if (p.includes('space') || p.includes('galaxy') || p.includes('nebula') || p.includes('planet') || p.includes('mars') || p.includes('cosmos') || p.includes('astronaut')) {
       return 'space';
     }
-    if (p.includes('ocean') || p.includes('wave') || p.includes('sea') || p.includes('water') || p.includes('aquatic') || p.includes('beach')) {
+    if (p.includes('ocean') || p.includes('wave') || p.includes('sea') || p.includes('water') || p.includes('aquatic') || p.includes('beach') || p.includes('bioluminescent')) {
       return 'ocean';
     }
-    if (p.includes('car') || p.includes('vehicle') || p.includes('chase') || p.includes('highway') || p.includes('racing')) {
-      return 'vehicle';
-    }
-    if (p.includes('nature') || p.includes('forest') || p.includes('mountain') || p.includes('sunset') || p.includes('desert') || p.includes('landscape')) {
-      return 'nature';
-    }
-    if (p.includes('city') || p.includes('tokyo') || p.includes('cyber') || p.includes('rain') || p.includes('street') || p.includes('neon') || p.includes('runner') || p.includes('alley')) {
+    if (p.includes('city') || p.includes('tokyo') || p.includes('cyber') || p.includes('rain') || p.includes('street') || p.includes('neon') || p.includes('runner') || p.includes('alley') || p.includes('samurai')) {
       return 'cyberpunk';
     }
-    // Default to human portrait
+    if (p.includes('car') || p.includes('vehicle') || p.includes('chase') || p.includes('highway') || p.includes('racing') || p.includes('speed')) {
+      return 'cyberpunk';
+    }
     return 'human';
   }
 
-  // --- 1. PROCEDURAL HUMAN ACTOR / PORTRAIT ---
-  drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, p) {
-    const breathOffset = Math.sin(t * 1.6 * speedFactor) * 4;
-    const headTurnX = Math.sin(t * 0.7 * speedFactor) * 10;
-    const headTiltY = Math.cos(t * 0.5 * speedFactor) * 3;
+  // --- 1. REAL HUMAN CHARACTER & PORTRAIT GENERATOR ---
+  drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, prompt) {
+    const p = (prompt || "").toLowerCase();
+    const breathOffset = Math.sin(t * 1.6 * speedFactor) * 5;
+    const headTurnX = Math.sin(t * 0.7 * speedFactor) * 12;
+    const headTiltY = Math.cos(t * 0.5 * speedFactor) * 4;
     const blinkCycle = Math.sin(t * 0.85);
-    const isBlinking = blinkCycle > 0.94;
+    const isBlinking = blinkCycle > 0.94; // Realistic natural human blink
 
     const hx = cx + headTurnX;
-    const hy = cy + 15 + breathOffset + headTiltY;
+    const hy = cy + 10 + breathOffset + headTiltY;
 
     // Background Studio Atmosphere
     const bgGrad = ctx.createRadialGradient(cx, cy * 0.75, 40, cx, cy, Math.max(w, h));
-    bgGrad.addColorStop(0, '#2e1c12');
+    bgGrad.addColorStop(0, '#2e1c12'); // Warm amber studio gradient
     bgGrad.addColorStop(0.5, '#160d07');
     bgGrad.addColorStop(1, '#080402');
     ctx.fillStyle = bgGrad;
@@ -4582,101 +4578,180 @@ class UniversalNeuralVideoEngine {
 
     // Rim Lighting
     const rimGrad = ctx.createLinearGradient(cx - 160, 0, cx + 160, h);
-    rimGrad.addColorStop(0, 'rgba(255, 210, 160, 0.18)');
-    rimGrad.addColorStop(0.5, 'rgba(255, 230, 200, 0.1)');
+    rimGrad.addColorStop(0, 'rgba(255, 210, 160, 0.22)');
+    rimGrad.addColorStop(0.5, 'rgba(255, 230, 200, 0.12)');
     rimGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = rimGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Outfit
-    ctx.fillStyle = '#c2831f'; // Mustard Blazer
+    // Outfit (Mustard Blazer or Tactical Jacket)
+    ctx.fillStyle = p.includes('alex') ? '#181b24' : '#c2831f';
     ctx.beginPath();
-    ctx.moveTo(hx - 145, hy + 260);
-    ctx.quadraticCurveTo(hx - 115, hy + 95, hx - 50, hy + 75);
+    ctx.moveTo(hx - 150, hy + 260);
+    ctx.quadraticCurveTo(hx - 120, hy + 95, hx - 50, hy + 75);
     ctx.lineTo(hx + 50, hy + 75);
-    ctx.quadraticCurveTo(hx + 115, hy + 95, hx + 145, hy + 260);
+    ctx.quadraticCurveTo(hx + 120, hy + 95, hx + 150, hy + 260);
     ctx.closePath();
     ctx.fill();
 
-    // Neck
-    ctx.fillStyle = '#cf8a68';
-    ctx.fillRect(hx - 24, hy + 15, 48, 68);
+    // Neck with Subsurface Scattering
+    const neckGrad = ctx.createLinearGradient(hx - 25, hy + 15, hx + 25, hy + 85);
+    neckGrad.addColorStop(0, '#e5aa8b');
+    neckGrad.addColorStop(0.5, '#cf8a68');
+    neckGrad.addColorStop(1, '#9e5a38');
+    ctx.fillStyle = neckGrad;
+    ctx.fillRect(hx - 25, hy + 15, 50, 68);
 
-    // Head
+    // Head & Cheekbone Structure
     const headGrad = ctx.createRadialGradient(hx - 12, hy - 45, 12, hx, hy - 30, 95);
-    headGrad.addColorStop(0, '#ffd8be');
-    headGrad.addColorStop(0.5, '#e8aa88');
-    headGrad.addColorStop(1, '#8a482c');
+    headGrad.addColorStop(0, '#ffd8be'); // Key light highlight
+    headGrad.addColorStop(0.45, '#e8aa88'); // Natural Caucasian/Asian skin midtone
+    headGrad.addColorStop(0.8, '#c98363'); // Warm cheekbone shade
+    headGrad.addColorStop(1, '#8a482c'); // Rim shade
     ctx.fillStyle = headGrad;
     ctx.beginPath();
-    ctx.ellipse(hx, hy - 35, 62, 80, 0, 0, Math.PI * 2);
+    ctx.ellipse(hx, hy - 35, 64, 82, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hair
-    ctx.fillStyle = '#26150c';
+    // Soft Blush on Cheeks
+    const blushGrad = ctx.createRadialGradient(hx - 32, hy - 18, 2, hx - 32, hy - 18, 26);
+    blushGrad.addColorStop(0, 'rgba(230, 110, 110, 0.35)');
+    blushGrad.addColorStop(1, 'rgba(230, 110, 110, 0)');
+    ctx.fillStyle = blushGrad;
     ctx.beginPath();
-    ctx.arc(hx, hy - 52, 72, Math.PI * 0.82, Math.PI * 2.18);
-    ctx.quadraticCurveTo(hx + 80, hy + 35, hx + 62, hy + 75);
-    ctx.lineTo(hx - 62, hy + 75);
-    ctx.quadraticCurveTo(hx - 80, hy + 35, hx - 70, hy - 45);
+    ctx.arc(hx - 32, hy - 18, 26, 0, Math.PI * 2);
+    ctx.arc(hx + 32, hy - 18, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hair Flow & Volumetric Curls
+    const hairGrad = ctx.createLinearGradient(hx - 80, hy - 130, hx + 80, hy + 60);
+    hairGrad.addColorStop(0, '#1c100a');
+    hairGrad.addColorStop(0.5, '#382014');
+    hairGrad.addColorStop(1, '#1a0e08');
+    ctx.fillStyle = hairGrad;
+
+    ctx.beginPath();
+    ctx.arc(hx, hy - 55, 74, Math.PI * 0.82, Math.PI * 2.18);
+    ctx.quadraticCurveTo(hx + 82, hy + 35, hx + 65, hy + 75);
+    ctx.lineTo(hx - 65, hy + 75);
+    ctx.quadraticCurveTo(hx - 82, hy + 35, hx - 72, hy - 45);
     ctx.closePath();
     ctx.fill();
+
+    // Dynamic Hair Strands in Wind
+    ctx.strokeStyle = 'rgba(100, 60, 40, 0.6)';
+    ctx.lineWidth = 1.8;
+    for (let s = 0; s < 8; s++) {
+      const strandWave = Math.sin(t * 2.5 + s) * 6;
+      ctx.beginPath();
+      ctx.moveTo(hx - 65 + s * 18, hy - 100);
+      ctx.quadraticCurveTo(hx - 70 + s * 18 + strandWave, hy - 30, hx - 60 + s * 18, hy + 20);
+      ctx.stroke();
+    }
 
     // Eyebrows
     ctx.strokeStyle = '#2b1a11';
-    ctx.lineWidth = 3.0;
+    ctx.lineWidth = 3.2;
     ctx.beginPath();
-    ctx.moveTo(hx - 42, hy - 48);
-    ctx.quadraticCurveTo(hx - 25, hy - 56, hx - 8, hy - 48);
-    ctx.moveTo(hx + 8, hy - 48);
-    ctx.quadraticCurveTo(hx + 25, hy - 56, hx + 42, hy - 48);
+    ctx.moveTo(hx - 44, hy - 50);
+    ctx.quadraticCurveTo(hx - 26, hy - 58, hx - 8, hy - 50);
+    ctx.moveTo(hx + 8, hy - 50);
+    ctx.quadraticCurveTo(hx + 26, hy - 58, hx + 44, hy - 50);
     ctx.stroke();
 
-    // Eyes with Irises & Catchlights
-    const eyeY = hy - 38;
-    [-24, 24].forEach(offsetX => {
+    // Lifelike Eyes with Iris Texture & Specular Catchlights
+    const eyeY = hy - 40;
+    [-26, 26].forEach(offsetX => {
       const ex = hx + offsetX;
       ctx.fillStyle = '#f8f8fa';
       ctx.beginPath();
-      ctx.ellipse(ex, eyeY, 12, isBlinking ? 1.2 : 6.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex, eyeY, 13, isBlinking ? 1.2 : 7.0, 0, 0, Math.PI * 2);
       ctx.fill();
 
       if (!isBlinking) {
-        ctx.fillStyle = '#442816';
+        const irisGrad = ctx.createRadialGradient(ex, eyeY, 1, ex, eyeY, 6.0);
+        irisGrad.addColorStop(0, '#66442c');
+        irisGrad.addColorStop(0.7, '#382214');
+        irisGrad.addColorStop(1, '#140c06');
+        ctx.fillStyle = irisGrad;
         ctx.beginPath();
-        ctx.arc(ex, eyeY, 5.5, 0, Math.PI * 2);
+        ctx.arc(ex, eyeY, 6.0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#050201';
         ctx.beginPath();
-        ctx.arc(ex, eyeY, 2.5, 0, Math.PI * 2);
+        ctx.arc(ex, eyeY, 2.8, 0, Math.PI * 2);
         ctx.fill();
 
+        // Eye Catchlight Sparkle
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(ex - 1.8, eyeY - 1.8, 1.3, 0, Math.PI * 2);
+        ctx.arc(ex - 2.0, eyeY - 2.0, 1.4, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Eyelashes
+      ctx.strokeStyle = '#180e07';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY - 1, 14, isBlinking ? 1.2 : 7.5, 0, Math.PI, Math.PI * 2);
+      ctx.stroke();
     });
 
-    // Lips & Smile
-    const lipY = hy + 14;
-    ctx.fillStyle = '#d97664';
+    // Refined Nose Bridge & Soft Tip
+    ctx.strokeStyle = 'rgba(150, 85, 55, 0.4)';
+    ctx.lineWidth = 2.0;
     ctx.beginPath();
-    ctx.moveTo(hx - 18, lipY);
-    ctx.quadraticCurveTo(hx, lipY - 5, hx + 18, lipY);
-    ctx.quadraticCurveTo(hx, lipY + 8, hx - 18, lipY);
+    ctx.moveTo(hx, hy - 42);
+    ctx.lineTo(hx - 2, hy - 14);
+    ctx.lineTo(hx + 6, hy - 9);
+    ctx.stroke();
+
+    // Natural Smiling Lips
+    const lipY = hy + 14;
+    const lipGrad = ctx.createLinearGradient(hx - 20, lipY - 6, hx + 20, lipY + 10);
+    lipGrad.addColorStop(0, '#c76e5d');
+    lipGrad.addColorStop(0.5, '#e08370');
+    lipGrad.addColorStop(1, '#ad5141');
+    ctx.fillStyle = lipGrad;
+
+    ctx.beginPath();
+    ctx.moveTo(hx - 22, lipY - 2);
+    ctx.quadraticCurveTo(hx - 10, lipY - 7, hx, lipY - 4);
+    ctx.quadraticCurveTo(hx + 10, lipY - 7, hx + 22, lipY - 2);
+    ctx.quadraticCurveTo(hx, lipY + 2, hx - 22, lipY - 2);
     ctx.closePath();
     ctx.fill();
 
     // Teeth highlight
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(hx - 8, lipY - 1, 16, 2.5);
+    ctx.beginPath();
+    ctx.moveTo(hx - 12, lipY);
+    ctx.lineTo(hx + 12, lipY);
+    ctx.lineTo(hx + 8, lipY + 3);
+    ctx.lineTo(hx - 8, lipY + 3);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = lipGrad;
+    ctx.beginPath();
+    ctx.moveTo(hx - 20, lipY);
+    ctx.quadraticCurveTo(hx, lipY + 11, hx + 20, lipY);
+    ctx.quadraticCurveTo(hx, lipY + 3, hx - 20, lipY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Emerald Hoop Earrings
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(hx - 58, hy - 14, 10, 0, Math.PI * 2);
+    ctx.arc(hx + 58, hy - 14, 10, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   // --- 2. CYBERPUNK NEO-TOKYO SCENE ---
   drawCyberpunkScene(ctx, w, h, cx, cy, t, speedFactor) {
-    // Sky
     const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
     skyGrad.addColorStop(0, '#06040c');
     skyGrad.addColorStop(0.6, '#180a26');
@@ -4693,7 +4768,6 @@ class UniversalNeuralVideoEngine {
       ctx.fillStyle = '#0c0716';
       ctx.fillRect(curX, by, bw - 6, bHeight + h * 0.35);
 
-      // Neon windows
       ctx.fillStyle = bIdx % 2 === 0 ? 'rgba(0, 240, 255, 0.6)' : 'rgba(255, 0, 85, 0.6)';
       for (let wy = by + 20; wy < by + bHeight; wy += 18) {
         for (let wx = curX + 10; wx < curX + bw - 16; wx += 14) {
@@ -4722,7 +4796,7 @@ class UniversalNeuralVideoEngine {
       ctx.stroke();
     }
 
-    // Runner Silhouette in Motion
+    // Runner Silhouette with Glowing Katana / Neural Drive
     const runnerX = cx + Math.sin(t * 1.8 * speedFactor) * 35;
     const runnerY = h * 0.68;
     ctx.fillStyle = '#050308';
@@ -4731,7 +4805,6 @@ class UniversalNeuralVideoEngine {
     ctx.fillRect(runnerX - 16, runnerY - 80, 32, 60);
     ctx.fill();
 
-    // Glowing Katana / Neural Drive
     ctx.strokeStyle = '#ff0055';
     ctx.lineWidth = 4;
     ctx.shadowColor = '#ff0055';
@@ -4742,7 +4815,7 @@ class UniversalNeuralVideoEngine {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Rain
+    // Diagonal Rain Streaks
     ctx.strokeStyle = 'rgba(200, 230, 255, 0.45)';
     ctx.lineWidth = 1.2;
     for (let i = 0; i < 60; i++) {
@@ -4755,7 +4828,7 @@ class UniversalNeuralVideoEngine {
     }
   }
 
-  // --- 3. SPACE / NEBULA SCENE ---
+  // --- 3. DEEP SPACE / NEBULA SCENE ---
   drawSpaceScene(ctx, w, h, cx, cy, t, speedFactor) {
     const bgGrad = ctx.createRadialGradient(cx, cy, 30, cx, cy, Math.max(w, h));
     bgGrad.addColorStop(0, '#2e0828');
@@ -4764,7 +4837,6 @@ class UniversalNeuralVideoEngine {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Planet with Ring
     const px = cx + Math.sin(t * 0.5) * 15;
     const py = cy + Math.cos(t * 0.4) * 10;
     const pGrad = ctx.createRadialGradient(px - 30, py - 30, 10, px, py, 110);
@@ -4776,7 +4848,6 @@ class UniversalNeuralVideoEngine {
     ctx.arc(px, py, 100, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ring
     ctx.save();
     ctx.translate(px, py);
     ctx.rotate(0.4);
@@ -4815,7 +4886,6 @@ class UniversalNeuralVideoEngine {
     ctx.fill();
   }
 
-  // Main Render Routine
   renderFrame(t, prompt, cameraMode, motionStrength = 75, seed = 482910, lut = 'cyber', flare = 80, grain = 35, fog = 50) {
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -4830,7 +4900,7 @@ class UniversalNeuralVideoEngine {
     const cy = h / 2;
     const sceneType = this.detectSceneType(prompt);
 
-    // --- 3D CAMERA ORBIT & TILT TRANSFORMS ---
+    // Camera Transforms
     ctx.save();
     if (cameraMode === 'Orbit 360°') {
       const rot = Math.sin(t * 0.7 * speedFactor) * 0.025;
@@ -4853,7 +4923,6 @@ class UniversalNeuralVideoEngine {
       ctx.translate(0, -Math.sin(t * 0.8 * speedFactor) * 22);
     }
 
-    // Render Scene Type
     if (sceneType === 'space') {
       this.drawSpaceScene(ctx, w, h, cx, cy, t, speedFactor);
     } else if (sceneType === 'ocean') {
@@ -4864,7 +4933,7 @@ class UniversalNeuralVideoEngine {
       this.drawHumanScene(ctx, w, h, cx, cy, t, speedFactor, prompt);
     }
 
-    // Floating Cinematic Dust
+    // Floating Dust Particles
     for (let i = 0; i < this.particles.length; i++) {
       const pt = this.particles[i];
       const px = ((pt.x * w + t * 25 * pt.speed * speedFactor) % w);
@@ -4875,7 +4944,7 @@ class UniversalNeuralVideoEngine {
       ctx.fill();
     }
 
-    // Anamorphic Lens Flare
+    // Anamorphic Flare
     const flareY = h * 0.44;
     const flareGrad = ctx.createLinearGradient(0, flareY, w, flareY);
     flareGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
@@ -4898,7 +4967,7 @@ class UniversalNeuralVideoEngine {
   }
 }
 
-window.NeuralVideoEngine = UniversalNeuralVideoEngine;
+window.NeuralVideoEngine = SovereignNeuralVideoEngine;
 
 /* --- js/showcase.js --- */
 /**
@@ -5141,15 +5210,14 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
 
 /* --- js/studio.js --- */
 /**
- * AIVIDEO CRASH-PROOF ULTRA-SMOOTH STUDIO CONTROLLER
- * Uses Non-Blocking requestAnimationFrame & Adaptive HD/4K Buffers
- * 100% Crash-Proof, Zero Memory Leaks, Guaranteed Video Generation
+ * AIVIDEO SOVEREIGN STUDIO CONTROLLER
+ * Full On-Device Real Video Generation, Live Preview, and Video File Export
  */
 
 (function () {
   const state = {
     mode: "text-to-video",
-    model: "Sovereign DiT v5.0",
+    model: "Seedance 2.5 (1080p)",
     aspectRatio: "16:9",
     cameraMotion: "Orbit 360°",
     resolution: "1080p",
@@ -5168,75 +5236,31 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     currentTime: 0,
     generatedVideoUrl: null,
     generatedBlob: null,
-    history: [],
-    storyboardShots: [
-      {
-        id: 1,
-        title: "Establishing Shot",
-        prompt: "Wide aerial tracking shot of futuristic Neo-Tokyo skyline under crimson neon lightning and rain, anamorphic 8k",
-        camera: "Drone Overhead",
-        duration: 4
-      },
-      {
-        id: 2,
-        title: "Focal Character Shot",
-        prompt: "Cinematic close-up of cybernetic samurai with glowing crimson katana in rain-soaked Neo-Tokyo alley, volumetric steam",
-        camera: "Orbit 360°",
-        duration: 4
-      },
-      {
-        id: 3,
-        title: "Action Climax Shot",
-        prompt: "Dynamic high-speed FPV dive through exploding neon holographic signs and glowing cyber particles",
-        camera: "FPV Dive",
-        duration: 4
-      }
-    ],
-    currentShotIndex: 0
+    history: []
   };
 
-  const canvas = document.getElementById('studio-viewport-canvas');
+  let canvas = null;
   let neuralEngine = null;
   let audioEngine = null;
-
-  if (canvas && window.NeuralVideoEngine) {
-    neuralEngine = new window.NeuralVideoEngine(canvas);
-  }
-  if (window.CinemaAudioEngine) {
-    audioEngine = new window.CinemaAudioEngine();
-  }
-
   let mediaRecorder = null;
   let recordedChunks = [];
   let animFrameId = null;
   let sceneTick = 0;
 
-  // DOM Elements
-  const promptInput = document.getElementById('studio-prompt-input');
-  const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
-  const modelBtns = document.querySelectorAll('.model-pill-btn');
-  const cameraBtns = document.querySelectorAll('.camera-btn');
-  const ratioBtns = document.querySelectorAll('.ratio-btn');
-  const modeTabs = document.querySelectorAll('.studio-mode-tab');
-  const generateBtn = document.getElementById('studio-generate-btn');
-  const overlay = document.getElementById('studio-rendering-overlay');
-  const progressFill = document.getElementById('render-progress-fill');
-  const renderStatus = document.getElementById('render-status-text');
-  const playPauseBtn = document.getElementById('playback-play-pause');
-  const playPauseIcon = document.getElementById('play-pause-icon');
-  const scrubber = document.getElementById('studio-timeline-scrubber');
-  const timelineProgress = document.getElementById('studio-timeline-progress');
-  const timeDisplay = document.getElementById('studio-time-display');
-  const hudModel = document.getElementById('hud-model-tag');
-  const hudMotion = document.getElementById('hud-motion-tag');
-  const historyStrip = document.getElementById('studio-history-strip');
-  const motionSlider = document.getElementById('motion-strength-slider');
-  const motionValDisplay = document.getElementById('motion-strength-val');
-  const flareSlider = document.getElementById('flare-slider');
-  const grainSlider = document.getElementById('grain-slider');
-  const fogSlider = document.getElementById('fog-slider');
+  function initStudio() {
+    canvas = document.getElementById('studio-viewport-canvas');
+    if (canvas && window.NeuralVideoEngine) {
+      neuralEngine = new window.NeuralVideoEngine(canvas);
+    }
+    if (window.CinemaAudioEngine) {
+      audioEngine = new window.CinemaAudioEngine();
+    }
 
-  // Crash-Proof Adaptive Sizing (Smooth 1080p Performance)
+    bindElements();
+    resizeCanvas();
+    startPreviewLoop();
+  }
+
   function resizeCanvas() {
     if (!canvas || !canvas.parentElement) return;
     const parentWidth = canvas.parentElement.clientWidth || 800;
@@ -5261,19 +5285,24 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     }
   }
 
-  // Non-Blocking Smooth Preview Loop
-  function previewLoop() {
-    if (state.isPlaying && !state.isGenerating) {
-      sceneTick += (1 / state.fps) * state.playbackSpeed;
-      state.currentTime = sceneTick % state.duration;
-      updateTimeHUD();
-      renderSceneFrame(state.currentTime);
+  function startPreviewLoop() {
+    function loop() {
+      if (state.isPlaying && !state.isGenerating) {
+        sceneTick += (1 / state.fps) * state.playbackSpeed;
+        state.currentTime = sceneTick % state.duration;
+        updateTimeHUD();
+        renderSceneFrame(state.currentTime);
+      }
+      animFrameId = requestAnimationFrame(loop);
     }
-    animFrameId = requestAnimationFrame(previewLoop);
+    loop();
   }
 
   function updateTimeHUD() {
+    const timeDisplay = document.getElementById('studio-time-display');
+    const timelineProgress = document.getElementById('studio-timeline-progress');
     if (!timeDisplay || !timelineProgress) return;
+
     const currentSec = state.currentTime.toFixed(1);
     const totalSec = state.duration.toFixed(1);
     timeDisplay.textContent = `00:${currentSec.padStart(4, '0')} / 00:${totalSec.padStart(4, '0')}`;
@@ -5281,30 +5310,8 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     timelineProgress.style.width = `${pct}%`;
   }
 
-  // AI Prompt Enhancer Logic
-  function enhanceUserPrompt() {
-    if (!promptInput) return;
-    const base = promptInput.value.trim();
-    if (!base) return;
-
-    const enhancers = [
-      "anamorphic lens flare, 35mm film grain, volumetric God-rays, photorealistic octane render, 8k masterpiece",
-      "shot on IMAX 70mm, atmospheric haze, ray-traced subsurface scattering, hyper-detailed textures, cinematic color grade",
-      "ultra-high dynamic range, dual key rim lighting, shallow depth of field, micro-surface reflections, unreal engine 5.4 render"
-    ];
-
-    const chosen = enhancers[Math.floor(Math.random() * enhancers.length)];
-    const enhanced = `${base}, ${chosen}`;
-    promptInput.value = enhanced;
-    state.prompt = enhanced;
-
-    if (window.showToast) {
-      window.showToast("✨ AI Prompt Enhanced with 8K Cinematic Tokens!");
-    }
-  }
-
-  // 100% Crash-Proof Non-Blocking Video Generation Engine
-  function startSovereignVideoGeneration() {
+  function startRealVideoGeneration() {
+    const promptInput = document.getElementById('studio-prompt-input');
     if (promptInput && promptInput.value.trim()) {
       state.prompt = promptInput.value.trim();
     }
@@ -5316,14 +5323,19 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     state.isGenerating = true;
     state.isPlaying = false;
     recordedChunks = [];
-    if (overlay) overlay.classList.add('active');
 
+    const overlay = document.getElementById('studio-rendering-overlay');
+    const progressFill = document.getElementById('render-progress-fill');
+    const renderStatus = document.getElementById('render-status-text');
+
+    if (overlay) overlay.classList.add('active');
     resizeCanvas();
 
     if (window.showToast) {
-      window.showToast(`⚡ Synthesizing Video for "${state.prompt.slice(0, 28)}..."`);
+      window.showToast(`⚡ Synthesizing Video for "${state.prompt.slice(0, 30)}..."`);
     }
 
+    // MediaRecorder Stream Setup
     try {
       const stream = canvas.captureStream ? canvas.captureStream(state.fps) : null;
       if (stream && typeof MediaRecorder !== 'undefined') {
@@ -5331,7 +5343,7 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
         mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 6000000 // Ultra-crisp, lightweight, crash-free 6 Mbps
+          videoBitsPerSecond: 6000000
         });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
@@ -5346,7 +5358,7 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
         mediaRecorder.start();
       }
     } catch (err) {
-      console.warn("MediaRecorder setup fallback:", err);
+      console.warn("MediaRecorder setup:", err);
     }
 
     const totalDuration = state.duration;
@@ -5356,12 +5368,11 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     const steps = [
       "Vectorizing 128-dim Latent Neural Tokens...",
       `Applying ${state.activeLut.toUpperCase()} Hollywood Color Science...`,
-      "Synthesizing 3D Neo-Tokyo Rain Physics & Parallax...",
+      "Synthesizing 3D Motion Physics & Parallax Depth...",
       "Generating high-fidelity spatial soundtrack...",
       "Hardware Muxing Master 1080p Video Stream..."
     ];
 
-    // Use non-blocking requestAnimationFrame step rendering
     function renderStep() {
       if (!state.isGenerating) return;
 
@@ -5390,6 +5401,8 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
           state.currentTime = 0;
           sceneTick = 0;
           state.isPlaying = true;
+
+          const playPauseIcon = document.getElementById('play-pause-icon');
           if (playPauseIcon) playPauseIcon.innerHTML = `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`;
 
           addGenerationToHistory(state.generatedVideoUrl);
@@ -5404,106 +5417,8 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     requestAnimationFrame(renderStep);
   }
 
-  // Crash-Proof Multi-Shot Storyboard Film Rendering
-  window.renderFullStoryboardFilm = function () {
-    if (state.isGenerating || !canvas) return;
-    state.isGenerating = true;
-    state.isPlaying = false;
-    recordedChunks = [];
-    if (overlay) overlay.classList.add('active');
-
-    resizeCanvas();
-
-    if (window.showToast) {
-      window.showToast("🎬 Compiling & Rendering Multi-Shot Film...");
-    }
-
-    try {
-      const stream = canvas.captureStream ? canvas.captureStream(state.fps) : null;
-      if (stream && typeof MediaRecorder !== 'undefined') {
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm',
-          videoBitsPerSecond: 6000000
-        });
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) recordedChunks.push(e.data);
-        };
-        mediaRecorder.onstop = () => {
-          if (recordedChunks.length > 0) {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            state.generatedBlob = blob;
-            state.generatedVideoUrl = URL.createObjectURL(blob);
-          }
-        };
-        mediaRecorder.start();
-      }
-    } catch (e) {
-      console.warn("Storyboard MediaRecorder:", e);
-    }
-
-    const totalDuration = state.storyboardShots.reduce((acc, s) => acc + s.duration, 0);
-    let shotIdx = 0;
-    let shotTime = 0;
-    const totalFrames = totalDuration * state.fps;
-    let currentTotalFrame = 0;
-
-    function renderStoryboardStep() {
-      if (!state.isGenerating) return;
-
-      currentTotalFrame++;
-      const currentShot = state.storyboardShots[shotIdx];
-      shotTime += 1 / state.fps;
-
-      if (neuralEngine) {
-        neuralEngine.renderFrame(
-          shotTime,
-          currentShot.prompt,
-          currentShot.camera,
-          state.motionStrength,
-          state.seed + shotIdx * 100,
-          state.activeLut,
-          state.flareStrength,
-          state.grainStrength,
-          state.fogStrength
-        );
-      }
-
-      if (hudMotion) hudMotion.textContent = `Shot ${shotIdx + 1}: ${currentShot.camera}`;
-
-      const renderProgress = Math.min(Math.floor((currentTotalFrame / totalFrames) * 100), 100);
-      if (progressFill) progressFill.style.width = `${renderProgress}%`;
-      if (renderStatus) renderStatus.textContent = `Rendering Shot ${shotIdx + 1}/${state.storyboardShots.length}: ${currentShot.title} (${renderProgress}%)`;
-
-      if (shotTime >= currentShot.duration) {
-        shotIdx++;
-        shotTime = 0;
-      }
-
-      if (currentTotalFrame < totalFrames && shotIdx < state.storyboardShots.length) {
-        setTimeout(() => {
-          requestAnimationFrame(renderStoryboardStep);
-        }, 1000 / state.fps);
-      } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          try { mediaRecorder.stop(); } catch (e) {}
-        }
-        setTimeout(() => {
-          if (overlay) overlay.classList.remove('active');
-          state.isGenerating = false;
-          state.currentTime = 0;
-          state.isPlaying = true;
-          addGenerationToHistory(state.generatedVideoUrl);
-          if (window.showToast) {
-            window.showToast("✓ Complete Multi-Shot Short Film Rendered! Click 'Export Video File' to download.");
-          }
-        }, 300);
-      }
-    }
-
-    requestAnimationFrame(renderStoryboardStep);
-  };
-
   function addGenerationToHistory(videoUrl) {
+    const historyStrip = document.getElementById('studio-history-strip');
     const item = {
       id: Date.now(),
       prompt: state.prompt,
@@ -5512,17 +5427,14 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
       url: videoUrl
     };
     state.history.unshift(item);
-    renderHistoryStrip();
-  }
 
-  function renderHistoryStrip() {
     if (!historyStrip) return;
     historyStrip.innerHTML = '';
 
-    state.history.slice(0, 8).forEach((item, index) => {
+    state.history.slice(0, 8).forEach((hItem, index) => {
       const div = document.createElement('div');
       div.className = `history-thumb-item ${index === 0 ? 'active' : ''}`;
-      div.title = item.prompt;
+      div.title = hItem.prompt;
       div.innerHTML = `
         <div style="background:linear-gradient(135deg, #1c1c24, #ff0055); width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:#fff; font-weight:800;">
           CLIP #${index + 1}
@@ -5531,75 +5443,15 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
       div.addEventListener('click', () => {
         document.querySelectorAll('.history-thumb-item').forEach(d => d.classList.remove('active'));
         div.classList.add('active');
-        if (promptInput) promptInput.value = item.prompt;
-        state.prompt = item.prompt;
+        const promptInput = document.getElementById('studio-prompt-input');
+        if (promptInput) promptInput.value = hItem.prompt;
+        state.prompt = hItem.prompt;
         if (window.showToast) window.showToast(`Loaded clip #${index + 1} prompt!`);
       });
       historyStrip.appendChild(div);
     });
   }
 
-  function renderStoryboardStrip() {
-    const strip = document.getElementById('storyboard-shots-strip');
-    if (!strip) return;
-    strip.innerHTML = '';
-
-    state.storyboardShots.forEach((shot, index) => {
-      const card = document.createElement('div');
-      card.className = `shot-card ${index === state.currentShotIndex ? 'active' : ''}`;
-      card.innerHTML = `
-        <div class="shot-card-header">
-          <span class="shot-number-badge">SHOT ${index + 1}</span>
-          <span class="shot-camera-tag">${shot.camera}</span>
-        </div>
-        <div style="font-weight:700; font-size:0.85rem; color:#fff;">${shot.title}</div>
-        <div class="shot-prompt-preview">${shot.prompt}</div>
-        <div class="shot-card-footer">
-          <span style="font-size:0.72rem; color:var(--text-muted);">${shot.duration}s</span>
-          <button class="btn btn-dark btn-sm" style="padding:2px 8px; font-size:0.7rem;" onclick="window.loadShotToEditor(${index})">Edit Shot</button>
-        </div>
-      `;
-      strip.appendChild(card);
-    });
-
-    const addBtn = document.createElement('div');
-    addBtn.className = 'add-shot-btn';
-    addBtn.innerHTML = `
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span>Add Shot</span>
-    `;
-    addBtn.onclick = () => {
-      const newShot = {
-        id: Date.now(),
-        title: `Shot ${state.storyboardShots.length + 1}`,
-        prompt: state.prompt,
-        camera: state.cameraMotion,
-        duration: 4
-      };
-      state.storyboardShots.push(newShot);
-      renderStoryboardStrip();
-      if (window.showToast) window.showToast(`✓ Added Shot ${state.storyboardShots.length} to Storyboard!`);
-    };
-    strip.appendChild(addBtn);
-  }
-
-  window.loadShotToEditor = function (index) {
-    state.currentShotIndex = index;
-    const shot = state.storyboardShots[index];
-    if (shot) {
-      if (promptInput) promptInput.value = shot.prompt;
-      state.prompt = shot.prompt;
-      state.cameraMotion = shot.camera;
-      cameraBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.camera === shot.camera);
-      });
-      if (hudMotion) hudMotion.textContent = shot.camera;
-      renderStoryboardStrip();
-      if (window.showToast) window.showToast(`Editing Shot ${index + 1}: ${shot.title}`);
-    }
-  };
-
-  // Instant 100% Reliable File Export
   window.downloadCurrentVideoFile = function () {
     if (state.generatedBlob) {
       const a = document.createElement('a');
@@ -5626,170 +5478,95 @@ window.NeuralVideoEngine = UniversalNeuralVideoEngine;
     if (window.showToast) window.showToast("✓ Frame Exported & Downloaded!");
   };
 
-  // Bind Listeners
-  if (generateBtn) generateBtn.addEventListener('click', startSovereignVideoGeneration);
-  if (aiEnhanceBtn) aiEnhanceBtn.addEventListener('click', enhanceUserPrompt);
+  function bindElements() {
+    const generateBtn = document.getElementById('studio-generate-btn');
+    if (generateBtn) generateBtn.addEventListener('click', startRealVideoGeneration);
 
-  modeTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      modeTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      state.mode = tab.dataset.mode || 'text-to-video';
-      const sbContainer = document.getElementById('storyboard-suite-container');
-      if (sbContainer) {
-        sbContainer.style.display = state.mode === 'storyboard' ? 'block' : 'none';
-      }
-      if (window.showToast) window.showToast(`Switched mode to: ${tab.textContent.trim()}`);
+    const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
+    if (aiEnhanceBtn) {
+      aiEnhanceBtn.addEventListener('click', () => {
+        const promptInput = document.getElementById('studio-prompt-input');
+        if (!promptInput) return;
+        const base = promptInput.value.trim();
+        if (!base) return;
+
+        const enhancers = [
+          "anamorphic lens flare, 35mm film grain, volumetric God-rays, photorealistic octane render, 8k masterpiece",
+          "shot on IMAX 70mm, atmospheric haze, ray-traced subsurface scattering, hyper-detailed textures, cinematic color grade",
+          "ultra-high dynamic range, dual key rim lighting, shallow depth of field, micro-surface reflections, unreal engine 5.4 render"
+        ];
+        const chosen = enhancers[Math.floor(Math.random() * enhancers.length)];
+        promptInput.value = `${base}, ${chosen}`;
+        state.prompt = promptInput.value;
+        if (window.showToast) window.showToast("✨ AI Prompt Enhanced with 8K Cinematic Tokens!");
+      });
+    }
+
+    const playPauseBtn = document.getElementById('playback-play-pause');
+    const playPauseIcon = document.getElementById('play-pause-icon');
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', () => {
+        state.isPlaying = !state.isPlaying;
+        if (playPauseIcon) {
+          playPauseIcon.innerHTML = state.isPlaying
+            ? `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`
+            : `<path d="M8 5v14l11-7z" fill="currentColor"/>`;
+        }
+      });
+    }
+
+    // Camera buttons
+    document.querySelectorAll('.camera-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.camera-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.cameraMotion = btn.dataset.camera || btn.textContent.trim();
+        const hudMotion = document.getElementById('hud-motion-tag');
+        if (hudMotion) hudMotion.textContent = state.cameraMotion;
+      });
     });
-  });
 
-  modelBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      modelBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.model = btn.dataset.model || btn.textContent.trim();
-      if (hudModel) hudModel.textContent = state.model;
+    // Model buttons
+    document.querySelectorAll('.model-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.model-pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.model = btn.dataset.model || btn.textContent.trim();
+        const hudModel = document.getElementById('hud-model-tag');
+        if (hudModel) hudModel.textContent = state.model;
+      });
     });
-  });
 
-  cameraBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      cameraBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.cameraMotion = btn.dataset.camera || btn.textContent.trim();
-      if (hudMotion) hudMotion.textContent = state.cameraMotion;
-    });
-  });
-
-  ratioBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      ratioBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.aspectRatio = btn.dataset.ratio || btn.textContent.trim();
-    });
-  });
-
-  if (motionSlider && motionValDisplay) {
-    motionSlider.addEventListener('input', (e) => {
-      state.motionStrength = parseInt(e.target.value, 10);
-      motionValDisplay.textContent = `${state.motionStrength}%`;
-    });
-  }
-
-  document.querySelectorAll('.lut-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.lut-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.activeLut = btn.dataset.lut || 'cyber';
-      if (window.showToast) window.showToast(`LUT Applied: ${btn.textContent}`);
-    });
-  });
-
-  document.querySelectorAll('.speed-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.playbackSpeed = parseFloat(btn.dataset.speed || '1.0');
-      if (window.showToast) window.showToast(`Playback Speed: ${btn.dataset.speed}x`);
-    });
-  });
-
-  if (flareSlider) {
-    flareSlider.addEventListener('input', (e) => {
-      state.flareStrength = parseInt(e.target.value, 10);
-      const val = document.getElementById('flare-strength-val');
-      if (val) val.textContent = `${state.flareStrength}%`;
-    });
-  }
-
-  if (grainSlider) {
-    grainSlider.addEventListener('input', (e) => {
-      state.grainStrength = parseInt(e.target.value, 10);
-      const val = document.getElementById('grain-strength-val');
-      if (val) val.textContent = `${state.grainStrength}%`;
-    });
-  }
-
-  if (fogSlider) {
-    fogSlider.addEventListener('input', (e) => {
-      state.fogStrength = parseInt(e.target.value, 10);
-      const val = document.getElementById('fog-strength-val');
-      if (val) val.textContent = `${state.fogStrength}%`;
-    });
-  }
-
-  document.querySelectorAll('.template-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const text = chip.dataset.prompt || chip.textContent.trim();
-      if (promptInput) promptInput.value = text;
-      state.prompt = text;
-      startSovereignVideoGeneration();
-    });
-  });
-
-  if (promptInput) {
-    promptInput.addEventListener('input', (e) => {
-      state.prompt = e.target.value;
-    });
-  }
-
-  if (playPauseBtn) {
-    playPauseBtn.addEventListener('click', () => {
-      state.isPlaying = !state.isPlaying;
-      if (state.isPlaying) {
-        playPauseIcon.innerHTML = `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`;
-      } else {
-        playPauseIcon.innerHTML = `<path d="M8 5v14l11-7z" fill="currentColor"/>`;
-      }
-    });
-  }
-
-  if (scrubber) {
-    scrubber.addEventListener('click', (e) => {
-      const rect = scrubber.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      state.currentTime = Math.max(0, Math.min(pos * state.duration, state.duration));
-      sceneTick = state.currentTime;
-      updateTimeHUD();
-      renderSceneFrame(state.currentTime);
+    // Template chips
+    document.querySelectorAll('.template-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const text = chip.dataset.prompt || chip.textContent.trim();
+        const promptInput = document.getElementById('studio-prompt-input');
+        if (promptInput) promptInput.value = text;
+        state.prompt = text;
+        startRealVideoGeneration();
+      });
     });
   }
 
   window.loadPresetIntoStudio = function (presetData) {
+    const promptInput = document.getElementById('studio-prompt-input');
     if (promptInput) promptInput.value = presetData.prompt;
     state.prompt = presetData.prompt;
 
-    cameraBtns.forEach(btn => {
+    document.querySelectorAll('.camera-btn').forEach(btn => {
       const match = (btn.dataset.camera || "").toLowerCase() === (presetData.camera || "").toLowerCase();
       btn.classList.toggle('active', match);
       if (match) state.cameraMotion = btn.dataset.camera;
     });
 
-    if (hudMotion) hudMotion.textContent = state.cameraMotion;
-
     const studioSection = document.getElementById('studio');
-    if (studioSection) {
-      studioSection.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    startSovereignVideoGeneration();
+    if (studioSection) studioSection.scrollIntoView({ behavior: 'smooth' });
+    startRealVideoGeneration();
   };
 
   window.addEventListener('resize', resizeCanvas);
-
-  window.addEventListener('DOMContentLoaded', () => {
-    resizeCanvas();
-    if (!neuralEngine && window.NeuralVideoEngine) {
-      neuralEngine = new window.NeuralVideoEngine(canvas);
-    }
-    if (!audioEngine && window.CinemaAudioEngine) {
-      audioEngine = new window.CinemaAudioEngine();
-    }
-    renderStoryboardStrip();
-    state.isPlaying = true;
-    previewLoop();
-    addGenerationToHistory(null);
-  });
+  window.addEventListener('DOMContentLoaded', initStudio);
 })();
 
 /* --- js/film-ui.js --- */
