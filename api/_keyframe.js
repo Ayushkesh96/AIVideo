@@ -11,7 +11,10 @@
 
 const https = require('https');
 
-const UPSTREAM_HOST = 'image.pollinations.ai';
+// gen.pollinations.ai is the current unified gateway. The old
+// image.pollinations.ai/prompt/{...} host is legacy, and generation there now
+// requires the same credential anyway.
+const UPSTREAM_HOST = 'gen.pollinations.ai';
 const REQUEST_TIMEOUT_MS = 45000;
 const MAX_REDIRECTS = 3;
 const MAX_BYTES = 12 * 1024 * 1024;
@@ -78,12 +81,24 @@ function buildUrl({ prompt, seed, width, height, shotProgress, chainFrom }) {
     params.set('image', chainFrom);
   }
 
-  return `https://${UPSTREAM_HOST}/prompt/${encodeURIComponent(full)}?${params}`;
+  // No credential in the URL. This exact string is returned to the browser as
+  // `sourceUrl` so the next frame can chain from it, so anything in the query
+  // string is public. The key travels as a request header instead.
+  return `https://${UPSTREAM_HOST}/image/${encodeURIComponent(full)}?${params}`;
+}
+
+function apiKey() {
+  return (process.env.POLLINATIONS_KEY || process.env.POLLINATIONS_API_KEY || '').trim();
+}
+
+function authHeaders() {
+  const key = apiKey();
+  return key ? { Authorization: `Bearer ${key}` } : {};
 }
 
 function get(url, redirectsLeft) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, res => {
+    const req = https.get(url, { headers: authHeaders() }, res => {
       const { statusCode, headers } = res;
 
       if (statusCode >= 300 && statusCode < 400 && headers.location) {
