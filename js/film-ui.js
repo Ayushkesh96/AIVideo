@@ -147,13 +147,14 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           <span>Video</span>
         </div>
-        <div class="track-clips-area" id="nle-track-video">
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)" title="Scroll Left">◀</button>
+        <div class="track-clips-area" id="nle-track-video" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
     tData.video.forEach(clip => {
       const isSel = selectedClip && selectedClip.id === clip.id;
       html += `
-        <div class="timeline-clip-block video ${isSel ? 'selected' : ''}" style="min-width:140px;" onclick="window.FilmOSUI.selectTimelineClip('video', '${clip.id}')" title="${clip.label} (${clip.duration}s)">
+        <div class="timeline-clip-block video ${isSel ? 'selected' : ''}" onclick="window.FilmOSUI.selectTimelineClip('video', '${clip.id}')" title="${clip.label} (${clip.duration}s)">
           <span>${clip.label}</span>
           <span style="display:flex; align-items:center; gap:4px;">
             <span style="font-size:0.65rem; color:rgba(255,255,255,0.7);">${clip.duration}s</span>
@@ -165,6 +166,7 @@
 
     html += `
         </div>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-video', 160)" title="Scroll Right">▶</button>
       </div>
 
       <!-- Voice Track -->
@@ -174,12 +176,13 @@
           <span>Voice</span>
           <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()" title="Add Voice Dialogue">+</button>
         </div>
-        <div class="track-clips-area" id="nle-track-voice">
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', -160)" title="Scroll Left">◀</button>
+        <div class="track-clips-area" id="nle-track-voice" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
     tData.voice.forEach(clip => {
       html += `
-        <div class="timeline-clip-block voice" style="min-width:180px;" onclick="window.FilmOSUI.playVoiceClip('${clip.text}')" title="${clip.speaker}: ${clip.text}">
+        <div class="timeline-clip-block voice" onclick="window.FilmOSUI.playVoiceClip('${clip.text}')" title="${clip.speaker}: ${clip.text}">
           <span>🎙️ ${clip.speaker}: "${clip.text}"</span>
           <span style="display:flex; align-items:center; gap:4px;">
             <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('voice', '${clip.id}')">×</button>
@@ -190,6 +193,7 @@
 
     html += `
         </div>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', 160)" title="Scroll Right">▶</button>
       </div>
 
       <!-- Music Track -->
@@ -200,12 +204,13 @@
           <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()" title="Upload Audio File">+</button>
           <input type="file" id="nle-music-uploader" accept="audio/mp3,audio/wav" style="display:none;" onchange="window.FilmOSUI.handleMusicUpload(event)">
         </div>
-        <div class="track-clips-area" id="nle-track-music">
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-music', -160)" title="Scroll Left">◀</button>
+        <div class="track-clips-area" id="nle-track-music" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
     tData.music.forEach(clip => {
       html += `
-        <div class="timeline-clip-block music" style="min-width:220px;" title="${clip.title} (${clip.genre}) - ${clip.duration}s">
+        <div class="timeline-clip-block music" title="${clip.title} (${clip.genre}) - ${clip.duration}s">
           <span>🎵 ${clip.title} (${clip.genre || 'Audio'})</span>
           <span style="display:flex; align-items:center; gap:4px;">
             <span style="font-size:0.65rem;">${clip.duration}s</span>
@@ -217,6 +222,7 @@
 
     html += `
         </div>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-music', 160)" title="Scroll Right">▶</button>
       </div>
     `;
 
@@ -588,8 +594,32 @@
       });
       window.FilmOS.save();
       if (window.showToast) window.showToast(`✓ Music Track "${file.name}" Added!`);
+    },
+
+    scrollTrack: function (trackId, amount) {
+      const el = document.getElementById(trackId);
+      if (el) {
+        el.scrollBy({ left: amount, behavior: 'smooth' });
+        setTimeout(() => this.handleTrackScroll(el), 150);
+      }
+    },
+
+    handleTrackScroll: function (el) {
+      if (!el) return;
+      const isEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+      const isStart = el.scrollLeft <= 4;
+      el.classList.toggle('scrolled-end', isEnd);
+
+      const parent = el.parentElement;
+      if (parent) {
+        const prevBtn = parent.querySelector('.track-nav-btn.prev');
+        const nextBtn = parent.querySelector('.track-nav-btn.next');
+        if (prevBtn) prevBtn.disabled = isStart;
+        if (nextBtn) nextBtn.disabled = isEnd;
+      }
     }
   };
 
   window.addEventListener('DOMContentLoaded', initFilmUI);
 })();
+
