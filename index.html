@@ -5143,37 +5143,90 @@ button {
       const { width = 1280, height = 720 } = opts;
       const baseSeed = opts.seed || 1;
       const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : () => {};
+      // Chaining trades wall-clock for continuity, so it is opt-out.
+      const chain = opts.chain !== false;
 
       this.reset();
       this.prompt = prompt;
 
+      if (!chain) return this._fetchParallel(prompt, count, width, height, baseSeed, onProgress, opts.signal);
+      return this._fetchChained(prompt, count, width, height, baseSeed, onProgress, opts.signal);
+    }
+
+    /**
+     * Independent frames, all at once. Fast, but each frame is a fresh roll of
+     * the scene, so the result cross-dissolves between unrelated images.
+     * Kept as the fallback for when chaining fails.
+     */
+    async _fetchParallel(prompt, count, width, height, baseSeed, onProgress, signal) {
       let done = 0;
       const requests = Array.from({ length: count }, (_, i) =>
-        this._fetchOne(prompt, baseSeed + i * 7919, width, height, i, count, opts.signal)
-          .then(img => { onProgress(++done, count); return img; })
+        this._fetchOne({ prompt, seed: baseSeed + i * 7919, width, height, index: i, count, signal })
+          .then(r => { onProgress(++done, count); return r; })
           .catch(() => { onProgress(++done, count); return null; })
       );
 
       const settled = await Promise.all(requests);
-      this.keyframes = settled.filter(Boolean);
+      this.keyframes = settled.filter(Boolean).map(r => r.image);
       return this.keyframes;
     }
 
-    async _fetchOne(prompt, seed, width, height, index, count, signal) {
+    /**
+     * Each frame is an image-to-image edit of the one before it, so the subject,
+     * setting and lighting persist and only the moment advances. This is what
+     * makes the fallback read as a continuous shot rather than a slideshow.
+     *
+     * Necessarily sequential — frame N needs frame N-1's URL — so it is slower
+     * than the parallel path by roughly the frame count. Partial results are
+     * kept: if frame 5 of 8 fails, the first four still make a clip.
+     */
+    async _fetchChained(prompt, count, width, height, baseSeed, onProgress, signal) {
+      const frames = [];
+      let previousUrl = null;
+
+      for (let i = 0; i < count; i++) {
+        try {
+          const result = await this._fetchOne({
+            prompt,
+            seed: baseSeed + i * 7919,
+            width,
+            height,
+            index: i,
+            count,
+            signal,
+            // The first frame establishes the scene; the rest continue it.
+            chainFrom: previousUrl
+          });
+          frames.push(result.image);
+          previousUrl = result.sourceUrl || previousUrl;
+        } catch (err) {
+          if (err && err.name === 'AbortError') throw err;
+          // Losing a link breaks the chain, so stop rather than splicing an
+          // unrelated frame into the middle of a continuous shot.
+          break;
+        }
+        onProgress(i + 1, count);
+      }
+
+      this.keyframes = frames;
+      return this.keyframes;
+    }
+
+    async _fetchOne(opts) {
       const res = await fetch(KEYFRAME_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt,
-          seed,
-          width,
-          height,
+          prompt: opts.prompt,
+          seed: opts.seed,
+          width: opts.width,
+          height: opts.height,
+          chainFrom: opts.chainFrom || undefined,
           // Nudging each keyframe along the shot gives the interpolation
-          // something to actually move through instead of re-rolling the
-          // same composition at a new seed.
-          shotProgress: count > 1 ? index / (count - 1) : 0
+          // something to move through when chaining isn't available.
+          shotProgress: opts.count > 1 ? opts.index / (opts.count - 1) : 0
         }),
-        signal
+        signal: opts.signal
       });
 
       if (!res.ok) throw new Error(`keyframe request failed: ${res.status}`);
@@ -5181,7 +5234,7 @@ button {
       if (!data || !data.success || !data.dataUrl) {
         throw new Error(data && data.error ? data.error : 'keyframe unavailable');
       }
-      return this._decode(data.dataUrl);
+      return { image: await this._decode(data.dataUrl), sourceUrl: data.sourceUrl };
     }
 
     _decode(dataUrl) {
@@ -5393,7 +5446,12 @@ button {
       const n = this.keyframes.length;
       const pos = p * (n - 1);
       const i = Math.min(Math.floor(pos), n - 1);
-      const blend = pos - i;
+      // Ease the dissolve instead of ramping it linearly. A linear cross-fade
+      // spends the middle of every transition showing two images at half
+      // opacity, which is exactly when the ghosting is most visible;
+      // smoothstep moves quickly through that midpoint.
+      const raw = pos - i;
+      const blend = raw * raw * (3 - 2 * raw);
       const cam = this._camera(opts.cameraMotion, p, opts.motionStrength || 75);
 
       this._drawTransformed(this.keyframes[i], cam, 1);
@@ -7709,7 +7767,10 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
   // How many stills to request per clip. Enough to carry a shot without making
   // the user wait through a dozen model round-trips.
-  const KEYFRAMES_PER_CLIP = 4;
+  // Chained keyframes are fetched sequentially — each one edits the previous —
+  // so this is a direct trade of wait time against how continuous the clip
+  // looks. Six is where the motion reads without the wait becoming absurd.
+  const KEYFRAMES_PER_CLIP = 6;
 
   // MP4 first — it plays everywhere the user is likely to take the file.
   // WebM/VP9 is the fallback for browsers that can't mux H.264.
@@ -8409,11 +8470,14 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
           seed: 4829103,
           width: canvas.width,
           height: canvas.height,
+          // Each frame continues the previous one instead of re-rolling the
+          // scene, which is what stops the result looking like a slideshow.
+          chain: true,
           onProgress: (done, total) => {
             // Keyframe fetching owns the first 30% of the progress bar.
             if (progressFill) progressFill.style.width = `${Math.round((done / total) * 30)}%`;
             if (renderStatus) {
-              renderStatus.textContent = `Sampling latent keyframes from the model... (${done}/${total})`;
+              renderStatus.textContent = `Building continuous shot — frame ${done} of ${total}...`;
             }
           }
         });

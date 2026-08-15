@@ -29,17 +29,42 @@ const SHOT_STAGES = [
   'tight close-up framing'
 ];
 
+// Image-editing models accept a reference frame, which is what makes chaining
+// possible: frame N is an edit of frame N-1 rather than an unrelated image at a
+// new seed. That continuity is the whole difference between a slideshow and
+// something that reads as motion.
+const CHAIN_MODEL = 'kontext';
+
+// Phrases that ask for a small forward step rather than a new composition.
+// Asking for a big change breaks continuity as badly as re-rolling would.
+const CHAIN_NUDGE = 'continue this exact scene one moment later, same subject, same setting, same lighting, slight natural movement';
+
 function clampDimension(value, fallback) {
   const n = parseInt(value, 10);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(256, Math.min(2048, n));
 }
 
-function buildUrl({ prompt, seed, width, height, shotProgress }) {
+/**
+ * Builds the upstream image URL.
+ *
+ * When `chainFrom` is a previously-generated frame's URL, this becomes an
+ * image-to-image edit of that frame. Passing the upstream URL (rather than the
+ * decoded bytes) is what makes chaining possible at all — the model service
+ * fetches the reference itself, and these URLs are deterministic, so the frame
+ * it pulls is exactly the one the client already has.
+ */
+function buildUrl({ prompt, seed, width, height, shotProgress, chainFrom }) {
   const stage = SHOT_STAGES[
     Math.min(SHOT_STAGES.length - 1, Math.round((shotProgress || 0) * (SHOT_STAGES.length - 1)))
   ];
-  const full = `${String(prompt || '').trim()}, ${stage}, ${STYLE_SUFFIX}`;
+
+  const chaining = typeof chainFrom === 'string' && /^https:\/\//.test(chainFrom);
+
+  // A chained frame is an edit instruction, not a fresh scene description.
+  const full = chaining
+    ? `${CHAIN_NUDGE}. ${String(prompt || '').trim()}`
+    : `${String(prompt || '').trim()}, ${stage}, ${STYLE_SUFFIX}`;
 
   const params = new URLSearchParams({
     width: String(clampDimension(width, 1280)),
@@ -47,6 +72,11 @@ function buildUrl({ prompt, seed, width, height, shotProgress }) {
     nologo: 'true',
     seed: String(Number.isFinite(+seed) ? Math.abs(Math.trunc(+seed)) % 1000000 : 1)
   });
+
+  if (chaining) {
+    params.set('model', CHAIN_MODEL);
+    params.set('image', chainFrom);
+  }
 
   return `https://${UPSTREAM_HOST}/prompt/${encodeURIComponent(full)}?${params}`;
 }
@@ -110,18 +140,25 @@ async function fetchKeyframe(params) {
     return { success: false, error: 'prompt is required' };
   }
 
+  const url = buildUrl({ ...params, prompt });
+
   try {
-    const { buffer, contentType } = await get(buildUrl({ ...params, prompt }), MAX_REDIRECTS);
+    const { buffer, contentType } = await get(url, MAX_REDIRECTS);
     return {
       success: true,
       type: 'ai_diffusion_keyframe',
       dataUrl: `data:${contentType};base64,${buffer.toString('base64')}`,
+      // The client passes this back as `chainFrom` for the next frame. It has
+      // to be the upstream URL: a data: URL cannot be used as a reference
+      // image, because the model service has to fetch it itself.
+      sourceUrl: url,
+      chained: Boolean(params.chainFrom),
       prompt,
       seed: params.seed,
       cameraMotion: params.cameraMotion
     };
   } catch (err) {
-    return { success: false, fallback: true, error: err.message };
+    return { success: false, fallback: true, error: err.message, sourceUrl: url };
   }
 }
 

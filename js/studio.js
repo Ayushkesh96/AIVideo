@@ -27,7 +27,10 @@
 
   // How many stills to request per clip. Enough to carry a shot without making
   // the user wait through a dozen model round-trips.
-  const KEYFRAMES_PER_CLIP = 4;
+  // Chained keyframes are fetched sequentially — each one edits the previous —
+  // so this is a direct trade of wait time against how continuous the clip
+  // looks. Six is where the motion reads without the wait becoming absurd.
+  const KEYFRAMES_PER_CLIP = 6;
 
   // MP4 first — it plays everywhere the user is likely to take the file.
   // WebM/VP9 is the fallback for browsers that can't mux H.264.
@@ -727,11 +730,14 @@
           seed: 4829103,
           width: canvas.width,
           height: canvas.height,
+          // Each frame continues the previous one instead of re-rolling the
+          // scene, which is what stops the result looking like a slideshow.
+          chain: true,
           onProgress: (done, total) => {
             // Keyframe fetching owns the first 30% of the progress bar.
             if (progressFill) progressFill.style.width = `${Math.round((done / total) * 30)}%`;
             if (renderStatus) {
-              renderStatus.textContent = `Sampling latent keyframes from the model... (${done}/${total})`;
+              renderStatus.textContent = `Building continuous shot — frame ${done} of ${total}...`;
             }
           }
         });

@@ -338,6 +338,47 @@ function withStubProvider(behaviour, fn) {
     }
   });
 
+  // --- keyframe chaining ----------------------------------------------------
+
+  console.log('\nkeyframe chaining (keyless engine)');
+
+  const { buildUrl } = require('../api/_keyframe');
+
+  test('an unchained frame describes a fresh scene', () => {
+    const url = buildUrl({ prompt: 'a red fox in snow', seed: 1, width: 1280, height: 720, shotProgress: 0 });
+    assert.ok(!url.includes('image='), 'the first frame has nothing to continue from');
+    assert.ok(url.includes('cinematic'), 'expected the style suffix on a fresh scene');
+  });
+
+  test('a chained frame edits the previous one', () => {
+    const url = buildUrl({
+      prompt: 'a red fox in snow', seed: 2, width: 1280, height: 720,
+      chainFrom: 'https://image.pollinations.ai/prompt/x?seed=1'
+    });
+    assert.ok(url.includes('model=kontext'), 'chaining needs an image-editing model');
+    assert.ok(url.includes('image='), 'the previous frame must be passed as a reference');
+    assert.ok(decodeURIComponent(url).includes('continue this exact scene'),
+      'a chained frame is an edit instruction, not a new scene description');
+  });
+
+  test('a non-https reference is refused', () => {
+    // chainFrom is echoed into a URL the model service will fetch, so anything
+    // that isn't a plain https url must not become a reference.
+    ['file:///etc/passwd', 'http://internal.local/x', 'javascript:alert(1)', ''].forEach(bad => {
+      const url = buildUrl({ prompt: 'x', seed: 1, chainFrom: bad });
+      assert.ok(!url.includes('image='), `${bad || '(empty)'} should not be chained`);
+    });
+  });
+
+  test('dimensions stay clamped when chaining', () => {
+    const url = buildUrl({
+      prompt: 'x', seed: 1, width: 99999, height: 10,
+      chainFrom: 'https://image.pollinations.ai/prompt/x'
+    });
+    assert.ok(url.includes('width=2048'), 'oversized width must clamp');
+    assert.ok(url.includes('height=256'), 'undersized height must clamp');
+  });
+
   // --- bundle freshness -----------------------------------------------------
 
   console.log('\nbundle');
