@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="aivideo-build" content="9a4b817f5deb">
+  <meta name="aivideo-build" content="53c2ba384152">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Higgsfield AI — AI-native creative suite (Self-Sufficient Video Platform)</title>
@@ -8049,31 +8049,29 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         // Name the host as well as the model: "Veo 3" alone is ambiguous when
         // several providers can serve it.
         badge.textContent = `${active.label} · ${active.activeModelLabel || active.activeModel}`;
-        // A keyless attempt can still be refused upstream, so it must not be
-        // dressed up the same as a provisioned model.
-        badge.classList.toggle('is-live', !providerCaps.keyless);
-        badge.classList.toggle('is-besteffort', Boolean(providerCaps.keyless));
-        badge.title = providerCaps.keyless
-          ? 'No API key is set, so the studio tries a real video model anonymously. That can be refused or rate limited — ' +
-            'if it is, the local keyframe engine renders instead. A free key from enter.pollinations.ai (POLLINATIONS_KEY) makes it reliable.'
-          : `Real text-to-video is active: ${active.activeModelLabel} via ${active.label}. Max ${active.maxResolution}p.`;
+        badge.classList.add('is-live');
+        badge.classList.remove('is-besteffort', 'is-error');
+        badge.title = `Real text-to-video is active: ${active.activeModelLabel} via ${active.label}. Max ${active.maxResolution}p.`;
       } else {
-        badge.textContent = 'LOCAL ENGINE';
-        badge.classList.remove('is-live', 'is-besteffort');
+        // The default, fully working state — no key, no account, no cost.
+        badge.textContent = 'FREE ENGINE · ON-DEVICE';
+        badge.classList.add('is-live');
+        badge.classList.remove('is-besteffort', 'is-error');
         badge.title =
-          'No video model is reachable, so clips are synthesized locally from generated stills. ' +
-          'Set POLLINATIONS_KEY, GEMINI_API_KEY, FAL_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY to enable a real model.';
+          'Clips are rendered entirely in your browser by the built-in cinematic engine — free, unlimited, nothing to configure. ' +
+          'Optionally set GEMINI_API_KEY, FAL_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET, LUMAAI_API_KEY or a funded POLLINATIONS_KEY to upgrade to a hosted AI video model.';
       }
     }
 
-    // Only offer a resolution some reachable model can deliver; the local
-    // engine can always render it, so it is never fully disabled.
+    // With a real model active, only offer resolutions it can deliver. The
+    // on-device engine renders any size, so with no model nothing is disabled.
     const maxRes = providerCaps ? providerCaps.maxResolution || 0 : 0;
+    const localOnly = !providerCaps || providerCaps.fallbackOnly || !maxRes;
     document.querySelectorAll('.quality-btn').forEach(btn => {
       const needs = parseInt(btn.dataset.minHeight || '0', 10);
-      const modelCanDoIt = needs <= maxRes;
-      btn.classList.toggle('is-unavailable', !modelCanDoIt);
-      btn.title = modelCanDoIt
+      const available = localOnly || needs <= maxRes;
+      btn.classList.toggle('is-unavailable', !available);
+      btn.title = available
         ? ''
         : `No reachable model renders above ${maxRes || 0}p — this falls back to the local engine at that size.`;
     });
@@ -8595,7 +8593,11 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     if (window.showToast) window.showToast(`⚡ Synthesizing Video for "${prompt.slice(0, 26)}..."`);
 
     // --- Path 1: real text-to-video model -----------------------------------
-    if (window.AIVideoEngine) {
+    // Only attempted when a provider is actually configured. With no keys the
+    // capability probe says fallbackOnly, and calling a model that isn't there
+    // would just delay the on-device render and surface a spurious error.
+    const modelAvailable = !providerCaps || !providerCaps.fallbackOnly;
+    if (window.AIVideoEngine && modelAvailable) {
       const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
       const camera = shot && shot.camera ? shot.camera : 'Orbit 360°';
       const lens = shot && shot.lens ? shot.lens : '';
@@ -8678,7 +8680,14 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     // window is real footage rather than a loading screen.
     usedAiKeyframes = false;
     let keyframeError = null;
-    if (aiSynth) {
+    // The AI-still path needs a funded image key; without one the server would
+    // refuse every frame, so the studio goes straight to the free engine.
+    const keyframesAvailable = !providerCaps || providerCaps.keyframes !== false;
+    if (aiSynth && !keyframesAvailable) {
+      aiSynth.reset();
+      if (renderStatus) renderStatus.textContent = 'Rendering with the free on-device engine...';
+    }
+    if (aiSynth && keyframesAvailable) {
       try {
         if (progressFill) progressFill.style.width = '0%';
         if (renderStatus) renderStatus.textContent = 'Sampling latent keyframes from the model...';

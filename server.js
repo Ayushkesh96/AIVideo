@@ -182,7 +182,7 @@ function startServer(port) {
     console.log(
       configured.length
         ? `Video providers active: ${configured.join(', ')}`
-        : 'No video provider keys found — the studio will use the local keyframe engine. Set FAL_KEY, GEMINI_API_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY in .env for real text-to-video.'
+        : 'No provider keys found — the free on-device engine renders every clip. Optionally set FAL_KEY, GEMINI_API_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY in .env for hosted text-to-video.'
     );
   });
 }

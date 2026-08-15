@@ -24,9 +24,9 @@ const selfhosted = require('./selfhosted');
 //
 // Self-hosted comes first: if you are running your own GPU, that is a
 // deliberate choice and it should not be silently outranked by a metered API.
-// Then the keyed providers by quality-per-call. Pollinations is last and
-// always "configured" — it needs no key, so it acts as a real-model attempt
-// for deployments that have set up nothing at all.
+// Then the keyed providers by quality-per-call. Every provider — Pollinations
+// included — is opt-in via its key; with nothing configured the studio runs
+// entirely on the free on-device engine and makes no upstream calls at all.
 const REGISTRY = [selfhosted, google, fal, replicate, runway, luma, pollinations];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
@@ -63,9 +63,6 @@ function capabilities() {
   const list = REGISTRY.map(p => p.capabilities());
   const active = configured()[0] || null;
 
-  // Pollinations reports itself configured with no key, so "is a provider
-  // active" no longer distinguishes a paid, reliable setup from a best-effort
-  // anonymous attempt. keyless says which one the user actually has.
   const keyed = REGISTRY.filter(p => p.isConfigured() && (p.envKeys || []).some(k => process.env[k]));
 
   return {
@@ -74,13 +71,12 @@ function capabilities() {
     active: active ? active.id : null,
     // The studio uses this to decide whether to offer 4K at all.
     maxResolution: list.filter(p => p.configured).reduce((max, p) => Math.max(max, p.maxResolution || 0), 0),
-    // True when nothing but the anonymous attempt is available: a real model
-    // may still answer, but it can also refuse, so the UI must not promise it.
     keyless: keyed.length === 0,
     keyedProviders: keyed.map(p => p.id),
-    // No provider at all would mean the local engine is the only option. With
-    // Pollinations always present this is now only reachable if that adapter
-    // is removed.
+    // Whether the AI-still keyframe path has a credential. Without one the
+    // studio skips the fetch entirely — the image endpoint is metered too.
+    keyframes: Boolean((process.env.POLLINATIONS_KEY || process.env.POLLINATIONS_API_KEY || '').trim()),
+    // No provider configured: the free on-device engine is the renderer.
     fallbackOnly: !active
   };
 }

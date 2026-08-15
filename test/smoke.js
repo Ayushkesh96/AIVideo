@@ -240,20 +240,28 @@ function withStubProvider(behaviour, fn) {
     }
   }
 
-  await testAsync('with no keys at all, a keyless real-model attempt is offered', () => withNoKeys(async () => {
+  await testAsync('with no keys at all, the studio is told to render on-device', () => withNoKeys(async () => {
     const res = await video.createJob({ prompt: 'a fox' });
-    assert.strictEqual(res.success, true, 'a keyless attempt should still be offered');
-    assert.strictEqual(res.direct, true, 'it must use the synchronous streaming route');
-    assert.strictEqual(res.provider, 'pollinations');
-    assert.strictEqual(res.endpoint, '/api/video-direct');
+    assert.strictEqual(res.success, false, 'no provider means no upstream attempt');
+    assert.strictEqual(res.fallback, true, 'the free engine is the renderer');
+    assert.strictEqual(res.reason, 'no_provider_configured');
   }));
 
-  await testAsync('capabilities marks a keyless deployment as best-effort', () => withNoKeys(async () => {
+  await testAsync('capabilities reports the free engine when nothing is configured', () => withNoKeys(async () => {
     const caps = video.capabilities();
     assert.strictEqual(caps.keyless, true, 'no keys means keyless');
     assert.deepStrictEqual(caps.keyedProviders, []);
-    assert.strictEqual(caps.active, 'pollinations');
-    assert.ok(caps.maxResolution > 0, 'a keyless attempt still advertises a resolution ceiling');
+    assert.strictEqual(caps.active, null, 'no provider may claim to be active without a key');
+    assert.strictEqual(caps.fallbackOnly, true);
+    assert.strictEqual(caps.keyframes, false, 'the metered image path must be reported unavailable');
+  }));
+
+  await testAsync('keyframe fetch refuses instantly with no key instead of calling upstream', () => withNoKeys(async () => {
+    const { fetchKeyframe } = require('../api/_keyframe');
+    const out = await fetchKeyframe({ prompt: 'a fox' });
+    assert.strictEqual(out.success, false);
+    assert.strictEqual(out.keyless, true, 'the refusal must be marked as a keyless short-circuit');
+    assert.strictEqual(out.fallback, true);
   }));
 
   await testAsync('a real key outranks the keyless provider', async () => {
@@ -265,10 +273,18 @@ function withStubProvider(behaviour, fn) {
   });
 
   await testAsync('the streaming descriptor targets the provider host, never the caller', () => withNoKeys(async () => {
-    const desc = video.resolveStream({ prompt: 'a fox in snow', quality: '720p' });
-    assert.ok(desc.url.startsWith('https://gen.pollinations.ai/video/'), `got ${desc.url}`);
-    assert.ok(desc.url.includes('a%20fox%20in%20snow'), 'prompt must be url-encoded into the path');
-    assert.strictEqual(desc.headers.Authorization, undefined, 'no key set means no auth header');
+    process.env.POLLINATIONS_KEY = 'pk_test';
+    try {
+      const desc = video.resolveStream({ prompt: 'a fox in snow', quality: '720p' });
+      assert.ok(desc.url.startsWith('https://gen.pollinations.ai/video/'), `got ${desc.url}`);
+      assert.ok(desc.url.includes('a%20fox%20in%20snow'), 'prompt must be url-encoded into the path');
+    } finally {
+      delete process.env.POLLINATIONS_KEY;
+    }
+  }));
+
+  await testAsync('with no keys, the streaming route has nothing to resolve', () => withNoKeys(async () => {
+    assert.throws(() => video.resolveStream({ prompt: 'a fox' }), /no synchronous video provider/i);
   }));
 
   await testAsync('a key is attached to the stream when one is set', async () => {

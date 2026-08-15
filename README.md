@@ -1,37 +1,31 @@
 # AIVideo — AI Cinema Studio
 
 A browser-based text-to-video studio. Type a prompt, pick a camera move, and get
-back an actual video file rendered by a frontier video model.
+back a video file. **Works with zero configuration, zero accounts, and zero
+cost** — the default renderer runs entirely in your browser. Adding a provider
+key upgrades generation to a hosted AI video model.
 
 ## How generation works
 
-Three engines, tried in order. The first one that answers wins:
+Three engines, tried in order. The first one available wins:
 
-| | Engine | Needs a key | What it can do |
+| | Engine | Needs | What it can do |
 |---|---|---|---|
-| 0 | **Your own GPU** — LTX-Video, Wan 2.2, CogVideoX via ComfyUI | no (needs hardware) | Open weights you run yourself. No per-clip fee, no upstream policy. See [docs/self-hosting.md](docs/self-hosting.md) |
-| 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | yes | Genuinely depicts the prompt, including motion, up to 4K |
-| 2 | **Pollinations, anonymously** | **no** | A real video model, attempted with no credentials at all |
-| 3 | **Local keyframe engine** | no | Generates stills for the prompt and animates them under a virtual camera |
+| 0 | **Your own GPU** — LTX-Video, Wan 2.2, CogVideoX via ComfyUI | hardware, no fees | Open weights you run yourself. No per-clip cost, no upstream policy. See [docs/self-hosting.md](docs/self-hosting.md) |
+| 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | an API key (paid) | Genuinely depicts the prompt, including motion, up to 4K |
+| 2 | **Free on-device engine** | nothing | Renders a cinematic procedural scene for the prompt in your browser — camera moves, grading, grain, atmosphere — and records it to a real video file |
 
-**Engine 2 is the no-key path.** With nothing configured, the studio still asks a
-real video model for a real clip. That request can be refused or rate limited —
-anonymous access is a courtesy, not a guarantee — and when it is, engine 3 takes
-over. The "Render Engine" badge shows amber for this best-effort state and green
-once a key makes it reliable.
+**Engine 2 is the default.** With nothing configured the studio makes no
+upstream calls at all: the scene is synthesized, animated and recorded entirely
+client-side, so it is unlimited and free forever. It is honest about what it is
+— a procedural renderer, not a diffusion model. It composes a scene *inspired
+by* the prompt; it cannot photorealistically depict arbitrary text. For that,
+add a key (engine 1) or point it at your own GPU (engine 0).
 
-Engine 3 is honest about what it is: it interpolates between stills, so it
-cannot invent motion. A prompt like *"the dog turns its head"* will not do that.
-Only engines 1 and 2 can.
-
-### If you want it to work without any key
-
-Deploy as-is. Engine 2 runs by default. If clips stop arriving, you have hit the
-anonymous limit — a **free** key from [enter.pollinations.ai](https://enter.pollinations.ai)
-(no credit card) set as `POLLINATIONS_KEY` lifts it. That is the cheapest route
-to reliable generation and the only "free" one that exists: image generation is
-cheap enough to give away anonymously, video is 100–1000× the GPU cost, so no
-provider offers unlimited keyless video.
+With a funded `POLLINATIONS_KEY` there is also a middle path: real AI stills
+are generated for the prompt and animated under a virtual camera. Generation on
+gen.pollinations.ai is metered (anonymous and zero-balance requests are
+refused), so this path only activates when a key with balance is configured.
 
 ## Enabling real video generation
 
@@ -45,11 +39,11 @@ Environment Variables, or a local `.env`):
 | `REPLICATE_API_TOKEN` | Replicate | `wan-video/wan-2.2-t2v-fast` | 720p | paid |
 | `RUNWAYML_API_SECRET` | Runway | `gen4_turbo` | 720p | paid |
 | `LUMAAI_API_KEY` | Luma | `ray-2` | 4K | paid |
-| `POLLINATIONS_KEY` | Pollinations | `wan` | 1080p | **free tier** |
+| `POLLINATIONS_KEY` | Pollinations | `wan` | 1080p | metered (pollen) |
 
-Providers are tried in that order and the first one with a key wins;
-Pollinations runs last and needs no key at all. Redeploy after adding one — the
-studio reads capabilities at page load.
+Providers are tried in that order and the first one with a key wins. Redeploy
+after adding one — the studio reads capabilities at page load. With no key at
+all, the free on-device engine renders every clip.
 
 To pin a different model on a provider, set the matching override
 (`GOOGLE_VEO_MODEL`, `FAL_VIDEO_MODEL`, `REPLICATE_VIDEO_MODEL`,

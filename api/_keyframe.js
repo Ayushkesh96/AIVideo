@@ -167,6 +167,18 @@ async function fetchKeyframe(params) {
     return { success: false, error: 'prompt is required' };
   }
 
+  // The image endpoint is metered: without a funded key every request 401/402s.
+  // Answer instantly so the studio goes straight to the on-device engine
+  // instead of burning a network round trip per frame on a known refusal.
+  if (!apiKey()) {
+    return {
+      success: false,
+      fallback: true,
+      keyless: true,
+      error: 'no image model key configured — rendering on-device'
+    };
+  }
+
   const url = buildUrl({ ...params, prompt });
 
   try {

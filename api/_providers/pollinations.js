@@ -1,15 +1,11 @@
 /**
- * Pollinations adapter — the lowest-friction real video model.
+ * Pollinations adapter.
  *
- * Unlike every other provider here, this one is ALWAYS enabled: it is tried
- * with no credentials at all, because Pollinations serves some generation
- * anonymously. If anonymous video is allowed for the chosen model the user gets
- * real text-to-video with no signup whatsoever; if it is not, the request 401s
- * and the studio falls back to the local engine exactly as before. Attempting
- * costs nothing, so there is no reason not to.
- *
- * Setting POLLINATIONS_KEY (free, no credit card, from enter.pollinations.ai)
- * lifts the anonymous limits.
+ * Opt-in like every other provider: it only activates when POLLINATIONS_KEY
+ * is set AND that account holds pollen. Generation on gen.pollinations.ai is
+ * metered — anonymous and zero-balance requests are refused with 401/402 — so
+ * advertising this adapter without a funded key just routes every generation
+ * through a doomed network round trip before the free on-device engine runs.
  *
  * Protocol differs from the others: it is SYNCHRONOUS and streams the finished
  * mp4 back on the same request rather than returning a job to poll:
@@ -52,10 +48,8 @@ const provider = {
   envKeys: ['POLLINATIONS_KEY'],
   synchronous: true,
 
-  // Deliberately always true: a keyless attempt is the whole point of this
-  // adapter. Registry order keeps it last, so any real key still wins.
   isConfigured() {
-    return true;
+    return Boolean(apiKey().trim());
   },
 
   capabilities() {
@@ -63,11 +57,11 @@ const provider = {
     return {
       id: 'pollinations',
       label: 'Pollinations',
-      configured: true,
+      configured: this.isConfigured(),
       keyless: !apiKey(),
       synchronous: true,
       activeModel: model.id,
-      activeModelLabel: apiKey() ? model.label : `${model.label} (no key — best effort)`,
+      activeModelLabel: model.label,
       maxResolution: model.maxResolution,
       durations: model.durations,
       audio: model.audio,
@@ -96,8 +90,7 @@ const provider = {
     if (Number.isFinite(input.seed)) params.set('seed', String(input.seed));
 
     const headers = { Accept: 'video/mp4' };
-    // Anonymous is a supported mode here; only send the header if we have one.
-    if (apiKey()) headers.Authorization = `Bearer ${apiKey()}`;
+    if (apiKey()) headers.Authorization = `Bearer ${apiKey().trim()}`;
 
     return {
       url: `${HOST}/video/${encodeURIComponent(input.prompt)}?${params}`,
