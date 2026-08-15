@@ -466,8 +466,10 @@
 }
 
 .timeline-scrubber {
-  flex: 1;
-  min-width: 120px;
+  /* Basis of 0 collapses the bar to nothing whenever the bottom row is tight,
+     which left the studio with an invisible, unclickable scrubber. */
+  flex: 1 1 120px;
+  min-width: 90px;
   height: 6px;
   background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
