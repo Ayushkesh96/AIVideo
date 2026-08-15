@@ -372,25 +372,42 @@ class HyperRealisticNeuralVideoEngine {
     else if (isGolden) { furA = '#f7d488'; furB = '#dba24a'; furC = '#96661c'; }
     else { furA = '#d9a468'; furB = '#a9713a'; furC = '#5c3616'; }
 
-    // Cheerful indoor backdrop with party-light bokeh.
-    const bgGrad = ctx.createRadialGradient(cx, cy * 0.85, 60, cx, cy, Math.max(w, h));
-    bgGrad.addColorStop(0, '#2a1f3d');
-    bgGrad.addColorStop(0.55, '#171126');
+    // Backdrop with an off-center key light instead of a flat centered glow —
+    // a light source that isn't dead-center reads as an actual room, not a
+    // gradient swatch.
+    const bgGrad = ctx.createRadialGradient(cx - 90, cy * 0.7, 40, cx, cy, Math.max(w, h));
+    bgGrad.addColorStop(0, '#37294f');
+    bgGrad.addColorStop(0.4, '#221935');
+    bgGrad.addColorStop(0.75, '#140f22');
     bgGrad.addColorStop(1, '#08050f');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
-    const partyColors = ['rgba(255,120,180,0.22)', 'rgba(120,200,255,0.2)', 'rgba(255,210,100,0.22)', 'rgba(150,255,180,0.18)'];
+    // Soft floor plane — grounds the character in a room instead of a void.
+    const floorGrad = ctx.createLinearGradient(0, h * 0.6, 0, h);
+    floorGrad.addColorStop(0, 'rgba(35, 26, 50, 0)');
+    floorGrad.addColorStop(1, 'rgba(18, 13, 28, 0.85)');
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, h * 0.6, w, h * 0.4);
+
+    // Party-light bokeh, each light built from three concentric soft
+    // gradients instead of one hard-edged circle — canvas has no native
+    // blur, so this is what fakes a photographic soft-focus glow instead of
+    // a flat painted dot.
+    const partyColors = ['255,120,180', '120,200,255', '255,210,100', '150,255,180'];
     for (let b = 0; b < 8; b++) {
       const bx = (cx - 260 + b * 75 + Math.sin(t * 0.6 + b) * 26) % w;
       const by = (cy - 160 + Math.cos(t * 0.5 + b * 1.3) * 40);
-      const bGrad = ctx.createRadialGradient(bx, by, 4, bx, by, 40);
-      bGrad.addColorStop(0, partyColors[b % partyColors.length]);
-      bGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = bGrad;
-      ctx.beginPath();
-      ctx.arc(bx, by, 40, 0, Math.PI * 2);
-      ctx.fill();
+      const rgb = partyColors[b % partyColors.length];
+      [[62, 0.08], [38, 0.14], [18, 0.22]].forEach(([radius, alpha]) => {
+        const bGrad = ctx.createRadialGradient(bx, by, 0, bx, by, radius);
+        bGrad.addColorStop(0, `rgba(${rgb},${alpha})`);
+        bGrad.addColorStop(1, `rgba(${rgb},0)`);
+        ctx.fillStyle = bGrad;
+        ctx.beginPath();
+        ctx.arc(bx, by, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
 
     // Ground shadow — shrinks as the bounce lifts the dog, to sell the hop.
@@ -421,18 +438,43 @@ class HyperRealisticNeuralVideoEngine {
     ctx.restore();
 
     // Body / torso.
+    const bodyPath = new Path2D();
+    bodyPath.moveTo(hx - 95, hy + 250);
+    bodyPath.quadraticCurveTo(hx - 100, hy + 100, hx - 55, hy + 75);
+    bodyPath.lineTo(hx + 55, hy + 75);
+    bodyPath.quadraticCurveTo(hx + 100, hy + 100, hx + 95, hy + 250);
+    bodyPath.closePath();
+
     const bodyGrad = ctx.createRadialGradient(hx, hy + 140, 20, hx, hy + 150, 140);
     bodyGrad.addColorStop(0, furA);
     bodyGrad.addColorStop(0.55, furB);
     bodyGrad.addColorStop(1, furC);
     ctx.fillStyle = bodyGrad;
+    ctx.fill(bodyPath);
+
+    // Rim light along the body's screen-left edge, matching the off-center
+    // key light in the backdrop — a directional highlight is most of what
+    // separates a shape from a shape that reads as lit.
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = 'rgba(255, 235, 195, 0.4)';
+    ctx.lineWidth = 5;
+    ctx.stroke(bodyPath);
+    ctx.restore();
+
+    // Ambient occlusion where the head will meet the neck — a soft contact
+    // shadow, multiplied rather than painted flat so it darkens the fur
+    // color instead of overwriting it with grey.
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    const neckAO = ctx.createRadialGradient(hx, hy + 78, 4, hx, hy + 78, 55);
+    neckAO.addColorStop(0, 'rgba(30, 18, 10, 0.4)');
+    neckAO.addColorStop(1, 'rgba(30, 18, 10, 0)');
+    ctx.fillStyle = neckAO;
     ctx.beginPath();
-    ctx.moveTo(hx - 95, hy + 250);
-    ctx.quadraticCurveTo(hx - 100, hy + 100, hx - 55, hy + 75);
-    ctx.lineTo(hx + 55, hy + 75);
-    ctx.quadraticCurveTo(hx + 100, hy + 100, hx + 95, hy + 250);
-    ctx.closePath();
+    ctx.ellipse(hx, hy + 78, 55, 20, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 
     // Front paws — alternate lifting when lively, selling a dance step.
     const pawLiftL = isLively ? Math.max(0, Math.sin(bouncePhase)) * 40 : 0;
@@ -483,6 +525,18 @@ class HyperRealisticNeuralVideoEngine {
     ctx.beginPath();
     ctx.ellipse(hx, hy - 5, 72, 65, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // Rim light on the head's upper-left arc, same key-light direction as
+    // the body's — stroking only a partial arc (not the full ellipse) keeps
+    // it reading as light wrapping the form instead of an outline.
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = 'rgba(255, 235, 195, 0.5)';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.ellipse(hx, hy - 5, 72, 65, 0, Math.PI * 1.05, Math.PI * 1.7);
+    ctx.stroke();
+    ctx.restore();
 
     // Muzzle.
     const muzzleGrad = ctx.createRadialGradient(hx, hy + 32, 6, hx, hy + 32, 46);
@@ -948,23 +1002,14 @@ class HyperRealisticNeuralVideoEngine {
       ctx.fill();
     }
 
-    // Anamorphic Lens Flare
-    const flareY = h * 0.44;
-    const flareGrad = ctx.createLinearGradient(0, flareY, w, flareY);
-    flareGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
-    flareGrad.addColorStop(0.48, 'rgba(0, 240, 255, 0.4)');
-    flareGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
-    flareGrad.addColorStop(0.52, 'rgba(255, 0, 85, 0.4)');
-    flareGrad.addColorStop(1, 'rgba(255, 0, 85, 0)');
-    ctx.fillStyle = flareGrad;
-    ctx.fillRect(0, flareY - 1, w, 2.2);
-
-    // 35mm Hollywood Vignette
-    const vigGrad = ctx.createRadialGradient(cx, cy, h * 0.38, cx, cy, Math.max(w, h) * 0.72);
-    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-    vigGrad.addColorStop(1, 'rgba(0,0,0,0.55)');
-    ctx.fillStyle = vigGrad;
-    ctx.fillRect(0, 0, w, h);
+    // The flare and vignette used to be drawn here too, on top of whatever
+    // post-fx.js's shared applyPostFx() already draws for the same frame —
+    // studio.js calls both every tick. Two independent flares and two
+    // vignettes were compositing on every render, and this one used flat
+    // alpha (no 'screen' blend), so it painted as a hard, unlit-looking
+    // stripe rather than added light — that's the harsh line across every
+    // clip. post-fx.js's version is the one with slider control and a
+    // proper light blend, so it's the only one now.
 
     ctx.restore();
     ctx.restore();

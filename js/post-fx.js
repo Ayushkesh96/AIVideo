@@ -106,18 +106,37 @@
       }
 
       if (flare > 0) {
-        const a = (flare / 100) * 0.5;
-        const y = h * (0.40 + Math.sin(p * Math.PI * 2) * 0.05);
-        const g = ctx.createLinearGradient(0, y, w, y);
-        g.addColorStop(0, 'rgba(0, 220, 255, 0)');
-        g.addColorStop(0.45, `rgba(0, 220, 255, ${a * 0.55})`);
-        g.addColorStop(0.5, `rgba(255, 255, 255, ${a})`);
-        g.addColorStop(0.55, `rgba(255, 70, 120, ${a * 0.55})`);
-        g.addColorStop(1, 'rgba(255, 70, 120, 0)');
+        // A streak spanning the full frame width reads as a hard bar cutting
+        // across the shot no matter how it's blended — a real anamorphic
+        // flare is bright near its light source and falls off quickly, so
+        // this concentrates around one drifting point instead of the whole
+        // canvas width.
+        const a = (flare / 100) * 0.55;
+        const y = h * (0.32 + Math.sin(p * Math.PI * 2) * 0.05);
+        const x = w * (0.5 + Math.sin(p * Math.PI * 2 + 1.3) * 0.16);
+        const reach = w * 0.2;
+
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
+
+        // Soft hot-spot at the source.
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, reach);
+        glow.addColorStop(0, `rgba(255,255,255,${a})`);
+        glow.addColorStop(0.3, `rgba(0,220,255,${a * 0.4})`);
+        glow.addColorStop(1, 'rgba(0,220,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(x, y, reach, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Narrow horizontal streak through the hot-spot, not the full frame.
+        const g = ctx.createLinearGradient(x - reach, y, x + reach, y);
+        g.addColorStop(0, 'rgba(0, 220, 255, 0)');
+        g.addColorStop(0.5, `rgba(255, 255, 255, ${a})`);
+        g.addColorStop(1, 'rgba(255, 70, 120, 0)');
         ctx.fillStyle = g;
-        ctx.fillRect(0, y - h * 0.006, w, h * 0.012);
+        ctx.fillRect(x - reach, y - h * 0.004, reach * 2, h * 0.008);
+
         ctx.restore();
       }
 
