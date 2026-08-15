@@ -1,22 +1,34 @@
 /**
- * AIVIDEO FILMMAKING PRODUCTION OS — CORE STATE & STORAGE ENGINE
- * Manages Projects, Elements (@Characters, @Locations, @Props, @Styles),
- * AI Co-Director, Keyframe Workflow, and Multi-Track NLE Timelines.
+ * AIVIDEO FILMMAKING PRODUCTION OS — REACTIVE GLOBAL STATE STORE
+ * Manages complete project hierarchy, elements, scenes, shots, timeline,
+ * reel history, settings, and localStorage persistence under key `filmOS_project`.
  */
 
 (function () {
-  const STORAGE_KEY = 'aivideo_filmmaking_os_v1';
+  const STORAGE_KEY = 'filmOS_project';
 
-  const defaultProject = {
-    id: "proj-neo-runner",
+  const initialProjectData = {
+    id: "proj-tokyo-protocol",
     name: "Midnight Runner: Tokyo Protocol",
     logline: "A rogue courier sprints through rain-soaked Neo-Tokyo to deliver an encrypted neural drive before dawn.",
+    synopsis: "In the shadow of monolithic megacorporations, courier Alex Vance navigates glowing neon alleys and high-speed hovercraft patrols to transmit the last uncensored artificial intelligence archive.",
     aspectRatio: "16:9",
     resolution: "1080p",
     fps: 24,
-    activeMode: "pro", // 'beginner' | 'pro' | 'director' | 'elements' | 'timeline'
-    
-    // Elements Library (@Mentionable)
+    activeModel: "Seedance 2.5 (1080p)",
+    activeSceneId: "scene-01",
+    activeShotId: "shot-01a",
+
+    // API Configuration
+    apiConfig: {
+      llmEndpoint: "",
+      llmKey: "",
+      videoGenEndpoint: "",
+      videoGenKey: "",
+      isSimulatedMode: true
+    },
+
+    // Reusable Elements Library (@Mentionable)
     elements: {
       characters: [
         {
@@ -25,9 +37,8 @@
           name: "Alex Vance",
           age: 28,
           gender: "Male",
-          appearance: "Athletic build, sharp jawline, short textured dark hair, hazel eyes, cybernetic optic scanner over left temple",
-          clothing: "Weathered obsidian technical windbreaker, charcoal compression pants, neon crimson accented running sneakers",
-          personality: "Focused, resilient, breathless determination",
+          appearance: "Athletic runner, sharp jawline, textured raven hair, cybernetic optic scanner over left temple",
+          clothing: "Obsidian technical windbreaker, charcoal compression pants, crimson accented running sneakers",
           avatarColor: "#00f0ff"
         },
         {
@@ -36,29 +47,28 @@
           name: "Sarah Chen",
           age: 31,
           gender: "Female",
-          appearance: "Elegant features, emerald green eyes, shoulder-length raven hair with subtle cyber-braids",
-          clothing: "High-collar mustard tailored blazer, tailored trousers, emerald hoop earrings",
-          personality: "Calm, calculating, authoritative operator",
+          appearance: "Refined posture, emerald green eyes, shoulder-length bob with subtle cyber-braids",
+          clothing: "High-collar mustard tailored blazer, dark tailored trousers, emerald hoop earrings",
           avatarColor: "#ccff00"
         }
       ],
       locations: [
         {
-          id: "loc-tokyo-night",
+          id: "loc-tokyo-rain",
           tag: "TokyoRain",
           name: "Neo-Tokyo Rain Alley",
           time: "Night",
-          weather: "Heavy Rain / Volumetric Mist",
-          description: "Narrow alley framed by towering skyscrapers, flickering neon signs in kanji, reflective wet obsidian asphalt, steam vents",
+          weather: "Heavy Rain & Volumetric Mist",
+          description: "Towering skyscraper canyon, glowing kanji holograms, reflective wet obsidian asphalt",
           colorKey: "#ff0055"
         },
         {
-          id: "loc-cafe-rooftop",
+          id: "loc-skyline-cafe",
           tag: "RooftopCafe",
           name: "Skyline Lounge Cafe",
           time: "Twilight / Dusk",
-          weather: "Golden Hour Glow",
-          description: "Minimalist glass interior overlooking panoramic futuristic metropolis skyline",
+          weather: "Golden Hour Sunset",
+          description: "Minimalist floor-to-ceiling glass lounge overlooking the sprawling futuristic metropolis",
           colorKey: "#ffaa00"
         }
       ],
@@ -66,22 +76,22 @@
         {
           id: "prop-drive",
           tag: "NeuralDrive",
-          name: "Quantum Neural Data Drive",
+          name: "Quantum Neural Drive",
           description: "Compact obsidian glass cartridge pulsing with internal crimson fiber-optic data light"
         },
         {
           id: "prop-katana",
           tag: "Katana",
           name: "Thermal Katana",
-          description: "High-frequency cybernetic blade with glowing red thermal edge"
+          description: "Cybernetic high-frequency combat blade with glowing red thermal edge"
         }
       ],
       styles: [
         {
-          id: "style-kodak",
+          id: "style-35mm",
           tag: "Cinematic35mm",
           name: "Kodak 35mm Neo-Noir",
-          description: "Anamorphic lens flares, rich shadows, 35mm organic film grain, warm skin tones with cool shadow contrasts"
+          description: "Anamorphic horizontal blue flare, rich shadow contrast, organic 35mm film grain"
         }
       ]
     },
@@ -99,49 +109,73 @@
             id: "shot-01a",
             code: "01A",
             title: "Wide Establishing Sprint",
-            prompt: "Wide establishing tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive in @Cinematic35mm",
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "24mm Ultra Wide",
-            focalLength: "24mm",
-            aperture: "f/2.8",
-            motion: "Tracking Forward",
-            speed: "Fast (1.5x)",
-            duration: 4,
+            prompt: "Wide establishing cinematic tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive in @Cinematic35mm",
+            model: "Seedance 2.5 (1080p)",
+            camera: "Tracking Forward",
+            lens: "24mm",
+            rig: "Dolly",
+            motionSpeed: 75,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 80,
+              grain: 35,
+              fog: 50,
+              speed: 1.0
+            },
             keyframeApproved: true,
-            status: "ready", // 'draft' | 'keyframe' | 'ready' | 'rendered'
-            videoUrl: null
+            status: "ready",
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
           },
           {
             id: "shot-01b",
             code: "01B",
             title: "Medium Hero Orbit",
             prompt: "Cinematic medium close-up shot of @Alex checking pulse while running through @TokyoRain under crimson neon rain, 8k",
-            cameraBody: "RED V-Raptor 8K",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/1.8",
-            motion: "Orbit 360°",
-            speed: "Normal (1.0x)",
-            duration: 5,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Orbit 360°",
+            lens: "50mm",
+            rig: "Orbit 360°",
+            motionSpeed: 80,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 85,
+              grain: 30,
+              fog: 45,
+              speed: 1.0
+            },
             keyframeApproved: true,
             status: "ready",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 5
           },
           {
             id: "shot-01c",
             code: "01C",
             title: "Extreme Close-Up Eyes",
             prompt: "Macro close-up on @Alex cybernetic optic eye scanner analyzing street route in @TokyoRain",
-            cameraBody: "Sony Venice 2",
-            lens: "85mm Telephoto Macro",
-            focalLength: "85mm",
-            aperture: "f/1.4",
-            motion: "Push-In Slow",
-            speed: "Slow-Mo (0.5x)",
-            duration: 4,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Zoom In",
+            lens: "85mm",
+            rig: "Handheld",
+            motionSpeed: 60,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 70,
+              grain: 40,
+              fog: 50,
+              speed: 1.0
+            },
             keyframeApproved: false,
             status: "draft",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
           }
         ]
       },
@@ -157,25 +191,56 @@
             code: "02A",
             title: "Sarah Overlook Medium",
             prompt: "Medium portrait shot of @Sarah in mustard blazer looking at city grid from @RooftopCafe in @Cinematic35mm",
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/2.0",
-            motion: "Dolly Push",
-            speed: "Normal (1.0x)",
-            duration: 5,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Dolly Push",
+            lens: "50mm",
+            rig: "Dolly",
+            motionSpeed: 70,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "solar",
+              flare: 60,
+              grain: 25,
+              fog: 30,
+              speed: 1.0
+            },
             keyframeApproved: true,
             status: "ready",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 5
           }
         ]
       }
     ],
 
+    // Recent Generation Reel (Keep last 12)
+    generationReel: [
+      {
+        id: "gen-1",
+        title: "Clip #1: Neon Runner",
+        prompt: "Wide establishing tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive",
+        model: "Seedance 2.5 (1080p)",
+        camera: "Tracking Forward",
+        timestamp: Date.now() - 60000,
+        url: null
+      },
+      {
+        id: "gen-2",
+        title: "Clip #2: Sarah Cafe",
+        prompt: "Medium portrait shot of @Sarah in mustard blazer looking at city grid from @RooftopCafe",
+        model: "Seedance 2.5 (1080p)",
+        camera: "Dolly Push",
+        timestamp: Date.now() - 120000,
+        url: null
+      }
+    ],
+
     // Multi-Track NLE Timeline Data
     timeline: {
-      activePlayhead: 0,
-      zoomLevel: 1.0,
+      playhead: 0,
+      zoom: 1.0,
+      muxAudio: true,
       tracks: {
         video: [
           { id: "clip-v1", shotId: "shot-01a", start: 0, duration: 4, label: "Shot 01A (Wide Sprint)" },
@@ -188,37 +253,41 @@
         ],
         music: [
           { id: "clip-m1", start: 0, duration: 14, title: "Synthwave Pulse OST", genre: "Cyberpunk Cinematic" }
-        ],
-        captions: [
-          { id: "clip-c1", start: 0.5, duration: 3.5, text: "[Sarah]: Vance, you have two minutes before sector lockdown." },
-          { id: "clip-c2", start: 5.0, duration: 3.0, text: "[Alex]: I'm already on the lower boulevard." }
         ]
       }
     }
   };
 
-  class FilmOSStore {
+  class FilmOSProjectStore {
     constructor() {
-      this.project = this.loadProject();
+      this.state = this.load();
       this.listeners = [];
+
+      // Auto-save every 10s
+      setInterval(() => {
+        this.save();
+      }, 10000);
     }
 
-    loadProject() {
+    load() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, initialProjectData, parsed);
+        }
       } catch (e) {
-        console.warn("Error loading stored project:", e);
+        console.warn("Could not load stored FilmOS project:", e);
       }
-      return JSON.parse(JSON.stringify(defaultProject));
+      return JSON.parse(JSON.stringify(initialProjectData));
     }
 
-    saveProject() {
+    save() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.project));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
         this.notify();
       } catch (e) {
-        console.error("Error saving project:", e);
+        console.error("Error saving FilmOS project:", e);
       }
     }
 
@@ -230,198 +299,166 @@
     }
 
     notify() {
-      this.listeners.forEach(fn => fn(this.project));
+      this.listeners.forEach(fn => fn(this.state));
     }
 
-    // Resolves @Character, @Location, @Prop, @Style into full enriched prompt
-    resolveMentions(promptText) {
-      if (!promptText) return "";
-      let resolved = promptText;
+    // Get Active Shot Object
+    getActiveShot() {
+      for (const scene of this.state.scenes) {
+        const shot = scene.shots.find(s => s.id === this.state.activeShotId);
+        if (shot) return shot;
+      }
+      // Fallback first shot
+      if (this.state.scenes[0] && this.state.scenes[0].shots[0]) {
+        this.state.activeShotId = this.state.scenes[0].shots[0].id;
+        return this.state.scenes[0].shots[0];
+      }
+      return null;
+    }
 
-      // Characters
-      this.project.elements.characters.forEach(c => {
+    // Set Active Shot
+    setActiveShot(shotId) {
+      this.state.activeShotId = shotId;
+      this.save();
+    }
+
+    // Update Shot Properties
+    updateActiveShot(updates) {
+      const shot = this.getActiveShot();
+      if (shot) {
+        Object.assign(shot, updates);
+        this.save();
+      }
+    }
+
+    // Resolve @Mentions
+    resolveMentions(text) {
+      if (!text) return "";
+      let resolved = text;
+      this.state.elements.characters.forEach(c => {
         const reg = new RegExp(`@${c.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${c.name} (${c.appearance}, wearing ${c.clothing})`);
-        }
+        resolved = resolved.replace(reg, `${c.name} (${c.appearance}, wearing ${c.clothing})`);
       });
-
-      // Locations
-      this.project.elements.locations.forEach(l => {
+      this.state.elements.locations.forEach(l => {
         const reg = new RegExp(`@${l.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${l.name} (${l.time}, ${l.weather}, ${l.description})`);
-        }
+        resolved = resolved.replace(reg, `${l.name} (${l.time}, ${l.weather}, ${l.description})`);
       });
-
-      // Props
-      this.project.elements.props.forEach(p => {
+      this.state.elements.props.forEach(p => {
         const reg = new RegExp(`@${p.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${p.name} (${p.description})`);
-        }
+        resolved = resolved.replace(reg, `${p.name} (${p.description})`);
       });
-
-      // Styles
-      this.project.elements.styles.forEach(s => {
+      this.state.elements.styles.forEach(s => {
         const reg = new RegExp(`@${s.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${s.name} (${s.description})`);
-        }
+        resolved = resolved.replace(reg, `${s.name} (${s.description})`);
       });
-
       return resolved;
     }
 
-    // AI Director: Script/Concept to Scene & Shot Breakdown
-    generateShotsFromConcept(conceptText) {
-      const p = conceptText.toLowerCase();
-      let newSceneTitle = "Cinematic Sequence";
-      let newSetting = "EXT. CINEMATIC ENVIRONMENT - NIGHT";
-
-      if (p.includes("commercial") || p.includes("nike") || p.includes("runner")) {
-        newSceneTitle = "Nike Style Night Runner";
-        newSetting = "EXT. RAIN-SLICKED CITY - NIGHT";
-      } else if (p.includes("space") || p.includes("mars")) {
-        newSceneTitle = "Mars Orbital Descent";
-        newSetting = "EXT. MARS ATMOSPHERE - DAY";
-      } else if (p.includes("ocean") || p.includes("water")) {
-        newSceneTitle = "Abyssal Wave Expedition";
-        newSetting = "EXT. BIOLUMINESCENT OCEAN - DUSK";
+    // Add Generation to Reel
+    addReelItem(item) {
+      this.state.generationReel.unshift(item);
+      if (this.state.generationReel.length > 12) {
+        this.state.generationReel.pop();
       }
-
-      const newScene = {
-        id: `scene-${Date.now()}`,
-        number: this.project.scenes.length + 1,
-        title: newSceneTitle,
-        setting: newSetting,
-        summary: conceptText,
-        shots: [
-          {
-            id: `shot-${Date.now()}-1`,
-            code: `${this.project.scenes.length + 1}A`,
-            title: "Wide Establishing Atmosphere",
-            prompt: `Wide establishing cinematic shot of ${conceptText}, 35mm film grain, volumetric fog`,
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "24mm Ultra Wide",
-            focalLength: "24mm",
-            aperture: "f/2.8",
-            motion: "Dolly Push",
-            speed: "Normal (1.0x)",
-            duration: 4,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          },
-          {
-            id: `shot-${Date.now()}-2`,
-            code: `${this.project.scenes.length + 1}B`,
-            title: "Hero Subject Motion Tracking",
-            prompt: `Medium tracking shot following hero in ${conceptText}, high tension motion blur, 8k`,
-            cameraBody: "RED V-Raptor 8K",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/1.8",
-            motion: "Tracking Forward",
-            speed: "Fast (1.5x)",
-            duration: 5,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          },
-          {
-            id: `shot-${Date.now()}-3`,
-            code: `${this.project.scenes.length + 1}C`,
-            title: "Dynamic 360 Climax Orbit",
-            prompt: `Dramatic 360 orbit camera rotation around subject in ${conceptText}, anamorphic lens flare`,
-            cameraBody: "Sony Venice 2",
-            lens: "85mm Telephoto",
-            focalLength: "85mm",
-            aperture: "f/1.4",
-            motion: "Orbit 360°",
-            speed: "Slow-Mo (0.5x)",
-            duration: 4,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          }
-        ]
-      };
-
-      this.project.scenes.push(newScene);
-      this.syncTimelineFromShots();
-      this.saveProject();
-      return newScene;
-    }
-
-    // Synchronize Timeline clips from scenes & shots
-    syncTimelineFromShots() {
-      let curTime = 0;
-      const vClips = [];
-
-      this.project.scenes.forEach(scene => {
-        scene.shots.forEach(shot => {
-          vClips.push({
-            id: `clip-${shot.id}`,
-            shotId: shot.id,
-            start: curTime,
-            duration: shot.duration || 4,
-            label: `Shot ${shot.code} (${shot.title})`
-          });
-          curTime += shot.duration || 4;
-        });
-      });
-
-      this.project.timeline.tracks.video = vClips;
+      // Update shot status to READY
+      const shot = this.getActiveShot();
+      if (shot) {
+        shot.status = 'ready';
+        shot.keyframeApproved = true;
+      }
+      this.save();
     }
 
     // Add Character
     addCharacter(charData) {
-      const newChar = {
+      const newChar = Object.assign({
         id: `char-${Date.now()}`,
-        tag: charData.tag || `Char${this.project.elements.characters.length + 1}`,
-        name: charData.name || "Unnamed Character",
-        age: charData.age || 25,
-        gender: charData.gender || "Any",
-        appearance: charData.appearance || "",
-        clothing: charData.clothing || "",
-        personality: charData.personality || "",
-        avatarColor: charData.avatarColor || "#ccff00"
-      };
-      this.project.elements.characters.push(newChar);
-      this.saveProject();
+        tag: `Char${this.state.elements.characters.length + 1}`,
+        name: "New Character",
+        age: 25,
+        gender: "Any",
+        appearance: "",
+        clothing: "",
+        avatarColor: "#ccff00"
+      }, charData);
+      this.state.elements.characters.push(newChar);
+      this.save();
       return newChar;
     }
 
     // Add Location
     addLocation(locData) {
-      const newLoc = {
+      const newLoc = Object.assign({
         id: `loc-${Date.now()}`,
-        tag: locData.tag || `Loc${this.project.elements.locations.length + 1}`,
-        name: locData.name || "Unnamed Location",
-        time: locData.time || "Night",
-        weather: locData.weather || "Clear",
-        description: locData.description || "",
-        colorKey: locData.colorKey || "#00f0ff"
-      };
-      this.project.elements.locations.push(newLoc);
-      this.saveProject();
+        tag: `Loc${this.state.elements.locations.length + 1}`,
+        name: "New Location",
+        time: "Night",
+        weather: "Clear",
+        description: "",
+        colorKey: "#00f0ff"
+      }, locData);
+      this.state.elements.locations.push(newLoc);
+      this.save();
       return newLoc;
     }
 
     // Add Prop
     addProp(propData) {
-      const newProp = {
+      const newProp = Object.assign({
         id: `prop-${Date.now()}`,
-        tag: propData.tag || `Prop${this.project.elements.props.length + 1}`,
-        name: propData.name || "Unnamed Prop",
-        description: propData.description || ""
-      };
-      this.project.elements.props.push(newProp);
-      this.saveProject();
+        tag: `Prop${this.state.elements.props.length + 1}`,
+        name: "New Prop",
+        description: ""
+      }, propData);
+      this.state.elements.props.push(newProp);
+      this.save();
       return newProp;
+    }
+
+    // Add Scene & Shots
+    createScene(title, setting = "EXT. CITY - NIGHT") {
+      const newScene = {
+        id: `scene-${Date.now()}`,
+        number: this.state.scenes.length + 1,
+        title: title || `Scene ${this.state.scenes.length + 1}`,
+        setting: setting,
+        summary: "",
+        shots: [
+          {
+            id: `shot-${Date.now()}-1`,
+            code: `${this.state.scenes.length + 1}A`,
+            title: "Establishing Shot",
+            prompt: `Cinematic establishing shot of ${title}`,
+            model: this.state.activeModel,
+            camera: "Orbit 360°",
+            lens: "35mm",
+            rig: "Orbit 360°",
+            motionSpeed: 75,
+            aspectRatio: this.state.aspectRatio,
+            fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+            keyframeApproved: false,
+            status: "draft",
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
+          }
+        ]
+      };
+      this.state.scenes.push(newScene);
+      this.state.activeSceneId = newScene.id;
+      this.state.activeShotId = newScene.shots[0].id;
+      this.save();
+      return newScene;
+    }
+
+    // Delete Clip from Timeline
+    deleteTimelineClip(trackName, clipId) {
+      if (this.state.timeline.tracks[trackName]) {
+        this.state.timeline.tracks[trackName] = this.state.timeline.tracks[trackName].filter(c => c.id !== clipId);
+        this.save();
+      }
     }
   }
 
-  window.FilmOS = new FilmOSStore();
+  window.FilmOS = new FilmOSProjectStore();
 })();

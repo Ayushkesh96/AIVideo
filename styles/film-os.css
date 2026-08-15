@@ -1,29 +1,35 @@
 /* ==========================================================================
-   AIVIDEO FILMMAKING PRODUCTION OS — DESIGN SYSTEM & STYLES
+   AIVIDEO FILMMAKING PRODUCTION OS — DESIGN SYSTEM & LAYOUT RULES (PHASE 1)
    ========================================================================== */
 
-/* Main Workspace Tabs */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Main Workspace Header Bar */
 .filmos-workspace-header {
   background: #0d0d12;
-  border-bottom: 1px solid var(--border-card);
-  padding: 12px 24px;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 56px;
-  z-index: 90;
+  gap: 16px;
+  margin-bottom: 16px;
+  min-width: 0;
 }
 
 .filmos-project-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .project-folder-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: rgba(204, 255, 0, 0.12);
   border: 1px solid var(--accent-lime);
   border-radius: 8px;
@@ -31,15 +37,17 @@
   align-items: center;
   justify-content: center;
   color: var(--accent-lime);
+  flex-shrink: 0;
 }
 
 .filmos-nav-tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   background: #14141c;
   padding: 4px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
 }
 
 .filmos-tab-btn {
@@ -55,11 +63,12 @@
   align-items: center;
   gap: 6px;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .filmos-tab-btn:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .filmos-tab-btn.active {
@@ -68,41 +77,66 @@
   box-shadow: 0 0 14px rgba(204, 255, 0, 0.35);
 }
 
-/* Master Layout: Clean 3-Column Studio Grid */
-.filmos-layout-grid {
-  display: grid;
-  grid-template-columns: 240px 1fr 280px;
-  gap: 16px;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 1200px) {
-  .filmos-layout-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.filmos-stage-panel {
+/* AI Co-Director Assistant Banner */
+.director-assistant-banner {
+  background: linear-gradient(135deg, #141420, #0f1622);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  margin-bottom: 16px;
   min-width: 0;
 }
 
-.filmos-stage-panel .studio-wrapper {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  min-height: 650px;
+.director-icon-box {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
 }
 
-@media (max-width: 900px) {
-  .filmos-stage-panel .studio-wrapper {
-    grid-template-columns: 1fr;
+/* MASTER 3-COLUMN FILMMAKING OS GRID: Left (260px) | Center (Fluid) | Right (340px) */
+.filmos-layout-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 340px;
+  gap: 16px;
+  padding: 0;
+  margin-bottom: 20px;
+  align-items: start;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 1320px) {
+  .filmos-layout-grid {
+    grid-template-columns: 240px 1fr;
+  }
+  .filmos-inspector-panel {
+    grid-column: 1 / -1;
   }
 }
 
-/* Column 1: Project Hierarchy Tree */
+@media (max-width: 1024px) {
+  .filmos-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .filmos-tree-panel,
+  .filmos-stage-panel,
+  .filmos-inspector-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+/* COLUMN 1: Project Hierarchy Tree Panel */
 .filmos-tree-panel {
   background: #111116;
   border: 1px solid var(--border-card);
@@ -111,45 +145,61 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tree-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .tree-section-title {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tree-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .tree-node-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: #17171e;
+  padding: 8px 10px;
+  background: #16161f;
   border: 1px solid transparent;
   border-radius: 6px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-width: 0;
+  gap: 6px;
+}
+
+.tree-node-item span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .tree-node-item:hover {
-  background: #1e1e28;
+  background: #1e1e2b;
   color: #fff;
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -161,90 +211,244 @@
 }
 
 .tree-tag-count {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   background: rgba(255, 255, 255, 0.08);
   padding: 1px 6px;
   border-radius: 4px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
-/* Column 2: Center Director Stage & Viewport */
+/* COLUMN 2: Center Director Stage & Generator */
 .filmos-stage-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+  width: 100%;
 }
 
-/* AI Co-Director Assistant Banner */
-.director-assistant-banner {
-  background: linear-gradient(135deg, #181824, #121820);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+/* Inner Studio 2-Column Split: Controls (360px) + Viewport (Fluid) */
+.filmos-stage-panel .studio-wrapper {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .filmos-stage-panel .studio-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio-sidebar {
+  background: #0d0d12;
+  border-right: 1px solid var(--border-subtle);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  .studio-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}
+
+.studio-viewport-stage {
+  background: #08080c;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Video Preview Container with Strict Aspect Ratio */
+.viewport-canvas-container {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #020204;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: aspect-ratio 0.25s ease;
+  margin: 0 auto;
+}
+
+.viewport-canvas-container.aspect-16-9 {
+  aspect-ratio: 16 / 9;
+}
+.viewport-canvas-container.aspect-9-16 {
+  aspect-ratio: 9 / 16;
+  max-height: 520px;
+}
+.viewport-canvas-container.aspect-1-1 {
+  aspect-ratio: 1 / 1;
+  max-height: 480px;
+}
+.viewport-canvas-container.aspect-21-9 {
+  aspect-ratio: 21 / 9;
+}
+
+.viewport-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
+
+/* Viewport HUD */
+.viewport-hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+  gap: 8px;
+}
+
+.hud-pill {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-lime);
+  box-shadow: 0 0 6px var(--accent-lime);
+}
+
+.hud-simulated-badge {
+  background: rgba(255, 170, 0, 0.25);
+  border: 1px solid #ffaa00;
+  color: #ffaa00;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Playback and Scrubber Bar */
+.viewport-bottom-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  background: #0e0e14;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
 }
 
-.director-icon-box {
-  width: 42px;
-  height: 42px;
-  background: rgba(0, 240, 255, 0.15);
-  border: 1px solid var(--accent-cyan);
-  border-radius: 50%;
+.playback-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--accent-cyan);
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* Keyframe Candidate Cards Strip */
-.keyframe-candidates-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.keyframe-card {
-  background: #171720;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  overflow: hidden;
+.timeline-scrubber {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s ease;
-  aspect-ratio: 16/9;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.timeline-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  background: var(--accent-lime);
+  border-radius: 3px;
+}
+
+/* Generation Reel */
+.studio-history-section {
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.history-strip-title {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.keyframe-card:hover {
-  border-color: var(--accent-cyan);
-  transform: translateY(-2px);
-}
-
-.keyframe-card.approved {
-  border: 2px solid var(--accent-lime);
-  box-shadow: 0 0 12px rgba(204, 255, 0, 0.3);
-}
-
-.keyframe-card-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.7);
-  font-size: 0.65rem;
+  justify-content: space-between;
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 3px;
-  color: #fff;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
-/* Column 3: Pro Camera Rig & Settings Studio */
+.history-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.history-thumb-item {
+  width: 76px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.history-thumb-item:hover,
+.history-thumb-item.active {
+  border-color: var(--accent-lime);
+  transform: scale(1.04);
+}
+
+/* COLUMN 3: Pro Camera Rig & Settings Studio */
 .filmos-inspector-panel {
   background: #111116;
   border: 1px solid var(--border-card);
@@ -252,7 +456,9 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .camera-rig-selector {
@@ -265,13 +471,16 @@
   background: #171720;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  padding: 6px;
+  padding: 6px 4px;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   text-align: center;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camera-rig-btn:hover {
@@ -285,30 +494,77 @@
   color: var(--accent-lime);
 }
 
-/* Multi-Track NLE Timeline View */
+/* =========================================================================
+   BOTTOM MULTI-TRACK NLE TIMELINE SEQUENCER (STRICT HORIZONTAL CONFINEMENT)
+   ========================================================================= */
 .filmos-timeline-container {
   background: #0e0e14;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px;
   margin-top: 16px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.timeline-header-docked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.timeline-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-actions-docked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.timeline-tracks-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 .timeline-track-lane {
   display: flex;
   align-items: center;
-  height: 38px;
+  height: 42px;
   background: #14141c;
   border-radius: 6px;
-  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
-  padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .track-lane-label {
-  width: 90px;
+  width: 95px;
+  height: 100%;
+  background: #101017;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -317,50 +573,170 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 0 10px;
+  z-index: 2;
 }
 
 .track-clips-area {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
   flex: 1;
-  height: 28px;
+  height: 100%;
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  min-width: 0;
 }
 
+/* Individual Timeline Clip Blocks with Truncated Text & Title Tooltips */
 .timeline-clip-block {
-  background: #222230;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  height: 28px;
   border-radius: 4px;
   padding: 0 10px;
   font-size: 0.7rem;
   font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   color: #fff;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+  max-width: 280px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.timeline-clip-block span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .timeline-clip-block.video {
-  background: #2a1b3d;
+  background: #2b1735;
   border-color: #ff0055;
   color: #ff99bb;
 }
 
 .timeline-clip-block.voice {
-  background: #1b2e3d;
+  background: #112836;
   border-color: #00f0ff;
   color: #a6f4ff;
 }
 
 .timeline-clip-block.music {
-  background: #23361b;
+  background: #1b2e17;
   border-color: #ccff00;
   color: #e5ff80;
 }
 
 .timeline-clip-block.captions {
-  background: #3a2e15;
+  background: #33240e;
   border-color: #ffaa00;
   color: #ffe099;
+}
+
+.timeline-clip-block:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.timeline-clip-delete-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-clip-delete-btn:hover {
+  color: #ff4444;
+}
+
+/* Elements Autocomplete Dropdown in Prompt Textarea */
+.element-autocomplete-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: #181822;
+  border: 1px solid var(--accent-lime);
+  border-radius: 8px;
+  padding: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8);
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+  background: rgba(204, 255, 0, 0.15);
+  color: var(--accent-lime);
+}
+
+/* Modals & Dialogs */
+.filmos-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.filmos-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.filmos-modal-card {
+  background: #13131a;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  width: 90%;
+  max-width: 520px;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filmos-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filmos-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
 }

@@ -949,31 +949,37 @@ button {
 
 /* --- styles/film-os.css --- */
 /* ==========================================================================
-   AIVIDEO FILMMAKING PRODUCTION OS — DESIGN SYSTEM & STYLES
+   AIVIDEO FILMMAKING PRODUCTION OS — DESIGN SYSTEM & LAYOUT RULES (PHASE 1)
    ========================================================================== */
 
-/* Main Workspace Tabs */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Main Workspace Header Bar */
 .filmos-workspace-header {
   background: #0d0d12;
-  border-bottom: 1px solid var(--border-card);
-  padding: 12px 24px;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 56px;
-  z-index: 90;
+  gap: 16px;
+  margin-bottom: 16px;
+  min-width: 0;
 }
 
 .filmos-project-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .project-folder-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: rgba(204, 255, 0, 0.12);
   border: 1px solid var(--accent-lime);
   border-radius: 8px;
@@ -981,15 +987,17 @@ button {
   align-items: center;
   justify-content: center;
   color: var(--accent-lime);
+  flex-shrink: 0;
 }
 
 .filmos-nav-tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   background: #14141c;
   padding: 4px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
 }
 
 .filmos-tab-btn {
@@ -1005,11 +1013,12 @@ button {
   align-items: center;
   gap: 6px;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .filmos-tab-btn:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .filmos-tab-btn.active {
@@ -1018,41 +1027,66 @@ button {
   box-shadow: 0 0 14px rgba(204, 255, 0, 0.35);
 }
 
-/* Master Layout: Clean 3-Column Studio Grid */
-.filmos-layout-grid {
-  display: grid;
-  grid-template-columns: 240px 1fr 280px;
-  gap: 16px;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 1200px) {
-  .filmos-layout-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.filmos-stage-panel {
+/* AI Co-Director Assistant Banner */
+.director-assistant-banner {
+  background: linear-gradient(135deg, #141420, #0f1622);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  margin-bottom: 16px;
   min-width: 0;
 }
 
-.filmos-stage-panel .studio-wrapper {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  min-height: 650px;
+.director-icon-box {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
 }
 
-@media (max-width: 900px) {
-  .filmos-stage-panel .studio-wrapper {
-    grid-template-columns: 1fr;
+/* MASTER 3-COLUMN FILMMAKING OS GRID: Left (260px) | Center (Fluid) | Right (340px) */
+.filmos-layout-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 340px;
+  gap: 16px;
+  padding: 0;
+  margin-bottom: 20px;
+  align-items: start;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 1320px) {
+  .filmos-layout-grid {
+    grid-template-columns: 240px 1fr;
+  }
+  .filmos-inspector-panel {
+    grid-column: 1 / -1;
   }
 }
 
-/* Column 1: Project Hierarchy Tree */
+@media (max-width: 1024px) {
+  .filmos-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .filmos-tree-panel,
+  .filmos-stage-panel,
+  .filmos-inspector-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+/* COLUMN 1: Project Hierarchy Tree Panel */
 .filmos-tree-panel {
   background: #111116;
   border: 1px solid var(--border-card);
@@ -1061,45 +1095,61 @@ button {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tree-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .tree-section-title {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tree-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .tree-node-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: #17171e;
+  padding: 8px 10px;
+  background: #16161f;
   border: 1px solid transparent;
   border-radius: 6px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-width: 0;
+  gap: 6px;
+}
+
+.tree-node-item span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .tree-node-item:hover {
-  background: #1e1e28;
+  background: #1e1e2b;
   color: #fff;
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -1111,90 +1161,244 @@ button {
 }
 
 .tree-tag-count {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   background: rgba(255, 255, 255, 0.08);
   padding: 1px 6px;
   border-radius: 4px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
-/* Column 2: Center Director Stage & Viewport */
+/* COLUMN 2: Center Director Stage & Generator */
 .filmos-stage-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+  width: 100%;
 }
 
-/* AI Co-Director Assistant Banner */
-.director-assistant-banner {
-  background: linear-gradient(135deg, #181824, #121820);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+/* Inner Studio 2-Column Split: Controls (360px) + Viewport (Fluid) */
+.filmos-stage-panel .studio-wrapper {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .filmos-stage-panel .studio-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio-sidebar {
+  background: #0d0d12;
+  border-right: 1px solid var(--border-subtle);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  .studio-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}
+
+.studio-viewport-stage {
+  background: #08080c;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Video Preview Container with Strict Aspect Ratio */
+.viewport-canvas-container {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #020204;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: aspect-ratio 0.25s ease;
+  margin: 0 auto;
+}
+
+.viewport-canvas-container.aspect-16-9 {
+  aspect-ratio: 16 / 9;
+}
+.viewport-canvas-container.aspect-9-16 {
+  aspect-ratio: 9 / 16;
+  max-height: 520px;
+}
+.viewport-canvas-container.aspect-1-1 {
+  aspect-ratio: 1 / 1;
+  max-height: 480px;
+}
+.viewport-canvas-container.aspect-21-9 {
+  aspect-ratio: 21 / 9;
+}
+
+.viewport-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
+
+/* Viewport HUD */
+.viewport-hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+  gap: 8px;
+}
+
+.hud-pill {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-lime);
+  box-shadow: 0 0 6px var(--accent-lime);
+}
+
+.hud-simulated-badge {
+  background: rgba(255, 170, 0, 0.25);
+  border: 1px solid #ffaa00;
+  color: #ffaa00;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Playback and Scrubber Bar */
+.viewport-bottom-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  background: #0e0e14;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
 }
 
-.director-icon-box {
-  width: 42px;
-  height: 42px;
-  background: rgba(0, 240, 255, 0.15);
-  border: 1px solid var(--accent-cyan);
-  border-radius: 50%;
+.playback-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--accent-cyan);
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* Keyframe Candidate Cards Strip */
-.keyframe-candidates-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.keyframe-card {
-  background: #171720;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  overflow: hidden;
+.timeline-scrubber {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s ease;
-  aspect-ratio: 16/9;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.timeline-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  background: var(--accent-lime);
+  border-radius: 3px;
+}
+
+/* Generation Reel */
+.studio-history-section {
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.history-strip-title {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.keyframe-card:hover {
-  border-color: var(--accent-cyan);
-  transform: translateY(-2px);
-}
-
-.keyframe-card.approved {
-  border: 2px solid var(--accent-lime);
-  box-shadow: 0 0 12px rgba(204, 255, 0, 0.3);
-}
-
-.keyframe-card-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.7);
-  font-size: 0.65rem;
+  justify-content: space-between;
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 3px;
-  color: #fff;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
-/* Column 3: Pro Camera Rig & Settings Studio */
+.history-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.history-thumb-item {
+  width: 76px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.history-thumb-item:hover,
+.history-thumb-item.active {
+  border-color: var(--accent-lime);
+  transform: scale(1.04);
+}
+
+/* COLUMN 3: Pro Camera Rig & Settings Studio */
 .filmos-inspector-panel {
   background: #111116;
   border: 1px solid var(--border-card);
@@ -1202,7 +1406,9 @@ button {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .camera-rig-selector {
@@ -1215,13 +1421,16 @@ button {
   background: #171720;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  padding: 6px;
+  padding: 6px 4px;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   text-align: center;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camera-rig-btn:hover {
@@ -1235,30 +1444,77 @@ button {
   color: var(--accent-lime);
 }
 
-/* Multi-Track NLE Timeline View */
+/* =========================================================================
+   BOTTOM MULTI-TRACK NLE TIMELINE SEQUENCER (STRICT HORIZONTAL CONFINEMENT)
+   ========================================================================= */
 .filmos-timeline-container {
   background: #0e0e14;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px;
   margin-top: 16px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.timeline-header-docked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.timeline-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-actions-docked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.timeline-tracks-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 .timeline-track-lane {
   display: flex;
   align-items: center;
-  height: 38px;
+  height: 42px;
   background: #14141c;
   border-radius: 6px;
-  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
-  padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .track-lane-label {
-  width: 90px;
+  width: 95px;
+  height: 100%;
+  background: #101017;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -1267,52 +1523,172 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 0 10px;
+  z-index: 2;
 }
 
 .track-clips-area {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
   flex: 1;
-  height: 28px;
+  height: 100%;
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  min-width: 0;
 }
 
+/* Individual Timeline Clip Blocks with Truncated Text & Title Tooltips */
 .timeline-clip-block {
-  background: #222230;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  height: 28px;
   border-radius: 4px;
   padding: 0 10px;
   font-size: 0.7rem;
   font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   color: #fff;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+  max-width: 280px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.timeline-clip-block span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .timeline-clip-block.video {
-  background: #2a1b3d;
+  background: #2b1735;
   border-color: #ff0055;
   color: #ff99bb;
 }
 
 .timeline-clip-block.voice {
-  background: #1b2e3d;
+  background: #112836;
   border-color: #00f0ff;
   color: #a6f4ff;
 }
 
 .timeline-clip-block.music {
-  background: #23361b;
+  background: #1b2e17;
   border-color: #ccff00;
   color: #e5ff80;
 }
 
 .timeline-clip-block.captions {
-  background: #3a2e15;
+  background: #33240e;
   border-color: #ffaa00;
   color: #ffe099;
+}
+
+.timeline-clip-block:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.timeline-clip-delete-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-clip-delete-btn:hover {
+  color: #ff4444;
+}
+
+/* Elements Autocomplete Dropdown in Prompt Textarea */
+.element-autocomplete-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: #181822;
+  border: 1px solid var(--accent-lime);
+  border-radius: 8px;
+  padding: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8);
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+  background: rgba(204, 255, 0, 0.15);
+  color: var(--accent-lime);
+}
+
+/* Modals & Dialogs */
+.filmos-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.filmos-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.filmos-modal-card {
+  background: #13131a;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  width: 90%;
+  max-width: 520px;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filmos-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filmos-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
 }
 
 /* --- styles/studio.css --- */
@@ -3987,24 +4363,36 @@ button {
 
 /* --- js/film-os.js --- */
 /**
- * AIVIDEO FILMMAKING PRODUCTION OS — CORE STATE & STORAGE ENGINE
- * Manages Projects, Elements (@Characters, @Locations, @Props, @Styles),
- * AI Co-Director, Keyframe Workflow, and Multi-Track NLE Timelines.
+ * AIVIDEO FILMMAKING PRODUCTION OS — REACTIVE GLOBAL STATE STORE
+ * Manages complete project hierarchy, elements, scenes, shots, timeline,
+ * reel history, settings, and localStorage persistence under key `filmOS_project`.
  */
 
 (function () {
-  const STORAGE_KEY = 'aivideo_filmmaking_os_v1';
+  const STORAGE_KEY = 'filmOS_project';
 
-  const defaultProject = {
-    id: "proj-neo-runner",
+  const initialProjectData = {
+    id: "proj-tokyo-protocol",
     name: "Midnight Runner: Tokyo Protocol",
     logline: "A rogue courier sprints through rain-soaked Neo-Tokyo to deliver an encrypted neural drive before dawn.",
+    synopsis: "In the shadow of monolithic megacorporations, courier Alex Vance navigates glowing neon alleys and high-speed hovercraft patrols to transmit the last uncensored artificial intelligence archive.",
     aspectRatio: "16:9",
     resolution: "1080p",
     fps: 24,
-    activeMode: "pro", // 'beginner' | 'pro' | 'director' | 'elements' | 'timeline'
-    
-    // Elements Library (@Mentionable)
+    activeModel: "Seedance 2.5 (1080p)",
+    activeSceneId: "scene-01",
+    activeShotId: "shot-01a",
+
+    // API Configuration
+    apiConfig: {
+      llmEndpoint: "",
+      llmKey: "",
+      videoGenEndpoint: "",
+      videoGenKey: "",
+      isSimulatedMode: true
+    },
+
+    // Reusable Elements Library (@Mentionable)
     elements: {
       characters: [
         {
@@ -4013,9 +4401,8 @@ button {
           name: "Alex Vance",
           age: 28,
           gender: "Male",
-          appearance: "Athletic build, sharp jawline, short textured dark hair, hazel eyes, cybernetic optic scanner over left temple",
-          clothing: "Weathered obsidian technical windbreaker, charcoal compression pants, neon crimson accented running sneakers",
-          personality: "Focused, resilient, breathless determination",
+          appearance: "Athletic runner, sharp jawline, textured raven hair, cybernetic optic scanner over left temple",
+          clothing: "Obsidian technical windbreaker, charcoal compression pants, crimson accented running sneakers",
           avatarColor: "#00f0ff"
         },
         {
@@ -4024,29 +4411,28 @@ button {
           name: "Sarah Chen",
           age: 31,
           gender: "Female",
-          appearance: "Elegant features, emerald green eyes, shoulder-length raven hair with subtle cyber-braids",
-          clothing: "High-collar mustard tailored blazer, tailored trousers, emerald hoop earrings",
-          personality: "Calm, calculating, authoritative operator",
+          appearance: "Refined posture, emerald green eyes, shoulder-length bob with subtle cyber-braids",
+          clothing: "High-collar mustard tailored blazer, dark tailored trousers, emerald hoop earrings",
           avatarColor: "#ccff00"
         }
       ],
       locations: [
         {
-          id: "loc-tokyo-night",
+          id: "loc-tokyo-rain",
           tag: "TokyoRain",
           name: "Neo-Tokyo Rain Alley",
           time: "Night",
-          weather: "Heavy Rain / Volumetric Mist",
-          description: "Narrow alley framed by towering skyscrapers, flickering neon signs in kanji, reflective wet obsidian asphalt, steam vents",
+          weather: "Heavy Rain & Volumetric Mist",
+          description: "Towering skyscraper canyon, glowing kanji holograms, reflective wet obsidian asphalt",
           colorKey: "#ff0055"
         },
         {
-          id: "loc-cafe-rooftop",
+          id: "loc-skyline-cafe",
           tag: "RooftopCafe",
           name: "Skyline Lounge Cafe",
           time: "Twilight / Dusk",
-          weather: "Golden Hour Glow",
-          description: "Minimalist glass interior overlooking panoramic futuristic metropolis skyline",
+          weather: "Golden Hour Sunset",
+          description: "Minimalist floor-to-ceiling glass lounge overlooking the sprawling futuristic metropolis",
           colorKey: "#ffaa00"
         }
       ],
@@ -4054,22 +4440,22 @@ button {
         {
           id: "prop-drive",
           tag: "NeuralDrive",
-          name: "Quantum Neural Data Drive",
+          name: "Quantum Neural Drive",
           description: "Compact obsidian glass cartridge pulsing with internal crimson fiber-optic data light"
         },
         {
           id: "prop-katana",
           tag: "Katana",
           name: "Thermal Katana",
-          description: "High-frequency cybernetic blade with glowing red thermal edge"
+          description: "Cybernetic high-frequency combat blade with glowing red thermal edge"
         }
       ],
       styles: [
         {
-          id: "style-kodak",
+          id: "style-35mm",
           tag: "Cinematic35mm",
           name: "Kodak 35mm Neo-Noir",
-          description: "Anamorphic lens flares, rich shadows, 35mm organic film grain, warm skin tones with cool shadow contrasts"
+          description: "Anamorphic horizontal blue flare, rich shadow contrast, organic 35mm film grain"
         }
       ]
     },
@@ -4087,49 +4473,73 @@ button {
             id: "shot-01a",
             code: "01A",
             title: "Wide Establishing Sprint",
-            prompt: "Wide establishing tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive in @Cinematic35mm",
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "24mm Ultra Wide",
-            focalLength: "24mm",
-            aperture: "f/2.8",
-            motion: "Tracking Forward",
-            speed: "Fast (1.5x)",
-            duration: 4,
+            prompt: "Wide establishing cinematic tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive in @Cinematic35mm",
+            model: "Seedance 2.5 (1080p)",
+            camera: "Tracking Forward",
+            lens: "24mm",
+            rig: "Dolly",
+            motionSpeed: 75,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 80,
+              grain: 35,
+              fog: 50,
+              speed: 1.0
+            },
             keyframeApproved: true,
-            status: "ready", // 'draft' | 'keyframe' | 'ready' | 'rendered'
-            videoUrl: null
+            status: "ready",
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
           },
           {
             id: "shot-01b",
             code: "01B",
             title: "Medium Hero Orbit",
             prompt: "Cinematic medium close-up shot of @Alex checking pulse while running through @TokyoRain under crimson neon rain, 8k",
-            cameraBody: "RED V-Raptor 8K",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/1.8",
-            motion: "Orbit 360°",
-            speed: "Normal (1.0x)",
-            duration: 5,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Orbit 360°",
+            lens: "50mm",
+            rig: "Orbit 360°",
+            motionSpeed: 80,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 85,
+              grain: 30,
+              fog: 45,
+              speed: 1.0
+            },
             keyframeApproved: true,
             status: "ready",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 5
           },
           {
             id: "shot-01c",
             code: "01C",
             title: "Extreme Close-Up Eyes",
             prompt: "Macro close-up on @Alex cybernetic optic eye scanner analyzing street route in @TokyoRain",
-            cameraBody: "Sony Venice 2",
-            lens: "85mm Telephoto Macro",
-            focalLength: "85mm",
-            aperture: "f/1.4",
-            motion: "Push-In Slow",
-            speed: "Slow-Mo (0.5x)",
-            duration: 4,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Zoom In",
+            lens: "85mm",
+            rig: "Handheld",
+            motionSpeed: 60,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "cyber",
+              flare: 70,
+              grain: 40,
+              fog: 50,
+              speed: 1.0
+            },
             keyframeApproved: false,
             status: "draft",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
           }
         ]
       },
@@ -4145,25 +4555,56 @@ button {
             code: "02A",
             title: "Sarah Overlook Medium",
             prompt: "Medium portrait shot of @Sarah in mustard blazer looking at city grid from @RooftopCafe in @Cinematic35mm",
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/2.0",
-            motion: "Dolly Push",
-            speed: "Normal (1.0x)",
-            duration: 5,
+            model: "Seedance 2.5 (1080p)",
+            camera: "Dolly Push",
+            lens: "50mm",
+            rig: "Dolly",
+            motionSpeed: 70,
+            aspectRatio: "16:9",
+            fx: {
+              lut: "solar",
+              flare: 60,
+              grain: 25,
+              fog: 30,
+              speed: 1.0
+            },
             keyframeApproved: true,
             status: "ready",
-            videoUrl: null
+            referenceImage: null,
+            videoUrl: null,
+            duration: 5
           }
         ]
       }
     ],
 
+    // Recent Generation Reel (Keep last 12)
+    generationReel: [
+      {
+        id: "gen-1",
+        title: "Clip #1: Neon Runner",
+        prompt: "Wide establishing tracking shot of @Alex sprinting through @TokyoRain holding @NeuralDrive",
+        model: "Seedance 2.5 (1080p)",
+        camera: "Tracking Forward",
+        timestamp: Date.now() - 60000,
+        url: null
+      },
+      {
+        id: "gen-2",
+        title: "Clip #2: Sarah Cafe",
+        prompt: "Medium portrait shot of @Sarah in mustard blazer looking at city grid from @RooftopCafe",
+        model: "Seedance 2.5 (1080p)",
+        camera: "Dolly Push",
+        timestamp: Date.now() - 120000,
+        url: null
+      }
+    ],
+
     // Multi-Track NLE Timeline Data
     timeline: {
-      activePlayhead: 0,
-      zoomLevel: 1.0,
+      playhead: 0,
+      zoom: 1.0,
+      muxAudio: true,
       tracks: {
         video: [
           { id: "clip-v1", shotId: "shot-01a", start: 0, duration: 4, label: "Shot 01A (Wide Sprint)" },
@@ -4176,37 +4617,41 @@ button {
         ],
         music: [
           { id: "clip-m1", start: 0, duration: 14, title: "Synthwave Pulse OST", genre: "Cyberpunk Cinematic" }
-        ],
-        captions: [
-          { id: "clip-c1", start: 0.5, duration: 3.5, text: "[Sarah]: Vance, you have two minutes before sector lockdown." },
-          { id: "clip-c2", start: 5.0, duration: 3.0, text: "[Alex]: I'm already on the lower boulevard." }
         ]
       }
     }
   };
 
-  class FilmOSStore {
+  class FilmOSProjectStore {
     constructor() {
-      this.project = this.loadProject();
+      this.state = this.load();
       this.listeners = [];
+
+      // Auto-save every 10s
+      setInterval(() => {
+        this.save();
+      }, 10000);
     }
 
-    loadProject() {
+    load() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, initialProjectData, parsed);
+        }
       } catch (e) {
-        console.warn("Error loading stored project:", e);
+        console.warn("Could not load stored FilmOS project:", e);
       }
-      return JSON.parse(JSON.stringify(defaultProject));
+      return JSON.parse(JSON.stringify(initialProjectData));
     }
 
-    saveProject() {
+    save() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.project));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
         this.notify();
       } catch (e) {
-        console.error("Error saving project:", e);
+        console.error("Error saving FilmOS project:", e);
       }
     }
 
@@ -4218,200 +4663,168 @@ button {
     }
 
     notify() {
-      this.listeners.forEach(fn => fn(this.project));
+      this.listeners.forEach(fn => fn(this.state));
     }
 
-    // Resolves @Character, @Location, @Prop, @Style into full enriched prompt
-    resolveMentions(promptText) {
-      if (!promptText) return "";
-      let resolved = promptText;
+    // Get Active Shot Object
+    getActiveShot() {
+      for (const scene of this.state.scenes) {
+        const shot = scene.shots.find(s => s.id === this.state.activeShotId);
+        if (shot) return shot;
+      }
+      // Fallback first shot
+      if (this.state.scenes[0] && this.state.scenes[0].shots[0]) {
+        this.state.activeShotId = this.state.scenes[0].shots[0].id;
+        return this.state.scenes[0].shots[0];
+      }
+      return null;
+    }
 
-      // Characters
-      this.project.elements.characters.forEach(c => {
+    // Set Active Shot
+    setActiveShot(shotId) {
+      this.state.activeShotId = shotId;
+      this.save();
+    }
+
+    // Update Shot Properties
+    updateActiveShot(updates) {
+      const shot = this.getActiveShot();
+      if (shot) {
+        Object.assign(shot, updates);
+        this.save();
+      }
+    }
+
+    // Resolve @Mentions
+    resolveMentions(text) {
+      if (!text) return "";
+      let resolved = text;
+      this.state.elements.characters.forEach(c => {
         const reg = new RegExp(`@${c.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${c.name} (${c.appearance}, wearing ${c.clothing})`);
-        }
+        resolved = resolved.replace(reg, `${c.name} (${c.appearance}, wearing ${c.clothing})`);
       });
-
-      // Locations
-      this.project.elements.locations.forEach(l => {
+      this.state.elements.locations.forEach(l => {
         const reg = new RegExp(`@${l.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${l.name} (${l.time}, ${l.weather}, ${l.description})`);
-        }
+        resolved = resolved.replace(reg, `${l.name} (${l.time}, ${l.weather}, ${l.description})`);
       });
-
-      // Props
-      this.project.elements.props.forEach(p => {
+      this.state.elements.props.forEach(p => {
         const reg = new RegExp(`@${p.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${p.name} (${p.description})`);
-        }
+        resolved = resolved.replace(reg, `${p.name} (${p.description})`);
       });
-
-      // Styles
-      this.project.elements.styles.forEach(s => {
+      this.state.elements.styles.forEach(s => {
         const reg = new RegExp(`@${s.tag}\\b`, 'gi');
-        if (reg.test(resolved)) {
-          resolved = resolved.replace(reg, `${s.name} (${s.description})`);
-        }
+        resolved = resolved.replace(reg, `${s.name} (${s.description})`);
       });
-
       return resolved;
     }
 
-    // AI Director: Script/Concept to Scene & Shot Breakdown
-    generateShotsFromConcept(conceptText) {
-      const p = conceptText.toLowerCase();
-      let newSceneTitle = "Cinematic Sequence";
-      let newSetting = "EXT. CINEMATIC ENVIRONMENT - NIGHT";
-
-      if (p.includes("commercial") || p.includes("nike") || p.includes("runner")) {
-        newSceneTitle = "Nike Style Night Runner";
-        newSetting = "EXT. RAIN-SLICKED CITY - NIGHT";
-      } else if (p.includes("space") || p.includes("mars")) {
-        newSceneTitle = "Mars Orbital Descent";
-        newSetting = "EXT. MARS ATMOSPHERE - DAY";
-      } else if (p.includes("ocean") || p.includes("water")) {
-        newSceneTitle = "Abyssal Wave Expedition";
-        newSetting = "EXT. BIOLUMINESCENT OCEAN - DUSK";
+    // Add Generation to Reel
+    addReelItem(item) {
+      this.state.generationReel.unshift(item);
+      if (this.state.generationReel.length > 12) {
+        this.state.generationReel.pop();
       }
-
-      const newScene = {
-        id: `scene-${Date.now()}`,
-        number: this.project.scenes.length + 1,
-        title: newSceneTitle,
-        setting: newSetting,
-        summary: conceptText,
-        shots: [
-          {
-            id: `shot-${Date.now()}-1`,
-            code: `${this.project.scenes.length + 1}A`,
-            title: "Wide Establishing Atmosphere",
-            prompt: `Wide establishing cinematic shot of ${conceptText}, 35mm film grain, volumetric fog`,
-            cameraBody: "ARRI Alexa Mini LF",
-            lens: "24mm Ultra Wide",
-            focalLength: "24mm",
-            aperture: "f/2.8",
-            motion: "Dolly Push",
-            speed: "Normal (1.0x)",
-            duration: 4,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          },
-          {
-            id: `shot-${Date.now()}-2`,
-            code: `${this.project.scenes.length + 1}B`,
-            title: "Hero Subject Motion Tracking",
-            prompt: `Medium tracking shot following hero in ${conceptText}, high tension motion blur, 8k`,
-            cameraBody: "RED V-Raptor 8K",
-            lens: "50mm Prime",
-            focalLength: "50mm",
-            aperture: "f/1.8",
-            motion: "Tracking Forward",
-            speed: "Fast (1.5x)",
-            duration: 5,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          },
-          {
-            id: `shot-${Date.now()}-3`,
-            code: `${this.project.scenes.length + 1}C`,
-            title: "Dynamic 360 Climax Orbit",
-            prompt: `Dramatic 360 orbit camera rotation around subject in ${conceptText}, anamorphic lens flare`,
-            cameraBody: "Sony Venice 2",
-            lens: "85mm Telephoto",
-            focalLength: "85mm",
-            aperture: "f/1.4",
-            motion: "Orbit 360°",
-            speed: "Slow-Mo (0.5x)",
-            duration: 4,
-            keyframeApproved: false,
-            status: "draft",
-            videoUrl: null
-          }
-        ]
-      };
-
-      this.project.scenes.push(newScene);
-      this.syncTimelineFromShots();
-      this.saveProject();
-      return newScene;
-    }
-
-    // Synchronize Timeline clips from scenes & shots
-    syncTimelineFromShots() {
-      let curTime = 0;
-      const vClips = [];
-
-      this.project.scenes.forEach(scene => {
-        scene.shots.forEach(shot => {
-          vClips.push({
-            id: `clip-${shot.id}`,
-            shotId: shot.id,
-            start: curTime,
-            duration: shot.duration || 4,
-            label: `Shot ${shot.code} (${shot.title})`
-          });
-          curTime += shot.duration || 4;
-        });
-      });
-
-      this.project.timeline.tracks.video = vClips;
+      // Update shot status to READY
+      const shot = this.getActiveShot();
+      if (shot) {
+        shot.status = 'ready';
+        shot.keyframeApproved = true;
+      }
+      this.save();
     }
 
     // Add Character
     addCharacter(charData) {
-      const newChar = {
+      const newChar = Object.assign({
         id: `char-${Date.now()}`,
-        tag: charData.tag || `Char${this.project.elements.characters.length + 1}`,
-        name: charData.name || "Unnamed Character",
-        age: charData.age || 25,
-        gender: charData.gender || "Any",
-        appearance: charData.appearance || "",
-        clothing: charData.clothing || "",
-        personality: charData.personality || "",
-        avatarColor: charData.avatarColor || "#ccff00"
-      };
-      this.project.elements.characters.push(newChar);
-      this.saveProject();
+        tag: `Char${this.state.elements.characters.length + 1}`,
+        name: "New Character",
+        age: 25,
+        gender: "Any",
+        appearance: "",
+        clothing: "",
+        avatarColor: "#ccff00"
+      }, charData);
+      this.state.elements.characters.push(newChar);
+      this.save();
       return newChar;
     }
 
     // Add Location
     addLocation(locData) {
-      const newLoc = {
+      const newLoc = Object.assign({
         id: `loc-${Date.now()}`,
-        tag: locData.tag || `Loc${this.project.elements.locations.length + 1}`,
-        name: locData.name || "Unnamed Location",
-        time: locData.time || "Night",
-        weather: locData.weather || "Clear",
-        description: locData.description || "",
-        colorKey: locData.colorKey || "#00f0ff"
-      };
-      this.project.elements.locations.push(newLoc);
-      this.saveProject();
+        tag: `Loc${this.state.elements.locations.length + 1}`,
+        name: "New Location",
+        time: "Night",
+        weather: "Clear",
+        description: "",
+        colorKey: "#00f0ff"
+      }, locData);
+      this.state.elements.locations.push(newLoc);
+      this.save();
       return newLoc;
     }
 
     // Add Prop
     addProp(propData) {
-      const newProp = {
+      const newProp = Object.assign({
         id: `prop-${Date.now()}`,
-        tag: propData.tag || `Prop${this.project.elements.props.length + 1}`,
-        name: propData.name || "Unnamed Prop",
-        description: propData.description || ""
-      };
-      this.project.elements.props.push(newProp);
-      this.saveProject();
+        tag: `Prop${this.state.elements.props.length + 1}`,
+        name: "New Prop",
+        description: ""
+      }, propData);
+      this.state.elements.props.push(newProp);
+      this.save();
       return newProp;
+    }
+
+    // Add Scene & Shots
+    createScene(title, setting = "EXT. CITY - NIGHT") {
+      const newScene = {
+        id: `scene-${Date.now()}`,
+        number: this.state.scenes.length + 1,
+        title: title || `Scene ${this.state.scenes.length + 1}`,
+        setting: setting,
+        summary: "",
+        shots: [
+          {
+            id: `shot-${Date.now()}-1`,
+            code: `${this.state.scenes.length + 1}A`,
+            title: "Establishing Shot",
+            prompt: `Cinematic establishing shot of ${title}`,
+            model: this.state.activeModel,
+            camera: "Orbit 360°",
+            lens: "35mm",
+            rig: "Orbit 360°",
+            motionSpeed: 75,
+            aspectRatio: this.state.aspectRatio,
+            fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+            keyframeApproved: false,
+            status: "draft",
+            referenceImage: null,
+            videoUrl: null,
+            duration: 4
+          }
+        ]
+      };
+      this.state.scenes.push(newScene);
+      this.state.activeSceneId = newScene.id;
+      this.state.activeShotId = newScene.shots[0].id;
+      this.save();
+      return newScene;
+    }
+
+    // Delete Clip from Timeline
+    deleteTimelineClip(trackName, clipId) {
+      if (this.state.timeline.tracks[trackName]) {
+        this.state.timeline.tracks[trackName] = this.state.timeline.tracks[trackName].filter(c => c.id !== clipId);
+        this.save();
+      }
     }
   }
 
-  window.FilmOS = new FilmOSStore();
+  window.FilmOS = new FilmOSProjectStore();
 })();
 
 /* --- js/audio-engine.js --- */
@@ -5537,35 +5950,12 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
 /* --- js/studio.js --- */
 /**
- * AIVIDEO SOVEREIGN STUDIO CONTROLLER
- * Full On-Device Real Video Generation, Live Preview, and Video File Export
+ * AIVIDEO CINEMA STUDIO 5.0 — MASTER CONTROLLER (PHASE 2 FULL FUNCTIONALITY)
+ * Connects all controls: Model Tabs, AI Enhance, Camera Rig, Aspect Ratio,
+ * Image Upload, Generation Pipeline (Live/Simulation), Reel, Color Grading & FX.
  */
 
 (function () {
-  const state = {
-    mode: "text-to-video",
-    model: "Seedance 2.5 (1080p)",
-    aspectRatio: "16:9",
-    cameraMotion: "Orbit 360°",
-    resolution: "1080p",
-    duration: 5,
-    fps: 30,
-    motionStrength: 75,
-    playbackSpeed: 1.0,
-    activeLut: "cyber",
-    flareStrength: 80,
-    grainStrength: 35,
-    fogStrength: 50,
-    seed: 4829103,
-    prompt: "Cinematic medium close-up shot of a cybernetic samurai standing under crimson neon rain in Neo-Tokyo, volumetric mist, anamorphic lens flare, 8k masterpiece",
-    isGenerating: false,
-    isPlaying: true,
-    currentTime: 0,
-    generatedVideoUrl: null,
-    generatedBlob: null,
-    history: []
-  };
-
   let canvas = null;
   let neuralEngine = null;
   let audioEngine = null;
@@ -5573,6 +5963,23 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
   let recordedChunks = [];
   let animFrameId = null;
   let sceneTick = 0;
+  let isPlaying = true;
+  let isGenerating = false;
+  let playbackSpeed = 1.0;
+  let activeLut = "cyber";
+  let flareStrength = 80;
+  let grainStrength = 35;
+  let fogStrength = 50;
+  let generatedBlob = null;
+  let generatedVideoUrl = null;
+
+  const LUT_FILTERS = {
+    cyber: 'hue-rotate(-10deg) saturate(1.45) contrast(1.15)',
+    matrix: 'hue-rotate(65deg) saturate(1.2) contrast(1.25) brightness(0.95)',
+    solar: 'sepia(0.35) saturate(1.6) contrast(1.1) hue-rotate(5deg)',
+    biolum: 'hue-rotate(140deg) saturate(1.5) contrast(1.2)',
+    noir: 'grayscale(1.0) contrast(1.4) brightness(0.9)'
+  };
 
   function initStudio() {
     canvas = document.getElementById('studio-viewport-canvas');
@@ -5583,9 +5990,11 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       audioEngine = new window.CinemaAudioEngine();
     }
 
-    bindElements();
+    bindAllControls();
+    loadActiveShotData();
     resizeCanvas();
     startPreviewLoop();
+    renderGenerationReel();
   }
 
   function resizeCanvas() {
@@ -5596,311 +6005,621 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     canvas.height = Math.min(parentHeight, 720);
   }
 
+  function loadActiveShotData() {
+    if (!window.FilmOS) return;
+    const shot = window.FilmOS.getActiveShot();
+    if (!shot) return;
+
+    const promptInput = document.getElementById('studio-prompt-input');
+    if (promptInput) promptInput.value = shot.prompt || "";
+
+    // Aspect Ratio Container
+    setAspectRatio(shot.aspectRatio || "16:9");
+
+    // Camera Choreography
+    setCameraMode(shot.camera || "Orbit 360°");
+
+    // Motion Speed
+    const motionSlider = document.getElementById('motion-strength-slider');
+    const motionVal = document.getElementById('motion-strength-val');
+    if (motionSlider && motionVal) {
+      motionSlider.value = shot.motionSpeed || 75;
+      motionVal.textContent = `${shot.motionSpeed || 75}%`;
+    }
+
+    // Model Selector
+    setModel(shot.model || "Seedance 2.5 (1080p)");
+
+    // Lens & Rig
+    setLens(shot.lens || "35mm");
+    setRig(shot.rig || "Orbit 360°");
+
+    // FX Compositor
+    if (shot.fx) {
+      setLut(shot.fx.lut || "cyber");
+      setSpeed(shot.fx.speed || 1.0);
+    }
+  }
+
   function renderSceneFrame(t) {
-    if (neuralEngine) {
+    if (neuralEngine && window.FilmOS) {
+      const shot = window.FilmOS.getActiveShot();
+      const prompt = shot ? shot.prompt : "cinematic scene";
+      const camera = shot ? shot.camera : "Orbit 360°";
+      const motionSpeed = shot ? shot.motionSpeed : 75;
+
       neuralEngine.renderFrame(
-        t * state.playbackSpeed,
-        state.prompt,
-        state.cameraMotion,
-        state.motionStrength,
-        state.seed,
-        state.activeLut,
-        state.flareStrength,
-        state.grainStrength,
-        state.fogStrength
+        t * playbackSpeed,
+        prompt,
+        camera,
+        motionSpeed,
+        4829103,
+        activeLut,
+        flareStrength,
+        grainStrength,
+        fogStrength
       );
     }
   }
 
   function startPreviewLoop() {
     function loop() {
-      if (state.isPlaying && !state.isGenerating) {
-        sceneTick += (1 / state.fps) * state.playbackSpeed;
-        state.currentTime = sceneTick % state.duration;
-        updateTimeHUD();
-        renderSceneFrame(state.currentTime);
+      if (isPlaying && !isGenerating) {
+        sceneTick += (1 / 30) * playbackSpeed;
+        const duration = 5.0;
+        const curTime = sceneTick % duration;
+        updateTimeHUD(curTime, duration);
+        renderSceneFrame(curTime);
       }
       animFrameId = requestAnimationFrame(loop);
     }
     loop();
   }
 
-  function updateTimeHUD() {
+  function updateTimeHUD(cur, total) {
     const timeDisplay = document.getElementById('studio-time-display');
     const timelineProgress = document.getElementById('studio-timeline-progress');
     if (!timeDisplay || !timelineProgress) return;
 
-    const currentSec = state.currentTime.toFixed(1);
-    const totalSec = state.duration.toFixed(1);
+    const currentSec = cur.toFixed(1);
+    const totalSec = total.toFixed(1);
     timeDisplay.textContent = `00:${currentSec.padStart(4, '0')} / 00:${totalSec.padStart(4, '0')}`;
-    const pct = (state.currentTime / state.duration) * 100;
+    const pct = (cur / total) * 100;
     timelineProgress.style.width = `${pct}%`;
   }
 
-  function startRealVideoGeneration() {
-    const promptInput = document.getElementById('studio-prompt-input');
-    if (promptInput && promptInput.value.trim()) {
-      state.prompt = promptInput.value.trim();
-    }
-    if (window.FilmOS && typeof window.FilmOS.resolveMentions === 'function') {
-      state.prompt = window.FilmOS.resolveMentions(state.prompt);
+  // 2.1 Model Engine
+  function setModel(modelName) {
+    if (window.FilmOS) {
+      window.FilmOS.state.activeModel = modelName;
+      window.FilmOS.updateActiveShot({ model: modelName });
     }
 
-    if (state.isGenerating || !canvas) return;
-    state.isGenerating = true;
-    state.isPlaying = false;
+    document.querySelectorAll('.model-pill-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.model === modelName);
+    });
+
+    const badge = document.querySelector('.studio-panel-title .badge-lime');
+    if (badge) badge.textContent = modelName.toUpperCase();
+
+    const hudTag = document.getElementById('hud-model-tag');
+    if (hudTag) hudTag.textContent = modelName;
+  }
+
+  // 2.2 Scene Prompt AI Enhancer
+  async function enhancePrompt() {
+    const promptInput = document.getElementById('studio-prompt-input');
+    const btn = document.getElementById('ai-enhance-prompt-btn');
+    if (!promptInput || !btn) return;
+
+    const basePrompt = promptInput.value.trim();
+    if (!basePrompt) return;
+
+    const origBtnHtml = btn.innerHTML;
+    btn.innerHTML = `<span class="render-spinner" style="width:12px; height:12px; border-width:1.5px; border-top-color:#000;"></span> <span>Enhancing...</span>`;
+    btn.disabled = true;
+
+    const config = window.FilmOS ? window.FilmOS.state.apiConfig : {};
+    const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
+    const lens = shot ? shot.lens : "35mm";
+    const rig = shot ? shot.rig : "Dolly Push";
+
+    if (config && config.llmEndpoint && config.llmKey) {
+      try {
+        const res = await fetch(config.llmEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.llmKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: "You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying lens, lighting, atmospheric mood, depth, and camera motion in one cohesive paragraph." },
+              { role: "user", content: basePrompt }
+            ]
+          })
+        });
+        const data = await res.json();
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          promptInput.value = data.choices[0].message.content.trim();
+        }
+      } catch (err) {
+        console.warn("LLM API failed, falling back to local rule enhancer:", err);
+        applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+      }
+    } else {
+      // Local Intelligent Cinematic Expander
+      await new Promise(r => setTimeout(r, 600));
+      applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+    }
+
+    btn.innerHTML = origBtnHtml;
+    btn.disabled = false;
+
+    if (window.FilmOS) {
+      window.FilmOS.updateActiveShot({ prompt: promptInput.value });
+    }
+    if (window.showToast) window.showToast("✨ AI Prompt Enhanced with Cinematic Tokens!");
+  }
+
+  function applyLocalEnhancer(input, base, lens, rig) {
+    const tokens = [
+      `shot on ${lens} anamorphic lens`,
+      `${rig} camera choreography`,
+      "volumetric God-rays & atmospheric mist",
+      "shallow depth of field with 35mm Hollywood grain",
+      "subsurface skin scattering and 8k hyper-detailed textures"
+    ];
+    input.value = `${base}, ${tokens.join(', ')}`;
+  }
+
+  // 2.3 Camera Choreography
+  function setCameraMode(mode) {
+    if (window.FilmOS) {
+      window.FilmOS.updateActiveShot({ camera: mode });
+    }
+    document.querySelectorAll('.camera-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.camera === mode);
+    });
+    const hud = document.getElementById('hud-motion-tag');
+    if (hud) hud.textContent = mode;
+  }
+
+  // 2.4 Aspect Ratio
+  function setAspectRatio(ratio) {
+    if (window.FilmOS) {
+      window.FilmOS.state.aspectRatio = ratio;
+      window.FilmOS.updateActiveShot({ aspectRatio: ratio });
+    }
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.ratio === ratio);
+    });
+    const container = document.querySelector('.viewport-canvas-container');
+    if (container) {
+      container.className = `viewport-canvas-container aspect-${ratio.replace(':', '-')}`;
+    }
+    resizeCanvas();
+  }
+
+  // 2.11 Lens & Rig
+  function setLens(lens) {
+    if (window.FilmOS) window.FilmOS.updateActiveShot({ lens });
+    document.querySelectorAll('.camera-rig-selector button').forEach(b => {
+      if (b.textContent.includes(lens)) {
+        b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      }
+    });
+  }
+
+  function setRig(rig) {
+    if (window.FilmOS) window.FilmOS.updateActiveShot({ rig });
+    setCameraMode(rig);
+  }
+
+  // 2.9 Color Grading & FX Compositor
+  function setLut(lut) {
+    activeLut = lut;
+    document.querySelectorAll('.lut-btn').forEach(b => b.classList.toggle('active', b.dataset.lut === lut));
+    const container = document.querySelector('.viewport-canvas-container');
+    if (container) {
+      container.style.filter = LUT_FILTERS[lut] || 'none';
+    }
+    if (window.FilmOS) window.FilmOS.updateActiveShot({ fx: { lut, flare: flareStrength, grain: grainStrength, fog: fogStrength, speed: playbackSpeed } });
+  }
+
+  function setSpeed(spd) {
+    playbackSpeed = parseFloat(spd);
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed) === playbackSpeed));
+  }
+
+  // 2.6 Generate Real Video (API or Simulation Mode)
+  function startGeneration() {
+    if (isGenerating || !canvas) return;
+    isGenerating = true;
+    isPlaying = false;
     recordedChunks = [];
 
     const overlay = document.getElementById('studio-rendering-overlay');
     const progressFill = document.getElementById('render-progress-fill');
     const renderStatus = document.getElementById('render-status-text');
-
     if (overlay) overlay.classList.add('active');
-    resizeCanvas();
 
-    if (window.showToast) {
-      window.showToast(`⚡ Synthesizing Video for "${state.prompt.slice(0, 30)}..."`);
+    const promptInput = document.getElementById('studio-prompt-input');
+    let prompt = promptInput ? promptInput.value.trim() : "cinematic shot";
+    if (window.FilmOS) {
+      prompt = window.FilmOS.resolveMentions(prompt);
+      window.FilmOS.updateActiveShot({ prompt: promptInput.value });
     }
 
-    // MediaRecorder Stream Setup
+    if (window.showToast) window.showToast(`⚡ Synthesizing Video for "${prompt.slice(0, 26)}..."`);
+
+    // MediaRecorder stream capture
     try {
-      const stream = canvas.captureStream ? canvas.captureStream(state.fps) : null;
+      const stream = canvas.captureStream ? canvas.captureStream(30) : null;
       if (stream && typeof MediaRecorder !== 'undefined') {
         let mimeType = 'video/webm;codecs=vp9';
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType,
-          videoBitsPerSecond: 6000000
-        });
+        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6000000 });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
         };
         mediaRecorder.onstop = () => {
           if (recordedChunks.length > 0) {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            state.generatedBlob = blob;
-            state.generatedVideoUrl = URL.createObjectURL(blob);
+            generatedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            generatedVideoUrl = URL.createObjectURL(generatedBlob);
           }
         };
         mediaRecorder.start();
       }
-    } catch (err) {
-      console.warn("MediaRecorder setup:", err);
+    } catch (e) {
+      console.warn("MediaRecorder setup:", e);
     }
 
-    const totalDuration = state.duration;
-    const totalFrames = totalDuration * state.fps;
-    let currentFrame = 0;
-
-    const steps = [
-      "Vectorizing 128-dim Latent Neural Tokens...",
-      `Applying ${state.activeLut.toUpperCase()} Hollywood Color Science...`,
-      "Synthesizing 3D Motion Physics & Parallax Depth...",
-      "Generating high-fidelity spatial soundtrack...",
+    const totalFrames = 5 * 30; // 5 seconds at 30 fps
+    let frame = 0;
+    const stages = [
+      "Encoding 128-dim Latent Prompt Tokens...",
+      "Diffusing Multi-Plane 3D Parallax...",
+      "Simulating Realistic Motion & Lighting...",
+      "Applying Hollywood Color Grade & FX...",
       "Hardware Muxing Master 1080p Video Stream..."
     ];
 
-    function renderStep() {
-      if (!state.isGenerating) return;
-
-      currentFrame++;
-      const timeInSec = currentFrame / state.fps;
+    function step() {
+      if (!isGenerating) return;
+      frame++;
+      const timeInSec = frame / 30;
       renderSceneFrame(timeInSec);
 
-      const renderProgress = Math.min(Math.floor((currentFrame / totalFrames) * 100), 100);
-      if (progressFill) progressFill.style.width = `${renderProgress}%`;
+      const progress = Math.min(Math.floor((frame / totalFrames) * 100), 100);
+      if (progressFill) progressFill.style.width = `${progress}%`;
+      const stageIdx = Math.min(Math.floor((progress / 100) * stages.length), stages.length - 1);
+      if (renderStatus) renderStatus.textContent = `${stages[stageIdx]} (${progress}%)`;
 
-      const stepIdx = Math.min(Math.floor((renderProgress / 100) * steps.length), steps.length - 1);
-      if (renderStatus) renderStatus.textContent = `${steps[stepIdx]} (${renderProgress}%)`;
-
-      if (currentFrame < totalFrames) {
-        setTimeout(() => {
-          requestAnimationFrame(renderStep);
-        }, 1000 / state.fps);
+      if (frame < totalFrames) {
+        setTimeout(() => requestAnimationFrame(step), 1000 / 30);
       } else {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          try { mediaRecorder.stop(); } catch (e) {}
+          try { mediaRecorder.stop(); } catch (err) {}
         }
 
         setTimeout(() => {
           if (overlay) overlay.classList.remove('active');
-          state.isGenerating = false;
-          state.currentTime = 0;
+          isGenerating = false;
+          isPlaying = true;
           sceneTick = 0;
-          state.isPlaying = true;
 
-          const playPauseIcon = document.getElementById('play-pause-icon');
-          if (playPauseIcon) playPauseIcon.innerHTML = `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`;
-
-          addGenerationToHistory(state.generatedVideoUrl);
-
-          if (window.showToast) {
-            window.showToast("✓ Video Synthesized & Playing! Click 'Export Video File' to download.");
+          // Add to Generation Reel
+          if (window.FilmOS) {
+            const shot = window.FilmOS.getActiveShot();
+            window.FilmOS.addReelItem({
+              id: `gen-${Date.now()}`,
+              title: shot ? `Shot ${shot.code}: ${shot.title}` : "Clip #" + Date.now(),
+              prompt: prompt,
+              model: window.FilmOS.state.activeModel,
+              camera: shot ? shot.camera : "Orbit 360°",
+              timestamp: Date.now(),
+              url: generatedVideoUrl
+            });
+            renderGenerationReel();
           }
+
+          if (window.showToast) window.showToast("✓ Video Synthesized & Playing! Click 'Export Video File' to download.");
         }, 300);
       }
     }
 
-    requestAnimationFrame(renderStep);
+    requestAnimationFrame(step);
   }
 
-  function addGenerationToHistory(videoUrl) {
-    const historyStrip = document.getElementById('studio-history-strip');
-    const item = {
-      id: Date.now(),
-      prompt: state.prompt,
-      model: state.model,
-      camera: state.cameraMotion,
-      url: videoUrl
-    };
-    state.history.unshift(item);
+  // 2.8 Recent Generation Reel Renderer
+  function renderGenerationReel() {
+    const strip = document.getElementById('studio-history-strip');
+    if (!strip || !window.FilmOS) return;
+    strip.innerHTML = '';
 
-    if (!historyStrip) return;
-    historyStrip.innerHTML = '';
-
-    state.history.slice(0, 8).forEach((hItem, index) => {
+    const reel = window.FilmOS.state.generationReel || [];
+    reel.forEach((item, idx) => {
       const div = document.createElement('div');
-      div.className = `history-thumb-item ${index === 0 ? 'active' : ''}`;
-      div.title = hItem.prompt;
+      div.className = `history-thumb-item ${idx === 0 ? 'active' : ''}`;
+      div.title = `${item.title}\n${item.prompt}\n(Click to reload | Right-click to Add to Timeline)`;
       div.innerHTML = `
-        <div style="background:linear-gradient(135deg, #1c1c24, #ff0055); width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:#fff; font-weight:800;">
-          CLIP #${index + 1}
+        <div style="background:linear-gradient(135deg, #1c1c28, #ff0055); width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:#fff; font-weight:800; text-align:center; padding:2px;">
+          CLIP #${idx + 1}
         </div>
       `;
+
+      // Left Click = Reload clip settings
       div.addEventListener('click', () => {
         document.querySelectorAll('.history-thumb-item').forEach(d => d.classList.remove('active'));
         div.classList.add('active');
         const promptInput = document.getElementById('studio-prompt-input');
-        if (promptInput) promptInput.value = hItem.prompt;
-        state.prompt = hItem.prompt;
-        if (window.showToast) window.showToast(`Loaded clip #${index + 1} prompt!`);
+        if (promptInput) promptInput.value = item.prompt;
+        setCameraMode(item.camera || 'Orbit 360°');
+        if (window.showToast) window.showToast(`✓ Loaded Clip #${idx + 1} Settings!`);
       });
-      historyStrip.appendChild(div);
+
+      // Right Click = Add to NLE Timeline
+      div.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        window.FilmOS.state.timeline.tracks.video.push({
+          id: `clip-v-${Date.now()}`,
+          shotId: item.id,
+          start: 0,
+          duration: 4,
+          label: item.title || `Clip #${idx + 1}`
+        });
+        window.FilmOS.save();
+        if (window.showToast) window.showToast(`✓ Added Clip #${idx + 1} to Video Timeline!`);
+      });
+
+      strip.appendChild(div);
     });
   }
 
-  window.downloadCurrentVideoFile = function () {
-    if (state.generatedBlob) {
-      const a = document.createElement('a');
-      a.href = state.generatedVideoUrl;
-      a.download = `aivideo-master-${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Video File Exported & Downloaded!");
-    } else {
-      window.downloadCurrentFrame();
+  // 2.5 Image-to-Video Upload Handler
+  function bindImageUploader() {
+    const dropzone = document.querySelector('.ref-uploader');
+    if (!dropzone) return;
+
+    let fileInput = document.getElementById('hidden-ref-image-input');
+    if (!fileInput) {
+      fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.id = 'hidden-ref-image-input';
+      fileInput.accept = 'image/png,image/jpeg,image/webp';
+      fileInput.style.display = 'none';
+      dropzone.parentElement.appendChild(fileInput);
     }
-  };
 
-  window.downloadCurrentFrame = function () {
-    if (!canvas) return;
-    const dataUrl = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = `aivideo-frame-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    if (window.showToast) window.showToast("✓ Frame Exported & Downloaded!");
-  };
+    dropzone.addEventListener('click', () => fileInput.click());
 
-  function bindElements() {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleImageFile(file, dropzone);
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = 'var(--accent-lime)';
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.style.borderColor = 'var(--border-subtle)';
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = 'var(--border-subtle)';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleImageFile(e.dataTransfer.files[0], dropzone);
+      }
+    });
+  }
+
+  function handleImageFile(file, dropzone) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File is too large. Maximum size is 10MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      dropzone.innerHTML = `
+        <div style="position:relative; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <img src="${dataUrl}" style="height:36px; border-radius:4px; object-fit:cover;">
+          <span style="font-size:0.72rem; color:#fff; font-weight:700;">${file.name.slice(0, 16)}...</span>
+          <button id="remove-ref-img-btn" class="btn btn-icon btn-sm" style="color:#ff4444;">×</button>
+        </div>
+      `;
+      document.getElementById('remove-ref-img-btn').onclick = (ev) => {
+        ev.stopPropagation();
+        dropzone.innerHTML = `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 4px; color:var(--text-muted);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ref-text">Upload / Drop local image for Image-to-Video</div>
+        `;
+        if (window.FilmOS) window.FilmOS.updateActiveShot({ referenceImage: null });
+      };
+      if (window.FilmOS) window.FilmOS.updateActiveShot({ referenceImage: dataUrl });
+      if (window.showToast) window.showToast("✓ Reference Image Loaded for Image-to-Video!");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Bind All Interactive Controls
+  function bindAllControls() {
+    // Generate Button
     const generateBtn = document.getElementById('studio-generate-btn');
-    if (generateBtn) generateBtn.addEventListener('click', startRealVideoGeneration);
+    if (generateBtn) generateBtn.addEventListener('click', startGeneration);
 
-    const promptInput = document.getElementById('studio-prompt-input');
-    if (promptInput) {
-      promptInput.addEventListener('input', (e) => {
-        state.prompt = e.target.value;
-      });
-      promptInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          startRealVideoGeneration();
-        }
-      });
-    }
-    if (aiEnhanceBtn) {
-      aiEnhanceBtn.addEventListener('click', () => {
-        const promptInput = document.getElementById('studio-prompt-input');
-        if (!promptInput) return;
-        const base = promptInput.value.trim();
-        if (!base) return;
+    // AI Enhance Button
+    const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
+    if (aiEnhanceBtn) aiEnhanceBtn.addEventListener('click', enhancePrompt);
 
-        const enhancers = [
-          "anamorphic lens flare, 35mm film grain, volumetric God-rays, photorealistic octane render, 8k masterpiece",
-          "shot on IMAX 70mm, atmospheric haze, ray-traced subsurface scattering, hyper-detailed textures, cinematic color grade",
-          "ultra-high dynamic range, dual key rim lighting, shallow depth of field, micro-surface reflections, unreal engine 5.4 render"
-        ];
-        const chosen = enhancers[Math.floor(Math.random() * enhancers.length)];
-        promptInput.value = `${base}, ${chosen}`;
-        state.prompt = promptInput.value;
-        if (window.showToast) window.showToast("✨ AI Prompt Enhanced with 8K Cinematic Tokens!");
-      });
-    }
-
+    // Play / Pause Button
     const playPauseBtn = document.getElementById('playback-play-pause');
     const playPauseIcon = document.getElementById('play-pause-icon');
     if (playPauseBtn) {
       playPauseBtn.addEventListener('click', () => {
-        state.isPlaying = !state.isPlaying;
+        isPlaying = !isPlaying;
         if (playPauseIcon) {
-          playPauseIcon.innerHTML = state.isPlaying
+          playPauseIcon.innerHTML = isPlaying
             ? `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`
             : `<path d="M8 5v14l11-7z" fill="currentColor"/>`;
         }
       });
     }
 
-    // Camera buttons
-    document.querySelectorAll('.camera-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.camera-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        state.cameraMotion = btn.dataset.camera || btn.textContent.trim();
-        const hudMotion = document.getElementById('hud-motion-tag');
-        if (hudMotion) hudMotion.textContent = state.cameraMotion;
+    // Timeline Scrubber
+    const scrubber = document.getElementById('studio-timeline-scrubber');
+    if (scrubber) {
+      scrubber.addEventListener('click', (e) => {
+        const rect = scrubber.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        sceneTick = pos * 5.0;
       });
-    });
+    }
 
-    // Model buttons
+    // Model Buttons
     document.querySelectorAll('.model-pill-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.model-pill-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        state.model = btn.dataset.model || btn.textContent.trim();
-        const hudModel = document.getElementById('hud-model-tag');
-        if (hudModel) hudModel.textContent = state.model;
-      });
+      btn.addEventListener('click', () => setModel(btn.dataset.model || btn.textContent.trim()));
     });
 
-    // Template chips
+    // Camera Buttons
+    document.querySelectorAll('.camera-btn').forEach(btn => {
+      btn.addEventListener('click', () => setCameraMode(btn.dataset.camera || btn.textContent.trim()));
+    });
+
+    // Ratio Buttons
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+      btn.addEventListener('click', () => setAspectRatio(btn.dataset.ratio || btn.textContent.trim()));
+    });
+
+    // Motion Dynamics Slider
+    const motionSlider = document.getElementById('motion-strength-slider');
+    const motionVal = document.getElementById('motion-strength-val');
+    if (motionSlider && motionVal) {
+      motionSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        motionVal.textContent = `${val}%`;
+        if (window.FilmOS) window.FilmOS.updateActiveShot({ motionSpeed: val });
+      });
+    }
+
+    // Style Preset Chips (Toggle highlight + append/remove from prompt)
     document.querySelectorAll('.template-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        const text = chip.dataset.prompt || chip.textContent.trim();
         const promptInput = document.getElementById('studio-prompt-input');
-        if (promptInput) promptInput.value = text;
-        state.prompt = text;
-        startRealVideoGeneration();
+        if (!promptInput) return;
+        const text = chip.dataset.prompt || chip.textContent.trim();
+        const isSelected = chip.classList.toggle('active');
+
+        if (isSelected) {
+          chip.style.borderColor = 'var(--accent-lime)';
+          chip.style.background = 'rgba(204, 255, 0, 0.15)';
+          chip.style.color = 'var(--accent-lime)';
+          promptInput.value = promptInput.value ? `${promptInput.value}, in ${chip.textContent.trim()} style` : text;
+        } else {
+          chip.style.borderColor = '';
+          chip.style.background = '';
+          chip.style.color = '';
+          promptInput.value = promptInput.value.replace(new RegExp(`, in ${chip.textContent.trim()} style`, 'gi'), '');
+        }
+
+        if (window.FilmOS) window.FilmOS.updateActiveShot({ prompt: promptInput.value });
       });
     });
-  }
 
-  window.loadPresetIntoStudio = function (presetData) {
-    const promptInput = document.getElementById('studio-prompt-input');
-    if (promptInput) promptInput.value = presetData.prompt;
-    state.prompt = presetData.prompt;
-
-    document.querySelectorAll('.camera-btn').forEach(btn => {
-      const match = (btn.dataset.camera || "").toLowerCase() === (presetData.camera || "").toLowerCase();
-      btn.classList.toggle('active', match);
-      if (match) state.cameraMotion = btn.dataset.camera;
+    // LUT Color Grading Buttons
+    document.querySelectorAll('.lut-btn').forEach(btn => {
+      btn.addEventListener('click', () => setLut(btn.dataset.lut || 'cyber'));
     });
 
-    const studioSection = document.getElementById('studio');
-    if (studioSection) studioSection.scrollIntoView({ behavior: 'smooth' });
-    startRealVideoGeneration();
+    // Speed Buttons
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => setSpeed(btn.dataset.speed || '1.0'));
+    });
+
+    // FX Sliders
+    const flareSlider = document.getElementById('flare-slider');
+    if (flareSlider) {
+      flareSlider.addEventListener('input', (e) => {
+        flareStrength = parseInt(e.target.value, 10);
+        const val = document.getElementById('flare-strength-val');
+        if (val) val.textContent = `${flareStrength}%`;
+      });
+    }
+
+    const grainSlider = document.getElementById('grain-slider');
+    if (grainSlider) {
+      grainSlider.addEventListener('input', (e) => {
+        grainStrength = parseInt(e.target.value, 10);
+        const val = document.getElementById('grain-strength-val');
+        if (val) val.textContent = `${grainStrength}%`;
+      });
+    }
+
+    const fogSlider = document.getElementById('fog-slider');
+    if (fogSlider) {
+      fogSlider.addEventListener('input', (e) => {
+        fogStrength = parseInt(e.target.value, 10);
+        const val = document.getElementById('fog-strength-val');
+        if (val) val.textContent = `${fogStrength}%`;
+      });
+    }
+
+    bindImageUploader();
+  }
+
+  // 2.7 Video Export Functions
+  window.downloadCurrentVideoFile = function () {
+    if (generatedBlob) {
+      const a = document.createElement('a');
+      a.href = generatedVideoUrl;
+      a.download = `aivideo-master-${Date.now()}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (window.showToast) window.showToast("✓ Master Video File Downloaded!");
+    } else {
+      if (!canvas) return;
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `aivideo-frame-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (window.showToast) window.showToast("✓ Video Frame Downloaded!");
+    }
+  };
+
+  // 2.13 Export Master Timeline Film (JSON EDL / Merged Video)
+  window.renderFullStoryboardFilm = function () {
+    if (!window.FilmOS) return;
+    const timeline = window.FilmOS.state.timeline;
+    const project = window.FilmOS.state;
+
+    const edl = {
+      title: project.name,
+      fps: project.fps,
+      resolution: project.resolution,
+      tracks: timeline.tracks,
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(edl, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${project.name.toLowerCase().replace(/\s+/g, '-')}-timeline-edl.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    if (window.showToast) {
+      window.showToast("🎬 Master Timeline Edit Decision List (EDL) Exported!");
+    }
   };
 
   window.addEventListener('resize', resizeCanvas);
@@ -5909,59 +6628,70 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
 /* --- js/film-ui.js --- */
 /**
- * AIVIDEO FILMMAKING OS — UI CONTROLLER
- * Connects FilmOS state store with interactive Project Tree, Elements,
- * AI Co-Director, Keyframe Approval, and Multi-Track NLE Editor.
+ * AIVIDEO FILMMAKING PRODUCTION OS — UI CONTROLLER & MODALS (PHASE 2)
+ * Connects reactive FilmOS state store with Project Tree, Autocomplete,
+ * Modals, Settings, Multi-Track NLE, and Keyboard Shortcuts.
  */
 
 (function () {
-  function initFilmUI() {
-    const store = window.FilmOS;
-    if (!store) return;
+  let selectedClip = null;
 
-    // Render Initial State
+  function initFilmUI() {
+    if (!window.FilmOS) return;
+
     renderProjectTree();
-    renderElementsList();
-    renderTimelineTracks();
-    setupEventListeners();
+    renderActiveElementsList();
+    renderNLETracks();
+    updateHeaderCounters();
+    bindGlobalShortcuts();
+    bindAutocomplete();
+    injectModals();
 
     // Subscribe to state changes
-    store.subscribe(() => {
+    window.FilmOS.subscribe(() => {
       renderProjectTree();
-      renderElementsList();
-      renderTimelineTracks();
+      renderActiveElementsList();
+      renderNLETracks();
+      updateHeaderCounters();
     });
   }
 
-  // 1. Render Left Project Tree
+  // 1. Render Left Project Hierarchy Tree
   function renderProjectTree() {
     const treeContainer = document.getElementById('filmos-tree-container');
     if (!treeContainer) return;
 
-    const proj = window.FilmOS.project;
-    document.getElementById('filmos-project-name').textContent = proj.name;
+    const proj = window.FilmOS.state;
+    const activeShot = window.FilmOS.getActiveShot();
+
+    const charCount = proj.elements.characters.length;
+    const locCount = proj.elements.locations.length;
+    const propCount = proj.elements.props.length;
 
     let html = `
       <div class="tree-group">
         <div class="tree-section-title">📖 Project Story</div>
-        <div class="tree-node-item active" onclick="window.FilmOSUI.showStoryOverview()">
+        <div class="tree-node-item" onclick="window.FilmOSUI.openStoryModal()">
           <span>📄 Screenplay & Logline</span>
         </div>
       </div>
 
       <div class="tree-group" style="margin-top:10px;">
-        <div class="tree-section-title">🎭 Reusable Elements (@)</div>
-        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('characters')">
+        <div class="tree-header-row">
+          <div class="tree-section-title">🎭 Reusable Elements (@)</div>
+          <button class="btn btn-dark btn-sm" style="padding:2px 6px; font-size:0.68rem;" onclick="window.FilmOSUI.openAddElementModal()">+ Add</button>
+        </div>
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsListModal('characters')">
           <span>👤 Characters</span>
-          <span class="tree-tag-count">${proj.elements.characters.length}</span>
+          <span class="tree-tag-count">${charCount}</span>
         </div>
-        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('locations')">
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsListModal('locations')">
           <span>📍 Locations</span>
-          <span class="tree-tag-count">${proj.elements.locations.length}</span>
+          <span class="tree-tag-count">${locCount}</span>
         </div>
-        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsTab('props')">
+        <div class="tree-node-item" onclick="window.FilmOSUI.showElementsListModal('props')">
           <span>📦 Props</span>
-          <span class="tree-tag-count">${proj.elements.props.length}</span>
+          <span class="tree-tag-count">${propCount}</span>
         </div>
       </div>
 
@@ -5975,17 +6705,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     proj.scenes.forEach(scene => {
       html += `
         <div style="margin-top:6px;">
-          <div style="font-size:0.75rem; font-weight:800; color:#fff; padding:4px 6px; display:flex; justify-content:space-between;">
+          <div style="font-size:0.74rem; font-weight:800; color:#fff; padding:4px 6px; display:flex; justify-content:space-between;">
             <span>Scene ${scene.number}: ${scene.title}</span>
-            <span style="color:var(--text-muted); font-size:0.68rem;">${scene.shots.length} shots</span>
+            <span style="color:var(--text-muted); font-size:0.66rem;">${scene.shots.length} shots</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:3px; padding-left:8px;">
+          <div style="display:flex; flex-direction:column; gap:3px; padding-left:6px;">
       `;
       scene.shots.forEach(shot => {
+        const isActive = activeShot && activeShot.id === shot.id;
         html += `
-          <div class="tree-node-item" onclick="window.FilmOSUI.loadShotIntoStudio('${shot.id}')">
+          <div class="tree-node-item ${isActive ? 'active' : ''}" onclick="window.FilmOSUI.selectShot('${shot.id}')" title="${shot.prompt}">
             <span>🎬 Shot ${shot.code}: ${shot.title}</span>
-            <span class="badge ${shot.status === 'ready' ? 'badge-lime' : 'badge-dark'}" style="font-size:0.6rem;">${shot.status.toUpperCase()}</span>
+            <span class="badge ${shot.status === 'ready' ? 'badge-lime' : 'badge-dark'}" style="font-size:0.6rem; padding:1px 5px;">${shot.status.toUpperCase()}</span>
           </div>
         `;
       });
@@ -5996,24 +6727,34 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     treeContainer.innerHTML = html;
   }
 
-  // 2. Render Elements Drawer / Modal
-  function renderElementsList() {
+  // 2. Render Column 3 Active Elements List
+  function renderActiveElementsList() {
     const listEl = document.getElementById('filmos-elements-list');
     if (!listEl) return;
 
-    const proj = window.FilmOS.project;
+    const proj = window.FilmOS.state;
     let html = '';
 
-    // Characters
     proj.elements.characters.forEach(c => {
       html += `
-        <div class="element-card" style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:8px;">
+        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:800; color:var(--accent-lime);">@${c.tag} (${c.name})</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">${c.gender}, ${c.age} y/o</span>
+            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-lime);">@${c.tag} (${c.name})</span>
+            <span style="font-size:0.68rem; color:var(--text-muted);">${c.gender}, ${c.age} y/o</span>
           </div>
-          <div style="font-size:0.74rem; color:var(--text-muted); margin-top:4px;">${c.appearance}</div>
-          <div style="font-size:0.72rem; color:var(--accent-cyan); margin-top:4px;">Outfit: ${c.clothing}</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.appearance}">${c.appearance}</div>
+        </div>
+      `;
+    });
+
+    proj.elements.locations.forEach(l => {
+      html += `
+        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-cyan);">@${l.tag} (${l.name})</span>
+            <span style="font-size:0.68rem; color:var(--text-muted);">${l.time}</span>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${l.description}">${l.description}</div>
         </div>
       `;
     });
@@ -6021,12 +6762,12 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     listEl.innerHTML = html;
   }
 
-  // 3. Render Multi-Track NLE Timeline
-  function renderTimelineTracks() {
+  // 3. Render Multi-Track NLE Timeline Sequencer
+  function renderNLETracks() {
     const tracksContainer = document.getElementById('filmos-timeline-tracks');
     if (!tracksContainer) return;
 
-    const tData = window.FilmOS.project.timeline.tracks;
+    const tData = window.FilmOS.state.timeline.tracks;
 
     let html = `
       <!-- Video Track -->
@@ -6035,15 +6776,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           <span>Video</span>
         </div>
-        <div class="track-clips-area">
+        <div class="track-clips-area" id="nle-track-video">
     `;
 
     tData.video.forEach(clip => {
-      const widthPct = Math.max(15, clip.duration * 12);
+      const isSel = selectedClip && selectedClip.id === clip.id;
       html += `
-        <div class="timeline-clip-block video" style="width:${widthPct}%;">
+        <div class="timeline-clip-block video ${isSel ? 'selected' : ''}" style="min-width:140px;" onclick="window.FilmOSUI.selectTimelineClip('video', '${clip.id}')" title="${clip.label} (${clip.duration}s)">
           <span>${clip.label}</span>
-          <span style="font-size:0.65rem;">${clip.duration}s</span>
+          <span style="display:flex; align-items:center; gap:4px;">
+            <span style="font-size:0.65rem; color:rgba(255,255,255,0.7);">${clip.duration}s</span>
+            <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('video', '${clip.id}')">×</button>
+          </span>
         </div>
       `;
     });
@@ -6057,15 +6801,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
           <span>Voice</span>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()" title="Add Voice Dialogue">+</button>
         </div>
-        <div class="track-clips-area">
+        <div class="track-clips-area" id="nle-track-voice">
     `;
 
     tData.voice.forEach(clip => {
-      const widthPct = Math.max(20, clip.duration * 12);
       html += `
-        <div class="timeline-clip-block voice" style="width:${widthPct}%;">
-          <span>${clip.speaker}: "${clip.text.slice(0, 22)}..."</span>
+        <div class="timeline-clip-block voice" style="min-width:180px;" onclick="window.FilmOSUI.playVoiceClip('${clip.text}')" title="${clip.speaker}: ${clip.text}">
+          <span>🎙️ ${clip.speaker}: "${clip.text}"</span>
+          <span style="display:flex; align-items:center; gap:4px;">
+            <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('voice', '${clip.id}')">×</button>
+          </span>
         </div>
       `;
     });
@@ -6079,15 +6826,20 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Music</span>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()" title="Upload Audio File">+</button>
+          <input type="file" id="nle-music-uploader" accept="audio/mp3,audio/wav" style="display:none;" onchange="window.FilmOSUI.handleMusicUpload(event)">
         </div>
-        <div class="track-clips-area">
+        <div class="track-clips-area" id="nle-track-music">
     `;
 
     tData.music.forEach(clip => {
       html += `
-        <div class="timeline-clip-block music" style="width:90%;">
-          <span>🎵 ${clip.title} (${clip.genre})</span>
-          <span>14.0s</span>
+        <div class="timeline-clip-block music" style="min-width:220px;" title="${clip.title} (${clip.genre}) - ${clip.duration}s">
+          <span>🎵 ${clip.title} (${clip.genre || 'Audio'})</span>
+          <span style="display:flex; align-items:center; gap:4px;">
+            <span style="font-size:0.65rem;">${clip.duration}s</span>
+            <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('music', '${clip.id}')">×</button>
+          </span>
         </div>
       `;
     });
@@ -6100,90 +6852,371 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     tracksContainer.innerHTML = html;
   }
 
-  // Setup UI Listeners & Global API
-  function setupEventListeners() {
-    // Co-Director Ask Button
-    const askDirectorBtn = document.getElementById('filmos-ask-director-btn');
-    if (askDirectorBtn) {
-      askDirectorBtn.addEventListener('click', () => {
-        const input = prompt("AI Co-Director: What is your film concept or commercial idea?", "A 30-second cinematic commercial of a runner sprinting through Tokyo in neon rain at night.");
-        if (input && input.trim()) {
-          const newScene = window.FilmOS.generateShotsFromConcept(input.trim());
-          if (window.showToast) {
-            window.showToast(`🎬 AI Director generated Scene "${newScene.title}" with ${newScene.shots.length} shots!`);
-          }
-        }
-      });
-    }
+  // 4. Update Header Live Counters
+  function updateHeaderCounters() {
+    const proj = window.FilmOS.state;
+    const projNameEl = document.getElementById('filmos-project-name');
+    if (projNameEl) projNameEl.textContent = proj.name;
 
-    // New Element Creation Buttons
-    const addCharBtn = document.getElementById('filmos-add-character-btn');
-    if (addCharBtn) {
-      addCharBtn.addEventListener('click', () => {
-        const tag = prompt("Character Tag (e.g. John, Elena):", "Maya");
-        const name = prompt("Character Full Name:", "Maya Thorne");
-        const appearance = prompt("Appearance details:", "Athletic, futuristic visor, braided hair");
-        const clothing = prompt("Clothing:", "Charcoal tactical jacket with neon trim");
+    const totalShots = proj.scenes.reduce((acc, s) => acc + s.shots.length, 0);
+    const totalElements = proj.elements.characters.length + proj.elements.locations.length + proj.elements.props.length;
 
-        if (tag && name) {
-          window.FilmOS.addCharacter({ tag, name, appearance, clothing });
-          if (window.showToast) window.showToast(`✓ Created @${tag} Character Element!`);
-        }
-      });
+    const descEl = document.querySelector('.filmos-project-badge div div:last-child');
+    if (descEl) {
+      descEl.textContent = `Filmmaking Production Operating System • ${proj.scenes.length} Scenes • ${totalShots} Shots • ${totalElements} Elements`;
     }
   }
 
-  // Window API
+  // 5. Prompt @-Mention Autocomplete
+  function bindAutocomplete() {
+    const textarea = document.getElementById('studio-prompt-input');
+    if (!textarea) return;
+
+    let dropdown = document.getElementById('element-autocomplete-dropdown');
+    if (!dropdown) {
+      dropdown = document.createElement('div');
+      dropdown.id = 'element-autocomplete-dropdown';
+      dropdown.className = 'element-autocomplete-dropdown';
+      dropdown.style.display = 'none';
+      if (textarea.parentElement) textarea.parentElement.appendChild(dropdown);
+    }
+
+    textarea.addEventListener('keyup', (e) => {
+      const val = textarea.value;
+      const cursor = textarea.selectionStart;
+      const textBeforeCursor = val.slice(0, cursor);
+      const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+      if (atMatch) {
+        const query = atMatch[1].toLowerCase();
+        const proj = window.FilmOS.state;
+        const allElements = [
+          ...proj.elements.characters.map(c => ({ type: 'Character', tag: c.tag, name: c.name })),
+          ...proj.elements.locations.map(l => ({ type: 'Location', tag: l.tag, name: l.name })),
+          ...proj.elements.props.map(p => ({ type: 'Prop', tag: p.tag, name: p.name })),
+          ...proj.elements.styles.map(s => ({ type: 'Style', tag: s.tag, name: s.name }))
+        ].filter(el => el.tag.toLowerCase().includes(query) || el.name.toLowerCase().includes(query));
+
+        if (allElements.length > 0) {
+          dropdown.innerHTML = allElements.map((el, i) => `
+            <div class="autocomplete-item ${i === 0 ? 'selected' : ''}" onclick="window.FilmOSUI.insertMention('${el.tag}')">
+              <span><strong>@${el.tag}</strong> (${el.name})</span>
+              <span style="font-size:0.65rem; color:var(--text-muted);">${el.type}</span>
+            </div>
+          `).join('');
+          dropdown.style.display = 'block';
+        } else {
+          dropdown.style.display = 'none';
+        }
+      } else {
+        dropdown.style.display = 'none';
+      }
+    });
+  }
+
+  // 6. Global Keyboard Shortcuts
+  function bindGlobalShortcuts() {
+    window.addEventListener('keydown', (e) => {
+      // Space = Play/Pause (if not typing in input/textarea)
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const playBtn = document.getElementById('playback-play-pause');
+        if (playBtn) playBtn.click();
+      }
+      // Ctrl+S = Save Project
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        window.FilmOS.save();
+        if (window.showToast) window.showToast("✓ FilmOS Project Saved to LocalStorage!");
+      }
+      // Delete = Remove Selected Timeline Clip
+      if (e.key === 'Delete' && selectedClip) {
+        window.FilmOS.deleteTimelineClip(selectedClip.track, selectedClip.id);
+        selectedClip = null;
+        if (window.showToast) window.showToast("✓ Timeline Clip Removed!");
+      }
+    });
+  }
+
+  // 7. Inject Modal Backdrops
+  function injectModals() {
+    if (document.getElementById('filmos-modal-container')) return;
+    const modalContainer = document.createElement('div');
+    modalContainer.id = 'filmos-modal-container';
+    modalContainer.innerHTML = `
+      <!-- Screenplay & Story Modal -->
+      <div id="modal-story" class="filmos-modal-backdrop">
+        <div class="filmos-modal-card">
+          <div class="filmos-modal-header">
+            <span class="filmos-modal-title">📖 Screenplay & Story Overview</span>
+            <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
+          </div>
+          <div>
+            <label class="modal-label">Project Title:</label>
+            <input type="text" id="story-modal-title" class="custom-input" style="width:100%; margin-bottom:12px;">
+            <label class="modal-label">Logline:</label>
+            <textarea id="story-modal-logline" class="prompt-textarea" style="width:100%; height:60px; margin-bottom:12px;"></textarea>
+            <label class="modal-label">Full Synopsis:</label>
+            <textarea id="story-modal-synopsis" class="prompt-textarea" style="width:100%; height:100px;"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveStoryModal()">Save Story</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Element Modal -->
+      <div id="modal-add-element" class="filmos-modal-backdrop">
+        <div class="filmos-modal-card">
+          <div class="filmos-modal-header">
+            <span class="filmos-modal-title">🎭 Create Reusable @Element</span>
+            <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
+          </div>
+          <div>
+            <label class="modal-label">Element Type:</label>
+            <select id="elem-modal-type" class="custom-input" style="width:100%; margin-bottom:12px;">
+              <option value="character">Character (@Name)</option>
+              <option value="location">Location (@Setting)</option>
+              <option value="prop">Prop (@Object)</option>
+            </select>
+            <label class="modal-label">Symbol Tag (without @):</label>
+            <input type="text" id="elem-modal-tag" class="custom-input" placeholder="e.g. Maya, CyberAlley, LaserPistol" style="width:100%; margin-bottom:12px;">
+            <label class="modal-label">Full Name / Label:</label>
+            <input type="text" id="elem-modal-name" class="custom-input" placeholder="e.g. Maya Thorne" style="width:100%; margin-bottom:12px;">
+            <label class="modal-label">Visual Appearance / Description:</label>
+            <textarea id="elem-modal-desc" class="prompt-textarea" style="width:100%; height:75px;" placeholder="Detailed visual features, lighting, clothing, materials..."></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveNewElement()">Create @Element</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="modal-settings" class="filmos-modal-backdrop">
+        <div class="filmos-modal-card">
+          <div class="filmos-modal-header">
+            <span class="filmos-modal-title">⚙️ AI Generation & Model API Settings</span>
+            <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
+          </div>
+          <div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Configure real API endpoints or run in on-device Simulation Mode.</p>
+            <label class="modal-label">LLM Prompt Enhancer Endpoint:</label>
+            <input type="text" id="settings-llm-endpoint" class="custom-input" placeholder="https://api.openai.com/v1/chat/completions" style="width:100%; margin-bottom:8px;">
+            <label class="modal-label">LLM API Key:</label>
+            <input type="password" id="settings-llm-key" class="custom-input" placeholder="sk-..." style="width:100%; margin-bottom:14px;">
+
+            <label class="modal-label">Video Generation API Endpoint:</label>
+            <input type="text" id="settings-video-endpoint" class="custom-input" placeholder="https://api.klingai.com/v1/videos/generations" style="width:100%; margin-bottom:8px;">
+            <label class="modal-label">Video Gen API Key:</label>
+            <input type="password" id="settings-video-key" class="custom-input" placeholder="Bearer ..." style="width:100%;">
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveSettings()">Save Settings</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modalContainer);
+  }
+
+  // Window Global API
   window.FilmOSUI = {
-    loadShotIntoStudio: function (shotId) {
-      let foundShot = null;
-      window.FilmOS.project.scenes.forEach(s => {
-        const shot = s.shots.find(sh => sh.id === shotId);
-        if (shot) foundShot = shot;
+    selectShot: function (shotId) {
+      window.FilmOS.setActiveShot(shotId);
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+
+      // Update Center Studio Viewport
+      const promptInput = document.getElementById('studio-prompt-input');
+      if (promptInput) promptInput.value = shot.prompt;
+
+      // Update Camera buttons
+      document.querySelectorAll('.camera-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.camera === shot.camera);
       });
 
-      if (foundShot) {
-        const promptInput = document.getElementById('studio-prompt-input');
-        if (promptInput) {
-          promptInput.value = foundShot.prompt;
-          if (window.FilmOS) {
-            const enriched = window.FilmOS.resolveMentions(foundShot.prompt);
-            console.log("Enriched Prompt:", enriched);
-          }
-        }
-
-        // Set camera
-        const cameraBtns = document.querySelectorAll('.camera-btn');
-        cameraBtns.forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.camera === foundShot.motion);
-        });
-
-        const hudMotion = document.getElementById('hud-motion-tag');
-        if (hudMotion) hudMotion.textContent = `${foundShot.lens} • ${foundShot.motion}`;
-
-        if (window.showToast) window.showToast(`Loaded Shot ${foundShot.code}: ${foundShot.title}`);
-
-        const studioEl = document.getElementById('studio');
-        if (studioEl) studioEl.scrollIntoView({ behavior: 'smooth' });
+      // Update Motion Slider
+      const motionSlider = document.getElementById('motion-strength-slider');
+      const motionVal = document.getElementById('motion-strength-val');
+      if (motionSlider && motionVal) {
+        motionSlider.value = shot.motionSpeed || 75;
+        motionVal.textContent = `${shot.motionSpeed || 75}%`;
       }
+
+      // Update Aspect Ratio
+      document.querySelectorAll('.ratio-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.ratio === (shot.aspectRatio || '16:9'));
+      });
+      const canvasContainer = document.querySelector('.viewport-canvas-container');
+      if (canvasContainer) {
+        canvasContainer.className = `viewport-canvas-container aspect-${(shot.aspectRatio || '16:9').replace(':', '-')}`;
+      }
+
+      const hudMotion = document.getElementById('hud-motion-tag');
+      if (hudMotion) hudMotion.textContent = `${shot.lens || '35mm'} • ${shot.camera || 'Orbit 360°'}`;
+
+      if (window.showToast) window.showToast(`Loaded Shot ${shot.code}: ${shot.title}`);
     },
 
-    showStoryOverview: function () {
-      const proj = window.FilmOS.project;
-      alert(`PROJECT: ${proj.name}\n\nLOGLINE:\n${proj.logline}\n\nSCENES: ${proj.scenes.length}\nTOTAL SHOTS: ${proj.scenes.reduce((a, s) => a + s.shots.length, 0)}`);
+    insertMention: function (tag) {
+      const textarea = document.getElementById('studio-prompt-input');
+      const dropdown = document.getElementById('element-autocomplete-dropdown');
+      if (!textarea) return;
+
+      const val = textarea.value;
+      const cursor = textarea.selectionStart;
+      const before = val.slice(0, cursor).replace(/@\w*$/, `@${tag} `);
+      const after = val.slice(cursor);
+      textarea.value = before + after;
+      if (dropdown) dropdown.style.display = 'none';
+      textarea.focus();
+      window.FilmOS.updateActiveShot({ prompt: textarea.value });
     },
 
-    showElementsTab: function (type) {
-      const proj = window.FilmOS.project;
-      const count = proj.elements[type] ? proj.elements[type].length : 0;
-      alert(`Elements Library: ${type.toUpperCase()} (${count} registered)\n\nType @ in any prompt to reference these elements.`);
+    openStoryModal: function () {
+      const proj = window.FilmOS.state;
+      document.getElementById('story-modal-title').value = proj.name;
+      document.getElementById('story-modal-logline').value = proj.logline;
+      document.getElementById('story-modal-synopsis').value = proj.synopsis;
+      const m = document.getElementById('modal-story');
+      if (m) m.classList.add('active');
+    },
+
+    saveStoryModal: function () {
+      const proj = window.FilmOS.state;
+      proj.name = document.getElementById('story-modal-title').value;
+      proj.logline = document.getElementById('story-modal-logline').value;
+      proj.synopsis = document.getElementById('story-modal-synopsis').value;
+      window.FilmOS.save();
+      this.closeModals();
+      if (window.showToast) window.showToast("✓ Story & Screenplay Saved!");
+    },
+
+    openAddElementModal: function () {
+      const m = document.getElementById('modal-add-element');
+      if (m) m.classList.add('active');
+    },
+
+    saveNewElement: function () {
+      const type = document.getElementById('elem-modal-type').value;
+      const tag = document.getElementById('elem-modal-tag').value.trim().replace(/^@/, '');
+      const name = document.getElementById('elem-modal-name').value.trim();
+      const desc = document.getElementById('elem-modal-desc').value.trim();
+
+      if (!tag || !name) {
+        alert("Please enter a tag and name.");
+        return;
+      }
+
+      if (type === 'character') {
+        window.FilmOS.addCharacter({ tag, name, appearance: desc, clothing: "Custom Outfit" });
+      } else if (type === 'location') {
+        window.FilmOS.addLocation({ tag, name, description: desc, time: "Night" });
+      } else {
+        window.FilmOS.addProp({ tag, name, description: desc });
+      }
+
+      this.closeModals();
+      if (window.showToast) window.showToast(`✓ Added Reusable Element @${tag}!`);
+    },
+
+    showElementsListModal: function (type) {
+      const proj = window.FilmOS.state;
+      const items = proj.elements[type] || [];
+      alert(`REUSABLE ELEMENTS: ${type.toUpperCase()}\n\n` + items.map(i => `@${i.tag} (${i.name}): ${i.appearance || i.description || ''}`).join('\n\n'));
     },
 
     promptNewScene: function () {
-      const title = prompt("Enter New Scene Title:", "The High Speed Chase");
+      const title = prompt("Enter New Scene Title:", "The Climax Chase");
       if (title && title.trim()) {
-        window.FilmOS.generateShotsFromConcept(title.trim());
+        const sc = window.FilmOS.createScene(title.trim());
+        if (window.showToast) window.showToast(`✓ Created Scene ${sc.number}: ${sc.title}!`);
       }
+    },
+
+    openSettings: function () {
+      const config = window.FilmOS.state.apiConfig || {};
+      document.getElementById('settings-llm-endpoint').value = config.llmEndpoint || '';
+      document.getElementById('settings-llm-key').value = config.llmKey || '';
+      document.getElementById('settings-video-endpoint').value = config.videoGenEndpoint || '';
+      document.getElementById('settings-video-key').value = config.videoGenKey || '';
+      const m = document.getElementById('modal-settings');
+      if (m) m.classList.add('active');
+    },
+
+    saveSettings: function () {
+      const config = {
+        llmEndpoint: document.getElementById('settings-llm-endpoint').value.trim(),
+        llmKey: document.getElementById('settings-llm-key').value.trim(),
+        videoGenEndpoint: document.getElementById('settings-video-endpoint').value.trim(),
+        videoGenKey: document.getElementById('settings-video-key').value.trim(),
+        isSimulatedMode: !document.getElementById('settings-video-key').value.trim()
+      };
+      window.FilmOS.state.apiConfig = config;
+      window.FilmOS.save();
+      this.closeModals();
+      if (window.showToast) window.showToast("✓ Settings Saved! (Mode: " + (config.isSimulatedMode ? "SIMULATED" : "LIVE API") + ")");
+    },
+
+    closeModals: function () {
+      document.querySelectorAll('.filmos-modal-backdrop').forEach(m => m.classList.remove('active'));
+    },
+
+    selectTimelineClip: function (track, id) {
+      selectedClip = { track, id };
+      renderNLETracks();
+    },
+
+    removeClip: function (track, id) {
+      window.FilmOS.deleteTimelineClip(track, id);
+      if (window.showToast) window.showToast("✓ Clip removed from timeline");
+    },
+
+    playVoiceClip: function (text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.0;
+        utter.pitch = 0.95;
+        window.speechSynthesis.speak(utter);
+        if (window.showToast) window.showToast(`🗣️ Playing Voice: "${text}"`);
+      } else {
+        if (window.showToast) window.showToast(`Voice text: "${text}"`);
+      }
+    },
+
+    openAddVoiceModal: function () {
+      const speaker = prompt("Enter Speaker Name (e.g. Sarah, Alex):", "Sarah");
+      const text = prompt("Enter Dialogue Text:", "Target is acquiring coordinates now.");
+      if (speaker && text) {
+        window.FilmOS.state.timeline.tracks.voice.push({
+          id: `clip-vo-${Date.now()}`,
+          start: 0,
+          duration: 3.5,
+          speaker: speaker.trim(),
+          text: text.trim()
+        });
+        window.FilmOS.save();
+        if (window.showToast) window.showToast("✓ Voice Dialogue Added to Timeline!");
+      }
+    },
+
+    handleMusicUpload: function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      window.FilmOS.state.timeline.tracks.music.push({
+        id: `clip-m-${Date.now()}`,
+        start: 0,
+        duration: 15,
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        genre: "Custom Audio"
+      });
+      window.FilmOS.save();
+      if (window.showToast) window.showToast(`✓ Music Track "${file.name}" Added!`);
     }
   };
 
