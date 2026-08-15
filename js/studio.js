@@ -21,6 +21,7 @@
   let fogStrength = 50;
   let generatedBlob = null;
   let generatedVideoUrl = null;
+  let aiSynth = null;
 
   const LUT_FILTERS = {
     cyber: 'hue-rotate(-10deg) saturate(1.45) contrast(1.15)',
@@ -35,6 +36,9 @@
     if (canvas && window.NeuralVideoEngine) {
       neuralEngine = new window.NeuralVideoEngine(canvas);
     }
+    if (canvas && window.AIKeyframeSynthesizer) {
+      aiSynth = new window.AIKeyframeSynthesizer(canvas);
+    }
     if (window.CinemaAudioEngine) {
       audioEngine = new window.CinemaAudioEngine();
     }
@@ -46,8 +50,13 @@
     renderGenerationReel();
   }
 
-  function resizeCanvas() {
+  function resizeCanvas(customWidth, customHeight) {
     if (!canvas || !canvas.parentElement) return;
+    if (customWidth && customHeight) {
+      canvas.width = customWidth;
+      canvas.height = customHeight;
+      return;
+    }
     const parentWidth = canvas.parentElement.clientWidth || 800;
     const parentHeight = canvas.parentElement.clientHeight || 450;
     canvas.width = Math.min(parentWidth, 1280);
@@ -91,23 +100,37 @@
   }
 
   function renderSceneFrame(t) {
-    if (neuralEngine && window.FilmOS) {
+    if (window.FilmOS) {
       const shot = window.FilmOS.getActiveShot();
       const prompt = shot ? shot.prompt : "cinematic scene";
       const camera = shot ? shot.camera : "Orbit 360°";
       const motionSpeed = shot ? shot.motionSpeed : 75;
 
-      neuralEngine.renderFrame(
-        t * playbackSpeed,
-        prompt,
-        camera,
-        motionSpeed,
-        4829103,
-        activeLut,
-        flareStrength,
-        grainStrength,
-        fogStrength
-      );
+      if (aiSynth && aiSynth.hasKeyframes()) {
+        const rendered = aiSynth.renderFrame(t * playbackSpeed, {
+          camera: camera,
+          motionSpeed: motionSpeed,
+          activeLut: activeLut,
+          flare: flareStrength,
+          grain: grainStrength,
+          fog: fogStrength
+        });
+        if (rendered) return;
+      }
+
+      if (neuralEngine) {
+        neuralEngine.renderFrame(
+          t * playbackSpeed,
+          prompt,
+          camera,
+          motionSpeed,
+          4829103,
+          activeLut,
+          flareStrength,
+          grainStrength,
+          fogStrength
+        );
+      }
     }
   }
 
@@ -284,8 +307,8 @@
     document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed) === playbackSpeed));
   }
 
-  // 2.6 Generate Real Video (API or Simulation Mode)
-  function startGeneration() {
+  // 2.6 Generate Real Video (API or Keyframe/Simulation Mode)
+  async function startGeneration() {
     if (isGenerating || !canvas) return;
     isGenerating = true;
     isPlaying = false;
@@ -303,7 +326,36 @@
       window.FilmOS.updateActiveShot({ prompt: promptInput.value });
     }
 
+    // Set correct backing resolution according to aspect ratio
+    let targetWidth = 1280;
+    let targetHeight = 720;
+    const ratio = window.FilmOS ? (window.FilmOS.state.aspectRatio || "16:9") : "16:9";
+    if (ratio === '9:16') { targetWidth = 720; targetHeight = 1280; }
+    else if (ratio === '1:1') { targetWidth = 1080; targetHeight = 1080; }
+    else if (ratio === '21:9') { targetWidth = 1920; targetHeight = 820; }
+    resizeCanvas(targetWidth, targetHeight);
+
     if (window.showToast) window.showToast(`⚡ Synthesizing Video for "${prompt.slice(0, 26)}..."`);
+
+    // Fetch keyframes from model API if available
+    if (aiSynth) {
+      if (renderStatus) renderStatus.textContent = "Synthesizing High-Fidelity Diffusion Keyframes...";
+      try {
+        await aiSynth.fetchKeyframes(prompt, {
+          count: 4,
+          width: targetWidth,
+          height: targetHeight,
+          seed: Math.floor(Math.random() * 899999 + 100000),
+          onProgress: (done, total) => {
+            const p = Math.floor((done / total) * 35);
+            if (progressFill) progressFill.style.width = `${p}%`;
+            if (renderStatus) renderStatus.textContent = `Generating Diffusion Keyframe ${done}/${total}...`;
+          }
+        });
+      } catch (err) {
+        console.warn("Keyframe synthesis failed, using procedural engine fallback:", err);
+      }
+    }
 
     // MediaRecorder stream capture
     try {
@@ -311,7 +363,7 @@
       if (stream && typeof MediaRecorder !== 'undefined') {
         let mimeType = 'video/webm;codecs=vp9';
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6000000 });
+        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
         };
