@@ -2404,6 +2404,95 @@ button {
   border-color: #ffffff;
 }
 
+/* Quality and duration pickers look like .ratio-btn but must NOT carry that
+   class: setAspectRatio() clears `active` from every .ratio-btn whose
+   data-ratio doesn't match, which would silently deselect them. */
+.option-btn {
+  padding: 5px 2px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.option-btn.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+.option-group-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* A resolution no configured model can reach is shown but visibly inert,
+   rather than hidden — the user should be able to see that 4K exists and that
+   their current provider cannot deliver it. */
+.quality-btn.is-unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.quality-btn.is-unavailable.active {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+}
+
+/* Render engine indicator: says whether a real video model is answering, or
+   whether the local keyframe engine is standing in for one. */
+.provider-badge {
+  padding: 4px 9px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 62%;
+  cursor: help;
+}
+
+.provider-badge.is-live {
+  border-color: var(--accent-lime);
+  background: rgba(204, 255, 0, 0.12);
+  color: var(--accent-lime);
+}
+
+/* Finished model renders play as a real <video> stacked on the canvas. */
+#studio-result-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  z-index: 2;
+}
+
+#studio-mute-toggle {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+#studio-mute-toggle.is-muted {
+  opacity: 0.55;
+}
+
 /* Right Viewport Stage */
 .studio-viewport-stage {
   position: relative;
@@ -4266,6 +4355,33 @@ button {
             </div>
           </div>
 
+          <!-- Output Quality -->
+          <div class="settings-row">
+            <span class="modal-label">Output Quality:</span>
+            <div class="ratio-group option-group-3">
+              <button class="quality-btn option-btn" data-quality="720p" data-min-height="720">720p</button>
+              <button class="quality-btn option-btn active" data-quality="1080p" data-min-height="1080">1080p</button>
+              <button class="quality-btn option-btn" data-quality="4k" data-min-height="2160">4K</button>
+            </div>
+          </div>
+
+          <!-- Clip Duration -->
+          <div class="settings-row">
+            <span class="modal-label">Clip Duration:</span>
+            <div class="ratio-group">
+              <button class="duration-btn option-btn" data-duration="4">4s</button>
+              <button class="duration-btn option-btn active" data-duration="5">5s</button>
+              <button class="duration-btn option-btn" data-duration="8">8s</button>
+              <button class="duration-btn option-btn" data-duration="10">10s</button>
+            </div>
+          </div>
+
+          <!-- Which engine will actually render: a real model, or the local one -->
+          <div class="settings-row">
+            <span class="modal-label">Render Engine:</span>
+            <span id="studio-provider-badge" class="provider-badge">CHECKING…</span>
+          </div>
+
           <!-- Local Reference Image Upload Slot -->
           <div class="ref-uploader" title="Click to upload any local image to animate">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 4px; color:var(--text-muted);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -4311,6 +4427,7 @@ button {
               <button id="playback-play-pause" class="btn btn-icon btn-sm">
                 <svg id="play-pause-icon" width="14" height="14" viewBox="0 0 24 24"><path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/></svg>
               </button>
+              <button id="studio-mute-toggle" class="btn btn-icon btn-sm is-muted" title="Toggle audio (models like Veo and Sora render a real soundtrack)">🔇</button>
               <span id="studio-time-display" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">00:00.0 / 00:06.0</span>
             </div>
 
@@ -5274,6 +5391,196 @@ button {
   }
 
   window.AIKeyframeSynthesizer = AIKeyframeSynthesizer;
+})();
+
+/* --- js/video-engine.js --- */
+/**
+ * REAL TEXT-TO-VIDEO CLIENT
+ *
+ * Drives the two-phase backend: submit a generation, then poll until the
+ * provider hands back a finished clip. This is the path that produces an
+ * actual video of the prompt — a real model rendering real motion.
+ *
+ * The keyframe synthesizer in ai-synth.js is what runs when this cannot: it
+ * interpolates stills under a virtual camera, which looks cinematic but is not
+ * a video model. Keeping the two clearly separated matters, because only one
+ * of them can honour a prompt like "the dog turns its head".
+ */
+
+(function () {
+  const CREATE_ENDPOINT = '/api/video-create';
+  const STATUS_ENDPOINT = '/api/video-status';
+  const PROVIDERS_ENDPOINT = '/api/video-providers';
+
+  // Video models run from ~20s (LTX, Wan fast) to several minutes (Veo 4K,
+  // Sora). The ceiling is generous; the backoff keeps the request count sane.
+  const POLL_START_MS = 2000;
+  const POLL_MAX_MS = 6000;
+  const POLL_GROWTH = 1.25;
+  const MAX_WAIT_MS = 10 * 60 * 1000;
+
+  let capabilitiesPromise = null;
+
+  function sleep(ms, signal) {
+    return new Promise((resolve, reject) => {
+      const id = setTimeout(resolve, ms);
+      if (signal) {
+        signal.addEventListener('abort', () => {
+          clearTimeout(id);
+          reject(new DOMException('aborted', 'AbortError'));
+        }, { once: true });
+      }
+    });
+  }
+
+  /**
+   * Which providers this deployment can actually reach. Cached: it only
+   * changes on redeploy, and the studio asks for it on every panel open.
+   */
+  function capabilities(force) {
+    if (!capabilitiesPromise || force) {
+      capabilitiesPromise = fetch(PROVIDERS_ENDPOINT, { headers: { Accept: 'application/json' } })
+        .then(res => (res.ok ? res.json() : null))
+        .then(data => data || offlineCapabilities())
+        .catch(() => offlineCapabilities());
+    }
+    return capabilitiesPromise;
+  }
+
+  function offlineCapabilities() {
+    return { success: false, providers: [], configured: [], active: null, maxResolution: 0, fallbackOnly: true };
+  }
+
+  /**
+   * Runs a full generation.
+   *
+   * Resolves with { ok: true, videoUrl, ... } on success, or
+   * { ok: false, fallback: true, error } when the studio should render the
+   * clip locally instead. It rejects only on abort — a provider being
+   * unavailable is an expected outcome, not an exception.
+   */
+  async function generate(opts) {
+    const options = opts || {};
+    const onProgress = typeof options.onProgress === 'function' ? options.onProgress : () => {};
+    const signal = options.signal;
+
+    onProgress({ phase: 'submitting', progress: 0.01, detail: 'Submitting to video model' });
+
+    let created;
+    try {
+      const res = await fetch(CREATE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: options.prompt,
+          aspectRatio: options.aspectRatio || '16:9',
+          quality: options.quality || '1080p',
+          durationSec: options.durationSec || 5,
+          negativePrompt: options.negativePrompt || '',
+          provider: options.provider || '',
+          modelKey: options.modelKey || '',
+          seed: options.seed,
+          audio: options.audio !== false
+        }),
+        signal
+      });
+      created = await res.json();
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
+      return { ok: false, fallback: true, error: `Could not reach the generation API: ${err.message}` };
+    }
+
+    if (!created || !created.success || !created.job) {
+      return {
+        ok: false,
+        fallback: true,
+        reason: created && created.reason,
+        error: (created && created.error) || 'The generation service did not accept the request.',
+        hint: created && created.hint
+      };
+    }
+
+    const label = created.modelLabel || created.providerLabel || 'video model';
+    onProgress({ phase: 'queued', progress: 0.05, detail: `Queued on ${label}`, provider: created.provider });
+
+    const startedAt = Date.now();
+    let wait = POLL_START_MS;
+
+    while (Date.now() - startedAt < MAX_WAIT_MS) {
+      await sleep(wait, signal);
+      wait = Math.min(POLL_MAX_MS, Math.round(wait * POLL_GROWTH));
+
+      let status;
+      try {
+        const res = await fetch(`${STATUS_ENDPOINT}?job=${encodeURIComponent(created.job)}`, {
+          headers: { Accept: 'application/json' },
+          signal
+        });
+        status = await res.json();
+      } catch (err) {
+        if (err && err.name === 'AbortError') throw err;
+        // A dropped poll is not a dead job; the next tick usually recovers.
+        continue;
+      }
+
+      if (!status) continue;
+
+      if (status.status === 'succeeded' && status.videoUrl) {
+        onProgress({ phase: 'succeeded', progress: 1, detail: `Rendered by ${status.modelLabel || label}` });
+        return {
+          ok: true,
+          videoUrl: status.videoUrl,
+          proxied: Boolean(status.proxied),
+          provider: status.provider || created.provider,
+          modelLabel: status.modelLabel || label,
+          request: created.request
+        };
+      }
+
+      if (status.status === 'failed') {
+        return {
+          ok: false,
+          fallback: true,
+          provider: status.provider || created.provider,
+          error: status.error || 'The video model failed to render this prompt.'
+        };
+      }
+
+      // Providers rarely report true percentages, so the bar is driven by the
+      // coarse phase they do report rather than pretending to precision.
+      const progress = Number.isFinite(status.progress) ? status.progress : 0.4;
+      onProgress({
+        phase: status.status || 'running',
+        progress: Math.max(0.05, Math.min(0.97, progress)),
+        detail: status.detail || `Rendering on ${label}`,
+        provider: status.provider || created.provider,
+        elapsedMs: Date.now() - startedAt
+      });
+    }
+
+    return {
+      ok: false,
+      fallback: true,
+      error: `The video model did not finish within ${Math.round(MAX_WAIT_MS / 60000)} minutes.`
+    };
+  }
+
+  /**
+   * Fetches a finished clip as a Blob so it can be downloaded and replayed
+   * without a second network round trip. Falls back to the bare URL if the
+   * provider CDN refuses a cross-origin read.
+   */
+  async function toBlob(videoUrl) {
+    try {
+      const res = await fetch(videoUrl);
+      if (!res.ok) return null;
+      return await res.blob();
+    } catch (err) {
+      return null;
+    }
+  }
+
+  window.AIVideoEngine = { capabilities, generate, toBlob };
 })();
 
 /* --- js/film-os.js --- */
@@ -7318,6 +7625,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
   let generatedVideoUrl = null;
   let aiSynth = null;
 
+  // Real text-to-video state. `resultVideo` is a <video> laid over the canvas:
+  // when a model returns an actual clip we play the file itself rather than
+  // re-rendering it, so what the user sees is what they downloaded.
+  let resultVideo = null;
+  let realVideoUrl = null;
+  let realVideoExt = 'mp4';
+  let activeProviderLabel = null;
+  let generationAbort = null;
+  let providerCaps = null;
+  let renderQuality = '1080p';
+  let renderDuration = 5;
+
   const LUT_FILTERS = {
     cyber: 'hue-rotate(-10deg) saturate(1.45) contrast(1.15)',
     matrix: 'hue-rotate(65deg) saturate(1.2) contrast(1.25) brightness(0.95)',
@@ -7338,11 +7657,110 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       audioEngine = new window.CinemaAudioEngine();
     }
 
+    ensureResultVideoElement();
     bindAllControls();
     loadActiveShotData();
     resizeCanvas();
     startPreviewLoop();
     renderGenerationReel();
+    refreshProviderStatus();
+  }
+
+  /**
+   * The <video> that plays a real model render, stacked over the canvas.
+   * Created here rather than in markup so the studio degrades cleanly on a
+   * page that predates it.
+   */
+  function ensureResultVideoElement() {
+    if (!canvas || !canvas.parentElement) return;
+    resultVideo = document.getElementById('studio-result-video');
+    if (resultVideo) return;
+
+    resultVideo = document.createElement('video');
+    resultVideo.id = 'studio-result-video';
+    resultVideo.className = 'viewport-canvas';
+    resultVideo.setAttribute('playsinline', '');
+    resultVideo.loop = true;
+    resultVideo.controls = false;
+    // Models that emit audio (Veo, Sora) would otherwise be blocked from
+    // autoplaying; the user can unmute from the transport controls.
+    resultVideo.muted = true;
+    resultVideo.style.cssText =
+      'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; z-index:2; background:#000;';
+    canvas.parentElement.appendChild(resultVideo);
+  }
+
+  function showRealVideo(url) {
+    if (!resultVideo) return;
+    resultVideo.src = url;
+    resultVideo.style.display = 'block';
+    if (canvas) canvas.style.visibility = 'hidden';
+    const play = resultVideo.play();
+    if (play && typeof play.catch === 'function') play.catch(() => {});
+  }
+
+  /** Returns the viewport to the live canvas engine. */
+  function hideRealVideo() {
+    if (resultVideo) {
+      resultVideo.pause();
+      resultVideo.removeAttribute('src');
+      resultVideo.load();
+      resultVideo.style.display = 'none';
+    }
+    if (canvas) canvas.style.visibility = 'visible';
+  }
+
+  /**
+   * Asks the backend which real models are reachable and reflects that in the
+   * UI. A deployment with no API key still works — it just runs the local
+   * keyframe engine, and the badge says so instead of implying otherwise.
+   */
+  async function refreshProviderStatus() {
+    if (!window.AIVideoEngine) return;
+    try {
+      providerCaps = await window.AIVideoEngine.capabilities();
+    } catch (err) {
+      providerCaps = null;
+    }
+
+    const badge = document.getElementById('studio-provider-badge');
+    if (badge) {
+      if (providerCaps && !providerCaps.fallbackOnly) {
+        const active = (providerCaps.providers || []).find(p => p.id === providerCaps.active);
+        // Name the host as well as the model: "Veo 3" alone is ambiguous when
+        // three different providers can serve it.
+        badge.textContent = active
+          ? `${active.label} · ${active.activeModelLabel || active.activeModel}`
+          : 'LIVE MODEL';
+        badge.classList.add('is-live');
+        badge.title = active
+          ? `Real text-to-video is active: ${active.activeModelLabel} (${active.activeModel}) via ${active.label}. Max ${active.maxResolution}p.`
+          : 'Real text-to-video is active.';
+      } else {
+        badge.textContent = 'LOCAL ENGINE';
+        badge.classList.remove('is-live');
+        badge.title =
+          'No video model API key is configured, so clips are synthesized locally from generated stills. ' +
+          'Add FAL_KEY, GEMINI_API_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY to enable a real video model.';
+      }
+    }
+
+    // 4K is only offered when a configured model can actually deliver it;
+    // otherwise the button would promise something the backend downgrades.
+    const maxRes = providerCaps ? providerCaps.maxResolution || 0 : 0;
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+      const needs = parseInt(btn.dataset.minHeight || '0', 10);
+      const reachable = needs <= maxRes;
+      btn.disabled = !reachable;
+      btn.classList.toggle('is-unavailable', !reachable);
+      if (!reachable) {
+        btn.title = maxRes
+          ? `The configured model tops out at ${maxRes}p.`
+          : 'Configure a video model API key to render above the local engine.';
+      } else {
+        btn.title = '';
+      }
+    });
   }
 
   function resizeCanvas(customWidth, customHeight) {
@@ -7402,13 +7820,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       const motionSpeed = shot ? shot.motionSpeed : 75;
 
       if (aiSynth && aiSynth.hasKeyframes()) {
+        // These key names must match AIKeyframeSynthesizer.renderFrame's
+        // options exactly — it reads cameraMotion/motionStrength/lut, and
+        // anything else silently falls through to its defaults, which is how
+        // the camera rig and colour grade used to get dropped on this path.
         const rendered = aiSynth.renderFrame(t * playbackSpeed, {
-          camera: camera,
-          motionSpeed: motionSpeed,
-          activeLut: activeLut,
+          cameraMotion: camera,
+          motionStrength: motionSpeed,
+          lut: activeLut,
           flare: flareStrength,
           grain: grainStrength,
-          fog: fogStrength
+          fog: fogStrength,
+          duration: renderDuration
         });
         if (rendered) return;
       }
@@ -7602,133 +8025,276 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed) === playbackSpeed));
   }
 
-  // 2.6 Generate Real Video (API or Keyframe/Simulation Mode)
+  /**
+   * A real video model takes camera direction as language, not as a canvas
+   * transform — "slow dolly in" belongs in the prompt, where the rig selector
+   * only ever reached the local compositor before.
+   */
+  const CAMERA_DIRECTION = {
+    'Pan Left': 'the camera pans smoothly to the left',
+    'Pan Right': 'the camera pans smoothly to the right',
+    'Tilt Up': 'the camera tilts upward',
+    'Tilt Down': 'the camera tilts downward',
+    'Zoom In': 'a slow push-in toward the subject',
+    'Zoom Out': 'a slow pull-back revealing the wider scene',
+    'Orbit 360°': 'the camera orbits around the subject in a smooth arc',
+    'Drone Overhead': 'a rising aerial drone shot looking down over the scene',
+    'FPV Dive': 'a fast FPV drone dive racing through the scene'
+  };
+
+  function buildModelPrompt(basePrompt, camera, lens) {
+    const parts = [basePrompt];
+    const move = CAMERA_DIRECTION[camera];
+    if (move) parts.push(move);
+    if (lens) parts.push(`shot on a ${lens} lens`);
+    parts.push('cinematic, photorealistic, natural motion');
+    return parts.join(', ');
+  }
+
+  /** Object URLs are only freed here; leaking them holds whole clips in memory. */
+  function releaseRealVideo() {
+    if (realVideoUrl && realVideoUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(realVideoUrl);
+    }
+    realVideoUrl = null;
+    activeProviderLabel = null;
+  }
+
+  function setRenderProgress(fraction, text) {
+    const progressFill = document.getElementById('render-progress-fill');
+    const renderStatus = document.getElementById('render-status-text');
+    if (progressFill) progressFill.style.width = `${Math.round(Math.max(0, Math.min(1, fraction)) * 100)}%`;
+    if (renderStatus && text) renderStatus.textContent = text;
+  }
+
+  // 2.6 Generation pipeline.
+  //
+  // Two engines, tried in order:
+  //   1. A real text-to-video model, when a provider key is configured. This is
+  //      the only path that can actually depict what the prompt describes.
+  //   2. The local keyframe synthesizer, which animates generated stills. It
+  //      always works and needs no key, but it cannot invent motion.
   async function startGeneration() {
     if (isGenerating || !canvas) return;
     isGenerating = true;
     isPlaying = false;
     recordedChunks = [];
+    generatedBlob = null;
+    releaseRealVideo();
+    hideRealVideo();
 
     const overlay = document.getElementById('studio-rendering-overlay');
-    const progressFill = document.getElementById('render-progress-fill');
-    const renderStatus = document.getElementById('render-status-text');
     if (overlay) overlay.classList.add('active');
 
     const promptInput = document.getElementById('studio-prompt-input');
-    let prompt = promptInput ? promptInput.value.trim() : "cinematic shot";
+    let prompt = promptInput ? promptInput.value.trim() : '';
+    if (!prompt) {
+      if (overlay) overlay.classList.remove('active');
+      isGenerating = false;
+      isPlaying = true;
+      if (window.showToast) window.showToast('⚠ Describe the shot first — the prompt is empty.');
+      return;
+    }
     if (window.FilmOS) {
       prompt = window.FilmOS.resolveMentions(prompt);
       window.FilmOS.updateActiveShot({ prompt: promptInput.value });
     }
 
-    // Set correct backing resolution according to aspect ratio
-    let targetWidth = 1280;
-    let targetHeight = 720;
-    const ratio = window.FilmOS ? (window.FilmOS.state.aspectRatio || "16:9") : "16:9";
-    if (ratio === '9:16') { targetWidth = 720; targetHeight = 1280; }
-    else if (ratio === '1:1') { targetWidth = 1080; targetHeight = 1080; }
-    else if (ratio === '21:9') { targetWidth = 1920; targetHeight = 820; }
-    resizeCanvas(targetWidth, targetHeight);
+    const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
+    const camera = shot && shot.camera ? shot.camera : 'Orbit 360°';
+    const lens = shot && shot.lens ? shot.lens : '';
+    const ratio = window.FilmOS ? (window.FilmOS.state.aspectRatio || '16:9') : '16:9';
 
-    if (window.showToast) window.showToast(`⚡ Synthesizing Video for "${prompt.slice(0, 26)}..."`);
+    if (window.showToast) window.showToast(`⚡ Generating video for "${prompt.slice(0, 26)}..."`);
 
-    // Fetch keyframes from model API if available
-    if (aiSynth) {
-      if (renderStatus) renderStatus.textContent = "Synthesizing High-Fidelity Diffusion Keyframes...";
+    generationAbort = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
+    // --- Path 1: real text-to-video model -----------------------------------
+    if (window.AIVideoEngine) {
+      setRenderProgress(0.01, 'Submitting to video model...');
+      let result;
       try {
-        await aiSynth.fetchKeyframes(prompt, {
-          count: 4,
-          width: targetWidth,
-          height: targetHeight,
-          seed: Math.floor(Math.random() * 899999 + 100000),
-          onProgress: (done, total) => {
-            const p = Math.floor((done / total) * 35);
-            if (progressFill) progressFill.style.width = `${p}%`;
-            if (renderStatus) renderStatus.textContent = `Generating Diffusion Keyframe ${done}/${total}...`;
+        result = await window.AIVideoEngine.generate({
+          prompt: buildModelPrompt(prompt, camera, lens),
+          aspectRatio: ratio,
+          quality: renderQuality,
+          durationSec: renderDuration,
+          signal: generationAbort ? generationAbort.signal : undefined,
+          onProgress: info => {
+            setRenderProgress(info.progress, describeProgress(info));
           }
         });
       } catch (err) {
-        console.warn("Keyframe synthesis failed, using procedural engine fallback:", err);
+        if (err && err.name === 'AbortError') {
+          if (overlay) overlay.classList.remove('active');
+          isGenerating = false;
+          isPlaying = true;
+          return;
+        }
+        result = { ok: false, fallback: true, error: err.message };
+      }
+
+      if (result && result.ok) {
+        setRenderProgress(0.99, 'Downloading master file...');
+
+        // Pulling the file down once means playback, scrubbing and export all
+        // work from the same local copy, and the download is instant.
+        const blob = await window.AIVideoEngine.toBlob(result.videoUrl);
+        if (blob) {
+          generatedBlob = blob;
+          realVideoUrl = URL.createObjectURL(blob);
+          realVideoExt = (blob.type && blob.type.indexOf('webm') >= 0) ? 'webm' : 'mp4';
+        } else {
+          // CORS refused the read; the clip still plays straight from source.
+          realVideoUrl = result.videoUrl;
+          realVideoExt = 'mp4';
+        }
+
+        generatedVideoUrl = realVideoUrl;
+        activeProviderLabel = result.modelLabel || result.provider;
+        showRealVideo(realVideoUrl);
+        finishGeneration(prompt, camera, `✓ Rendered by ${activeProviderLabel}. Click 'Export Video File' to download.`);
+        return;
+      }
+
+      // Falling through is normal on a keyless deployment; say why, once.
+      if (result && result.error) {
+        console.warn('Video model unavailable, using local engine:', result.error);
+        if (window.showToast) {
+          window.showToast(
+            result.reason === 'no_provider_configured'
+              ? 'ℹ No video model key configured — rendering with the local engine.'
+              : `ℹ Video model unavailable (${result.error.slice(0, 60)}) — using local engine.`
+          );
+        }
       }
     }
 
-    // MediaRecorder stream capture
+    // --- Path 2: local keyframe synthesizer ---------------------------------
+    await runLocalGeneration(prompt, camera, ratio);
+  }
+
+  function describeProgress(info) {
+    const seconds = info.elapsedMs ? Math.round(info.elapsedMs / 1000) : 0;
+    const suffix = seconds > 3 ? ` (${seconds}s)` : '';
+    if (info.phase === 'queued') return `${info.detail || 'Queued'}${suffix}`;
+    if (info.phase === 'succeeded') return info.detail || 'Complete';
+    return `${info.detail || 'Rendering'}${suffix}`;
+  }
+
+  /**
+   * The keyless path: request stills for the prompt, animate them under the
+   * virtual camera, and capture the canvas to a real .webm file.
+   */
+  async function runLocalGeneration(prompt, camera, ratio) {
+    const overlay = document.getElementById('studio-rendering-overlay');
+
+    // Canvas backing resolution. MediaRecorder captures at whatever the canvas
+    // is, so this is what actually determines export resolution here.
+    const heights = { '720p': 720, '1080p': 1080, '4k': 2160 };
+    const targetHeight = heights[renderQuality] || 1080;
+    const ratios = { '16:9': 16 / 9, '9:16': 9 / 16, '1:1': 1, '21:9': 21 / 9 };
+    const targetWidth = Math.round((targetHeight * (ratios[ratio] || ratios['16:9'])) / 2) * 2;
+    resizeCanvas(targetWidth, targetHeight);
+
+    if (aiSynth) {
+      setRenderProgress(0.02, 'Generating diffusion keyframes...');
+      try {
+        await aiSynth.fetchKeyframes(prompt, {
+          // More keyframes across the shot means less time held on any single
+          // still, which is what makes the fallback read as motion at all.
+          count: 6,
+          width: Math.min(targetWidth, 1920),
+          height: Math.min(targetHeight, 1080),
+          seed: Math.floor(Math.random() * 899999 + 100000),
+          signal: generationAbort ? generationAbort.signal : undefined,
+          onProgress: (done, total) => {
+            setRenderProgress((done / total) * 0.35, `Generating keyframe ${done}/${total}...`);
+          }
+        });
+      } catch (err) {
+        console.warn('Keyframe synthesis failed, using procedural engine:', err);
+      }
+    }
+
     try {
       const stream = canvas.captureStream ? canvas.captureStream(30) : null;
       if (stream && typeof MediaRecorder !== 'undefined') {
         let mimeType = 'video/webm;codecs=vp9';
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
-        mediaRecorder.ondataavailable = (e) => {
+        // 4K needs far more headroom than 1080p or the encoder smears motion.
+        const bitrate = targetHeight >= 2160 ? 40000000 : (targetHeight >= 1080 ? 16000000 : 8000000);
+        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: bitrate });
+        mediaRecorder.ondataavailable = e => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
         };
         mediaRecorder.onstop = () => {
           if (recordedChunks.length > 0) {
             generatedBlob = new Blob(recordedChunks, { type: 'video/webm' });
             generatedVideoUrl = URL.createObjectURL(generatedBlob);
+            realVideoExt = 'webm';
           }
         };
         mediaRecorder.start();
       }
     } catch (e) {
-      console.warn("MediaRecorder setup:", e);
+      console.warn('MediaRecorder setup:', e);
     }
 
-    const totalFrames = 5 * 30; // 5 seconds at 30 fps
-    let frame = 0;
-    const stages = [
-      "Encoding 128-dim Latent Prompt Tokens...",
-      "Diffusing Multi-Plane 3D Parallax...",
-      "Simulating Realistic Motion & Lighting...",
-      "Applying Hollywood Color Grade & FX...",
-      "Hardware Muxing Master 1080p Video Stream..."
-    ];
+    await new Promise(resolve => {
+      const fps = 30;
+      const totalFrames = renderDuration * fps;
+      let frame = 0;
 
-    function step() {
-      if (!isGenerating) return;
-      frame++;
-      const timeInSec = frame / 30;
-      renderSceneFrame(timeInSec);
+      function step() {
+        if (!isGenerating) return resolve();
+        frame++;
+        renderSceneFrame(frame / fps);
 
-      const progress = Math.min(Math.floor((frame / totalFrames) * 100), 100);
-      if (progressFill) progressFill.style.width = `${progress}%`;
-      const stageIdx = Math.min(Math.floor((progress / 100) * stages.length), stages.length - 1);
-      if (renderStatus) renderStatus.textContent = `${stages[stageIdx]} (${progress}%)`;
+        const progress = 0.35 + (frame / totalFrames) * 0.65;
+        setRenderProgress(progress, `Compositing frame ${frame}/${totalFrames}...`);
 
-      if (frame < totalFrames) {
-        setTimeout(() => requestAnimationFrame(step), 1000 / 30);
-      } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          try { mediaRecorder.stop(); } catch (err) {}
-        }
-
-        setTimeout(() => {
-          if (overlay) overlay.classList.remove('active');
-          isGenerating = false;
-          isPlaying = true;
-          sceneTick = 0;
-
-          // Add to Generation Reel
-          if (window.FilmOS) {
-            const shot = window.FilmOS.getActiveShot();
-            window.FilmOS.addReelItem({
-              id: `gen-${Date.now()}`,
-              title: shot ? `Shot ${shot.code}: ${shot.title}` : "Clip #" + Date.now(),
-              prompt: prompt,
-              model: window.FilmOS.state.activeModel,
-              camera: shot ? shot.camera : "Orbit 360°",
-              timestamp: Date.now(),
-              url: generatedVideoUrl
-            });
-            renderGenerationReel();
+        if (frame < totalFrames) {
+          setTimeout(() => requestAnimationFrame(step), 1000 / fps);
+        } else {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            try { mediaRecorder.stop(); } catch (err) {}
           }
-
-          if (window.showToast) window.showToast("✓ Video Synthesized & Playing! Click 'Export Video File' to download.");
-        }, 300);
+          // onstop fires asynchronously; the blob is not ready before it does.
+          setTimeout(resolve, 350);
+        }
       }
+      requestAnimationFrame(step);
+    });
+
+    if (overlay) overlay.classList.remove('active');
+    finishGeneration(prompt, camera, "✓ Video synthesized locally. Click 'Export Video File' to download.");
+  }
+
+  /** Shared completion: close the overlay, log the clip, tell the user. */
+  function finishGeneration(prompt, camera, message) {
+    const overlay = document.getElementById('studio-rendering-overlay');
+    if (overlay) overlay.classList.remove('active');
+    isGenerating = false;
+    isPlaying = true;
+    sceneTick = 0;
+    generationAbort = null;
+
+    if (window.FilmOS) {
+      const shot = window.FilmOS.getActiveShot();
+      window.FilmOS.addReelItem({
+        id: `gen-${Date.now()}`,
+        title: shot ? `Shot ${shot.code}: ${shot.title}` : 'Clip #' + Date.now(),
+        prompt: prompt,
+        model: activeProviderLabel || (window.FilmOS.state.activeModel),
+        camera: camera,
+        timestamp: Date.now(),
+        url: generatedVideoUrl
+      });
+      renderGenerationReel();
     }
 
-    requestAnimationFrame(step);
+    if (window.showToast && message) window.showToast(message);
   }
 
   // 2.8 Recent Generation Reel Renderer
@@ -7755,7 +8321,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         const promptInput = document.getElementById('studio-prompt-input');
         if (promptInput) promptInput.value = item.prompt;
         setCameraMode(item.camera || 'Orbit 360°');
-        if (window.showToast) window.showToast(`✓ Loaded Clip #${idx + 1} Settings!`);
+
+        // Reel entries from this session still hold a playable URL; replay the
+        // clip itself rather than only restoring the settings that made it.
+        if (item.url) {
+          generatedVideoUrl = item.url;
+          activeProviderLabel = item.model || null;
+          showRealVideo(item.url);
+        } else {
+          hideRealVideo();
+        }
+
+        if (window.showToast) window.showToast(`✓ Loaded Clip #${idx + 1}.`);
       });
 
       // Right Click = Add to NLE Timeline
@@ -7861,6 +8438,16 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     if (playPauseBtn) {
       playPauseBtn.addEventListener('click', () => {
         isPlaying = !isPlaying;
+        // With a model render on screen the transport drives the <video>; the
+        // canvas loop is not what the user is watching.
+        if (resultVideo && resultVideo.style.display !== 'none') {
+          if (isPlaying) {
+            const p = resultVideo.play();
+            if (p && typeof p.catch === 'function') p.catch(() => {});
+          } else {
+            resultVideo.pause();
+          }
+        }
         if (playPauseIcon) {
           playPauseIcon.innerHTML = isPlaying
             ? `<path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>`
@@ -7967,19 +8554,57 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       });
     }
 
+    // Output Quality (720p / 1080p / 4K)
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        renderQuality = btn.dataset.quality || '1080p';
+        document.querySelectorAll('.quality-btn').forEach(b =>
+          b.classList.toggle('active', b === btn));
+        if (window.FilmOS) window.FilmOS.state.resolution = renderQuality;
+      });
+    });
+
+    // Clip Duration
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        renderDuration = parseInt(btn.dataset.duration, 10) || 5;
+        document.querySelectorAll('.duration-btn').forEach(b =>
+          b.classList.toggle('active', b === btn));
+      });
+    });
+
+    // Audio toggle on the result player. Model output (Veo, Sora) carries a
+    // real soundtrack, so this is only meaningful once a clip exists.
+    const muteBtn = document.getElementById('studio-mute-toggle');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        if (!resultVideo) return;
+        resultVideo.muted = !resultVideo.muted;
+        muteBtn.classList.toggle('is-muted', resultVideo.muted);
+        muteBtn.textContent = resultVideo.muted ? '🔇' : '🔊';
+      });
+    }
+
     bindImageUploader();
   }
 
   // 2.7 Video Export Functions
   window.downloadCurrentVideoFile = function () {
-    if (generatedBlob) {
+    if (generatedVideoUrl) {
       const a = document.createElement('a');
       a.href = generatedVideoUrl;
-      a.download = `aivideo-master-${Date.now()}.webm`;
+      // A model render is .mp4 and a local capture is .webm; naming the file
+      // after whichever produced it keeps players from choking on it.
+      a.download = `aivideo-master-${Date.now()}.${realVideoExt}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Master Video File Downloaded!");
+      if (window.showToast) {
+        window.showToast(activeProviderLabel
+          ? `✓ Master file downloaded (${activeProviderLabel}).`
+          : '✓ Master video file downloaded!');
+      }
     } else {
       if (!canvas) return;
       const a = document.createElement('a');

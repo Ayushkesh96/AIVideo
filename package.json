@@ -1,13 +1,23 @@
 {
-  "name": "social-media",
-  "version": "1.0.0",
-  "description": "A complete, self-contained replica of **Higgsfield AI** ([higgsfield.ai](https://higgsfield.ai/)).",
-  "main": "push-to-github.js",
+  "name": "aivideo-studio",
+  "version": "2.0.0",
+  "description": "AI-native cinema studio with real text-to-video generation across multiple model providers.",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node build.js",
+    "check": "node build.js --check",
+    "test": "node test/smoke.js"
   },
-  "keywords": [],
+  "keywords": [
+    "text-to-video",
+    "video-generation",
+    "veo",
+    "sora",
+    "kling",
+    "fal",
+    "replicate"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

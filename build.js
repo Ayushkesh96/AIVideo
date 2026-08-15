@@ -1,0 +1,106 @@
+/**
+ * Bundles styles/*.css and js/*.js into the inline <style> and <script> blocks
+ * of index.html.
+ *
+ * index.html ships as one self-contained file — it has no <link rel=stylesheet>
+ * and no <script src> — so the browser only ever runs the inlined copies.
+ * Before this script existed those copies were maintained by hand, which meant
+ * an edit to js/ or styles/ could look correct in the repo and change nothing
+ * in the deployed studio.
+ *
+ * styles/ and js/ are the source. Run `npm run build` after editing either.
+ *
+ *   node build.js          rewrite index.html from source
+ *   node build.js --check  verify index.html is in sync (non-zero exit if not)
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const CSS_ORDER = [
+  'styles/main.css',
+  'styles/navbar.css',
+  'styles/hero.css',
+  'styles/film-os.css',
+  'styles/studio.css',
+  'styles/storyboard.css',
+  'styles/compositor.css',
+  'styles/director.css',
+  'styles/presets.css',
+  'styles/community.css',
+  'styles/pricing.css'
+];
+
+// Explicit, because load order is load-bearing: film-os defines the state
+// store the studio and UI controllers read at startup, and app.js boots last.
+const JS_ORDER = [
+  'js/supabase.js',
+  'js/ai-synth.js',
+  'js/video-engine.js',
+  'js/film-os.js',
+  'js/audio-engine.js',
+  'js/neural-engine.js',
+  'js/showcase.js',
+  'js/studio.js',
+  'js/film-ui.js',
+  'js/presets.js',
+  'js/projects.js',
+  'js/pricing.js',
+  'js/app.js'
+];
+
+// js/human-assets.js is a multi-megabyte base64 blob that nothing references;
+// it is deliberately not bundled.
+
+const INDEX = path.join(__dirname, 'index.html');
+
+function buildBundle(order, guard) {
+  return order.map(rel => {
+    const abs = path.join(__dirname, rel);
+    if (!fs.existsSync(abs)) throw new Error(`bundle source missing: ${rel}`);
+    const source = fs.readFileSync(abs, 'utf8').replace(/\s*$/, '');
+    // A literal closing tag inside a source file would end the block early.
+    if (guard.test(source)) {
+      throw new Error(`${rel} contains a literal ${guard.source} and cannot be inlined`);
+    }
+    return `/* --- ${rel} --- */\n${source}\n`;
+  }).join('\n');
+}
+
+/**
+ * Replaces the contents of one tag, preserving the surrounding markup exactly.
+ * `from` selects which occurrence to take, so the <style> in <head> and the
+ * <script> at the end of <body> are each found unambiguously.
+ */
+function replaceBlock(html, openTag, closeTag, body, fromEnd) {
+  const open = fromEnd ? html.lastIndexOf(openTag) : html.indexOf(openTag);
+  if (open === -1) throw new Error(`index.html has no ${openTag} block`);
+  const bodyStart = open + openTag.length;
+  const close = html.indexOf(closeTag, bodyStart);
+  if (close === -1) throw new Error(`index.html has an unterminated ${openTag} block`);
+  return `${html.slice(0, bodyStart)}\n\n${body}\n${html.slice(close)}`;
+}
+
+function main() {
+  const check = process.argv.includes('--check');
+  const html = fs.readFileSync(INDEX, 'utf8');
+
+  let next = replaceBlock(html, '<style>', '</style>', buildBundle(CSS_ORDER, /<\/style/i), false);
+  next = replaceBlock(next, '<script>', '</script>', buildBundle(JS_ORDER, /<\/script/i), true);
+
+  if (next === html) {
+    console.log('index.html is in sync with styles/ and js/');
+    return;
+  }
+
+  if (check) {
+    console.error('index.html is OUT OF SYNC with styles/ or js/ — run `npm run build`.');
+    process.exit(1);
+  }
+
+  fs.writeFileSync(INDEX, next);
+  const kb = (Buffer.byteLength(next) / 1024).toFixed(0);
+  console.log(`index.html rebuilt from ${CSS_ORDER.length} stylesheets and ${JS_ORDER.length} scripts (${kb} KB)`);
+}
+
+main();
