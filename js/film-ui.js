@@ -500,27 +500,40 @@
       if (!shot) return;
       shot.motionRig = rigVal;
       
-      // Map to cameraMovement / choreography
+      // Choosing a rig suggests a camera move, but every value here must be a
+      // real data-camera on a .camera-btn. 'Dolly Push' and 'Handheld' were
+      // not, so picking those rigs blanked the camera selection entirely.
+      //
+      // Handheld is deliberately absent: it describes how the camera is held,
+      // not where it goes, so it leaves the chosen move alone.
       const rigToChoreography = {
-        'Dolly': 'Dolly Push',
+        'Dolly': 'Zoom In',
         'Truck': 'Pan Left',
-        'Crane': 'Tilt Up',
-        'Handheld': 'Handheld',
+        'Crane': 'Crane',
         'FPV Drone': 'FPV Dive',
         'Orbit 360°': 'Orbit 360°'
       };
 
-      const mappedCamera = rigToChoreography[rigVal] || rigVal;
-      shot.camera = mappedCamera;
+      const mappedCamera = rigToChoreography[rigVal];
+      if (mappedCamera) shot.camera = mappedCamera;
       shot.cameraMovement = rigVal;
 
       window.FilmOS.save();
       renderCameraInspector();
 
-      // Sync 9-button choreography grid
-      document.querySelectorAll('.camera-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.camera === mappedCamera);
-      });
+      // Sync the choreography grid, but only when this rig actually implies a
+      // move — otherwise Handheld would deselect whatever the user picked.
+      if (mappedCamera) {
+        document.querySelectorAll('.camera-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.camera === mappedCamera);
+        });
+      }
+
+      // Keep the rig grid's own highlight in step with the saved value.
+      const rigGrid = document.getElementById('motion-rig-selector-grid');
+      if (rigGrid) {
+        rigGrid.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.rig === rigVal));
+      }
 
       if (window.showToast) window.showToast(`Active Motion Rig: ${rigVal}`);
     },

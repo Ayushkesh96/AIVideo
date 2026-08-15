@@ -406,6 +406,14 @@
   color: #e5b45c;
 }
 
+/* The model actually refused. Hovering gives the provider's own reason, which
+   is the difference between "add a key" and "wait and retry". */
+.provider-badge.is-error {
+  border-color: #d9534f;
+  background: rgba(217, 83, 79, 0.14);
+  color: #f08b88;
+}
+
 /* Finished model renders play as a real <video> stacked on the canvas. */
 #studio-result-video {
   position: absolute;

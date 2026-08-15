@@ -143,6 +143,12 @@
           t.scale = 1.30 - ease * 0.18 * s;
           t.rot = ease * 0.03 * s;
           break;
+        case 'Crane':
+          // Rising boom: the frame lifts while easing back, the way a crane
+          // reveals a scene.
+          t.dy = ease * 0.15 * s;
+          t.scale = 1.26 - ease * 0.14 * s;
+          break;
         case 'FPV Dive':
           t.scale = 1.02 + Math.pow(ease, 1.7) * 0.55 * s;
           t.dy = -Math.pow(ease, 1.7) * 0.10 * s;

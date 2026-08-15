@@ -57,6 +57,10 @@
   let renderQuality = '1080p';
   let renderDuration = 5;
 
+  // Last refusal from a video model, kept so the badge can explain itself
+  // after the toast has gone.
+  let lastModelError = null;
+
   const LUT_FILTERS = {
     cyber: 'hue-rotate(-10deg) saturate(1.45) contrast(1.15)',
     matrix: 'hue-rotate(65deg) saturate(1.2) contrast(1.25) brightness(0.95)',
@@ -219,6 +223,17 @@
     return { width: width - (width % 2), height: height - (height % 2) };
   }
 
+  /**
+   * Keeps the viewport HUD honest. The resolution pill was hardcoded markup,
+   * so it read "1080p • 30 FPS" even while rendering a 4K portrait frame.
+   */
+  function updateHud() {
+    const resTag = document.getElementById('hud-res-tag');
+    if (resTag && canvas) {
+      resTag.textContent = `${canvas.width}×${canvas.height} • 30 FPS`;
+    }
+  }
+
   function resizeCanvas() {
     if (!canvas) return;
     const { width, height } = frameSize();
@@ -232,6 +247,7 @@
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.objectFit = 'contain';
+    updateHud();
   }
 
   function loadActiveShotData() {
@@ -464,17 +480,25 @@
   // 2.11 Lens & Rig
   function setLens(lens) {
     if (window.FilmOS) window.FilmOS.updateActiveShot({ lens });
-    document.querySelectorAll('.camera-rig-selector button').forEach(b => {
-      if (b.textContent.includes(lens)) {
-        b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-      }
-    });
+    // Match on data-lens, not button text. Text matching also scanned the
+    // motion-rig grid, so a rig button could steal the lens highlight.
+    const grid = document.getElementById('lens-selector-grid');
+    if (grid) {
+      grid.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.lens === lens));
+    }
   }
 
+  /**
+   * Motion rig is its own axis — "Dolly", "Crane", "Handheld" are not camera
+   * moves. Feeding them into setCameraMode() used to blank the camera
+   * selection, because no .camera-btn has data-camera="Crane".
+   */
   function setRig(rig) {
-    if (window.FilmOS) window.FilmOS.updateActiveShot({ rig });
-    setCameraMode(rig);
+    if (window.FilmOS) window.FilmOS.updateActiveShot({ motionRig: rig });
+    const grid = document.getElementById('motion-rig-selector-grid');
+    if (grid) {
+      grid.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.rig === rig));
+    }
   }
 
   // 2.9 Color Grading & FX Compositor
@@ -508,13 +532,31 @@
     'Zoom Out': 'a slow pull-back revealing the wider scene',
     'Orbit 360°': 'the camera orbits around the subject in a smooth arc',
     'Drone Overhead': 'a rising aerial drone shot looking down over the scene',
-    'FPV Dive': 'a fast FPV drone dive racing through the scene'
+    'FPV Dive': 'a fast FPV drone dive racing through the scene',
+    // Crane is a data-camera on the choreography grid, so it needs an entry
+    // here too — without one, picking it sent no motion language at all.
+    'Crane': 'a sweeping crane shot rising over the scene'
   };
 
-  function buildModelPrompt(basePrompt, camera, lens) {
+  // The rig is how the camera is physically carried, which reads differently
+  // to a model than the move itself.
+  const RIG_DIRECTION = {
+    'Dolly': 'smooth dolly movement on tracks',
+    'Truck': 'lateral trucking movement',
+    'Crane': 'sweeping crane movement',
+    'Handheld': 'handheld camera with natural shake',
+    'FPV Drone': 'fast FPV drone flight',
+    'Orbit 360°': 'orbiting camera movement'
+  };
+
+  function buildModelPrompt(basePrompt, camera, lens, rig) {
     const parts = [basePrompt];
     const move = CAMERA_DIRECTION[camera];
     if (move) parts.push(move);
+    const carry = RIG_DIRECTION[rig];
+    // Skip the rig when it just restates the move, so the prompt doesn't say
+    // "orbits around the subject, orbiting camera movement".
+    if (carry && rig !== camera) parts.push(carry);
     if (lens) parts.push(`shot on a ${lens} lens`);
     parts.push('cinematic, photorealistic, natural motion');
     return parts.join(', ');
@@ -597,13 +639,14 @@
       const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
       const camera = shot && shot.camera ? shot.camera : 'Orbit 360°';
       const lens = shot && shot.lens ? shot.lens : '';
+      const rig = shot && shot.motionRig ? shot.motionRig : '';
       generationAbort = typeof AbortController !== 'undefined' ? new AbortController() : null;
 
       setRenderProgress(0.01, 'Submitting to video model...');
       let result;
       try {
         result = await window.AIVideoEngine.generate({
-          prompt: buildModelPrompt(prompt, camera, lens),
+          prompt: buildModelPrompt(prompt, camera, lens, rig),
           aspectRatio: activeAspectRatio(),
           quality: renderQuality,
           durationSec: activeDuration(),
@@ -653,8 +696,17 @@
 
       if (result && result.error) {
         console.warn('Video model unavailable, using local engine:', result.error);
-        if (window.showToast) {
-          window.showToast(`ℹ Video model unavailable — rendering on-device instead.`);
+        lastModelError = result.error;
+        // Show the provider's actual reason, not a generic line. "requires a
+        // key" and "rate limited" need completely different responses from the
+        // user, and hiding which one happened is how this stays unexplained.
+        if (window.showToast) window.showToast(`⚠ ${result.error}`);
+        const badge = document.getElementById('studio-provider-badge');
+        if (badge) {
+          badge.classList.remove('is-live', 'is-besteffort');
+          badge.classList.add('is-error');
+          badge.textContent = 'LOCAL ENGINE (model refused)';
+          badge.title = `The video model declined this request:\n\n${result.error}\n\nThe clip below was rendered by the local keyframe engine instead.`;
         }
       }
       generationAbort = null;
@@ -1102,6 +1154,17 @@
       });
     });
 
+    // "+ Add @Element" — the modal and its save handler already existed, but
+    // nothing opened it, so the button did nothing at all.
+    const addElementBtn = document.getElementById('filmos-add-character-btn');
+    if (addElementBtn) {
+      addElementBtn.addEventListener('click', () => {
+        if (window.FilmOSUI && window.FilmOSUI.openAddElementModal) {
+          window.FilmOSUI.openAddElementModal();
+        }
+      });
+    }
+
     // Audio toggle for the result player — model output (Veo, Sora) carries a
     // real soundtrack, so this only means anything once a clip exists.
     const muteBtn = document.getElementById('studio-mute-toggle');
@@ -1118,6 +1181,58 @@
   }
 
   // 2.7 Video Export Functions
+  /**
+   * Loads a preset, community project or showcase clip into the studio.
+   *
+   * The presets gallery, the projects explorer and the showcase strip all call
+   * this, but nothing defined it — so every "use this" button on the page was
+   * inert. Each caller passes a different subset of fields, so everything here
+   * is optional.
+   */
+  window.loadPresetIntoStudio = function (preset) {
+    if (!preset) return;
+
+    const promptInput = document.getElementById('studio-prompt-input');
+    if (promptInput && preset.prompt) {
+      promptInput.value = preset.prompt;
+      if (window.FilmOS) window.FilmOS.updateActiveShot({ prompt: preset.prompt });
+    }
+
+    if (preset.camera) setCameraMode(preset.camera);
+    if (preset.lens) setLens(preset.lens);
+    if (preset.rig) setRig(preset.rig);
+    if (preset.lut) setLut(preset.lut);
+    if (preset.aspectRatio) setAspectRatio(preset.aspectRatio);
+
+    if (preset.model && window.FilmOS) setModel(preset.model);
+
+    if (Number.isFinite(preset.motionSpeed)) {
+      const slider = document.getElementById('motion-strength-slider');
+      const val = document.getElementById('motion-strength-val');
+      if (slider) slider.value = preset.motionSpeed;
+      if (val) val.textContent = `${preset.motionSpeed}%`;
+      if (window.FilmOS) window.FilmOS.updateActiveShot({ motionSpeed: preset.motionSpeed });
+    }
+
+    // Single-page layout: bring the studio into view so the user can see the
+    // settings that were just applied.
+    const studio = document.getElementById('studio');
+    if (studio && studio.scrollIntoView) {
+      studio.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (promptInput) {
+      // Focus after the scroll so the caret lands where the user is looking.
+      setTimeout(() => promptInput.focus(), 400);
+    }
+
+    if (window.showToast) {
+      window.showToast(preset.title
+        ? `✓ Loaded "${preset.title}" into the studio.`
+        : '✓ Preset loaded into the studio.');
+    }
+  };
+
   window.downloadCurrentVideoFile = function () {
     if (generatedBlob) {
       const a = document.createElement('a');
