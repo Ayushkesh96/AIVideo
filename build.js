@@ -36,7 +36,7 @@ const CSS_ORDER = [
 // store the studio and UI controllers read at startup, and app.js boots last.
 const JS_ORDER = [
   'js/supabase.js',
-  'js/ai-synth.js',
+  'js/post-fx.js',
   'js/video-engine.js',
   'js/film-os.js',
   'js/audio-engine.js',

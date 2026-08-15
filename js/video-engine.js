@@ -5,10 +5,11 @@
  * provider hands back a finished clip. This is the path that produces an
  * actual video of the prompt — a real model rendering real motion.
  *
- * The keyframe synthesizer in ai-synth.js is what runs when this cannot: it
- * interpolates stills under a virtual camera, which looks cinematic but is not
- * a video model. Keeping the two clearly separated matters, because only one
- * of them can honour a prompt like "the dog turns its head".
+ * The on-device procedural engine (neural-engine.js) is what runs when this
+ * cannot: it synthesizes a scene under a virtual camera, which looks
+ * cinematic but is not a video model. Keeping the two clearly separated
+ * matters, because only this one can honour a prompt like "the dog turns its
+ * head".
  */
 
 (function () {

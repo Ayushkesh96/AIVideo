@@ -226,8 +226,7 @@ function withStubProvider(behaviour, fn) {
   }));
 
   const ALL_KEYS = ['FAL_KEY', 'FAL_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'REPLICATE_API_TOKEN',
-    'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY',
-    'POLLINATIONS_KEY', 'POLLINATIONS_API_KEY'];
+    'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY'];
 
   /** Runs fn with every provider key unset, then restores them. */
   async function withNoKeys(fn) {
@@ -253,48 +252,14 @@ function withStubProvider(behaviour, fn) {
     assert.deepStrictEqual(caps.keyedProviders, []);
     assert.strictEqual(caps.active, null, 'no provider may claim to be active without a key');
     assert.strictEqual(caps.fallbackOnly, true);
-    assert.strictEqual(caps.keyframes, false, 'the metered image path must be reported unavailable');
   }));
 
-  await testAsync('keyframe fetch refuses instantly with no key instead of calling upstream', () => withNoKeys(async () => {
-    const { fetchKeyframe } = require('../api/_keyframe');
-    const out = await fetchKeyframe({ prompt: 'a fox' });
-    assert.strictEqual(out.success, false);
-    assert.strictEqual(out.keyless, true, 'the refusal must be marked as a keyless short-circuit');
-    assert.strictEqual(out.fallback, true);
-  }));
-
-  await testAsync('a real key outranks the keyless provider', async () => {
+  await testAsync('a real key outranks the keyless state', async () => {
     process.env.FAL_KEY = 'test-key';
     const caps = video.capabilities();
     assert.strictEqual(caps.active, 'fal', 'a keyed provider must win');
     assert.strictEqual(caps.keyless, false);
     assert.ok(caps.keyedProviders.indexOf('fal') >= 0);
-  });
-
-  await testAsync('the streaming descriptor targets the provider host, never the caller', () => withNoKeys(async () => {
-    process.env.POLLINATIONS_KEY = 'pk_test';
-    try {
-      const desc = video.resolveStream({ prompt: 'a fox in snow', quality: '720p' });
-      assert.ok(desc.url.startsWith('https://gen.pollinations.ai/video/'), `got ${desc.url}`);
-      assert.ok(desc.url.includes('a%20fox%20in%20snow'), 'prompt must be url-encoded into the path');
-    } finally {
-      delete process.env.POLLINATIONS_KEY;
-    }
-  }));
-
-  await testAsync('with no keys, the streaming route has nothing to resolve', () => withNoKeys(async () => {
-    assert.throws(() => video.resolveStream({ prompt: 'a fox' }), /no synchronous video provider/i);
-  }));
-
-  await testAsync('a key is attached to the stream when one is set', async () => {
-    process.env.POLLINATIONS_KEY = 'pk_test';
-    try {
-      const desc = video.resolveStream({ prompt: 'a fox', provider: 'pollinations' });
-      assert.strictEqual(desc.headers.Authorization, 'Bearer pk_test');
-    } finally {
-      delete process.env.POLLINATIONS_KEY;
-    }
   });
 
   // --- self-hosted (ComfyUI) ------------------------------------------------
@@ -352,47 +317,6 @@ function withStubProvider(behaviour, fn) {
       delete process.env.COMFYUI_URL;
       delete process.env.COMFYUI_WORKFLOW;
     }
-  });
-
-  // --- keyframe chaining ----------------------------------------------------
-
-  console.log('\nkeyframe chaining (keyless engine)');
-
-  const { buildUrl } = require('../api/_keyframe');
-
-  test('an unchained frame describes a fresh scene', () => {
-    const url = buildUrl({ prompt: 'a red fox in snow', seed: 1, width: 1280, height: 720, shotProgress: 0 });
-    assert.ok(!url.includes('image='), 'the first frame has nothing to continue from');
-    assert.ok(url.includes('cinematic'), 'expected the style suffix on a fresh scene');
-  });
-
-  test('a chained frame edits the previous one', () => {
-    const url = buildUrl({
-      prompt: 'a red fox in snow', seed: 2, width: 1280, height: 720,
-      chainFrom: 'https://image.pollinations.ai/prompt/x?seed=1'
-    });
-    assert.ok(url.includes('model=kontext'), 'chaining needs an image-editing model');
-    assert.ok(url.includes('image='), 'the previous frame must be passed as a reference');
-    assert.ok(decodeURIComponent(url).includes('continue this exact scene'),
-      'a chained frame is an edit instruction, not a new scene description');
-  });
-
-  test('a non-https reference is refused', () => {
-    // chainFrom is echoed into a URL the model service will fetch, so anything
-    // that isn't a plain https url must not become a reference.
-    ['file:///etc/passwd', 'http://internal.local/x', 'javascript:alert(1)', ''].forEach(bad => {
-      const url = buildUrl({ prompt: 'x', seed: 1, chainFrom: bad });
-      assert.ok(!url.includes('image='), `${bad || '(empty)'} should not be chained`);
-    });
-  });
-
-  test('dimensions stay clamped when chaining', () => {
-    const url = buildUrl({
-      prompt: 'x', seed: 1, width: 99999, height: 10,
-      chainFrom: 'https://image.pollinations.ai/prompt/x'
-    });
-    assert.ok(url.includes('width=2048'), 'oversized width must clamp');
-    assert.ok(url.includes('height=256'), 'undersized height must clamp');
   });
 
   // --- bundle freshness -----------------------------------------------------

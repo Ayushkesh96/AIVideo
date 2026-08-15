@@ -2,8 +2,7 @@
  * Shared text-to-video job logic.
  *
  * Lives outside the route files so the Vercel functions and the local dev
- * server in server.js run the exact same code — the same reason _keyframe.js
- * is factored out.
+ * server in server.js run the exact same code.
  *
  * The flow is deliberately two-phase. Video models take 30s to several
  * minutes; a serverless function cannot hold a request open that long, so
@@ -95,28 +94,6 @@ async function createJob(body) {
       reason: 'no_provider_configured',
       error: 'No video model API key is configured on this deployment.',
       hint: 'Set FAL_KEY, GEMINI_API_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY in the environment to enable real text-to-video.'
-    };
-  }
-
-  // Synchronous providers stream the finished file on one request instead of
-  // handing back a job to poll, so there is nothing to submit — the client is
-  // pointed straight at the streaming route.
-  if (provider.synchronous) {
-    return {
-      success: true,
-      direct: true,
-      endpoint: '/api/video-direct',
-      provider: provider.id,
-      providerLabel: provider.label,
-      modelLabel: (provider.capabilities() || {}).activeModelLabel || provider.label,
-      request: {
-        prompt: input.prompt,
-        aspectRatio: input.aspectRatio,
-        quality: input.quality,
-        width: input.width,
-        height: input.height,
-        durationSec: input.durationSec
-      }
     };
   }
 
@@ -223,34 +200,12 @@ async function resolveDownload(token) {
   };
 }
 
-/**
- * Builds the upstream request for a synchronous provider. Used only by the
- * direct streaming route; the destination comes from the adapter, never from
- * the caller.
- */
-function resolveStream(body) {
-  const input = normalizeInput(body);
-  const provider = providers.pick(input.providerId);
-
-  if (!provider || !provider.synchronous || typeof provider.streamRequest !== 'function') {
-    throw new Error('no synchronous video provider is available');
-  }
-
-  const descriptor = provider.streamRequest(input);
-  if (!providers.providerOwnsUrl(descriptor.url)) {
-    throw new Error('refusing to stream a url no configured provider claims');
-  }
-
-  return Object.assign({ provider: provider.id }, descriptor);
-}
-
 module.exports = {
   applyCors,
   normalizeInput,
   createJob,
   pollJob,
   resolveDownload,
-  resolveStream,
   capabilities: providers.capabilities,
   QUALITY_HEIGHTS,
   ASPECT_RATIOS

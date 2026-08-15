@@ -7,7 +7,7 @@ key upgrades generation to a hosted AI video model.
 
 ## How generation works
 
-Three engines, tried in order. The first one available wins:
+Two engines, tried in order. The first one available wins:
 
 | | Engine | Needs | What it can do |
 |---|---|---|---|
@@ -17,15 +17,11 @@ Three engines, tried in order. The first one available wins:
 
 **Engine 2 is the default.** With nothing configured the studio makes no
 upstream calls at all: the scene is synthesized, animated and recorded entirely
-client-side, so it is unlimited and free forever. It is honest about what it is
-— a procedural renderer, not a diffusion model. It composes a scene *inspired
-by* the prompt; it cannot photorealistically depict arbitrary text. For that,
-add a key (engine 1) or point it at your own GPU (engine 0).
-
-With a funded `POLLINATIONS_KEY` there is also a middle path: real AI stills
-are generated for the prompt and animated under a virtual camera. Generation on
-gen.pollinations.ai is metered (anonymous and zero-balance requests are
-refused), so this path only activates when a key with balance is configured.
+client-side, so it is unlimited and free forever, with no metered or paid
+dependency of any kind. It is honest about what it is — a procedural renderer,
+not a diffusion model. It composes a scene *inspired by* the prompt; it cannot
+photorealistically depict arbitrary text. For that, add a key (engine 1) or
+point it at your own GPU (engine 0).
 
 ## Enabling real video generation
 
@@ -39,7 +35,6 @@ Environment Variables, or a local `.env`):
 | `REPLICATE_API_TOKEN` | Replicate | `wan-video/wan-2.2-t2v-fast` | 720p | paid |
 | `RUNWAYML_API_SECRET` | Runway | `gen4_turbo` | 720p | paid |
 | `LUMAAI_API_KEY` | Luma | `ray-2` | 4K | paid |
-| `POLLINATIONS_KEY` | Pollinations | `wan` | 1080p | metered (pollen) |
 
 Providers are tried in that order and the first one with a key wins. Redeploy
 after adding one — the studio reads capabilities at page load. With no key at
@@ -52,11 +47,11 @@ versions; these let you follow a rename without a code change.
 
 ### About 4K
 
-Only Veo 3.1 and Luma Ray 2 advertise true 4K output. On any other model the 4K
-button is **disabled rather than faked** — the studio will not upscale a 720p
-render and call it 4K. The local fallback engine does render its canvas at
-3840×2160 when you pick 4K, but that is an upscaled composite of generated
-stills, not a 4K model render.
+Only Veo 3.1 and Luma Ray 2 advertise true 4K output. On any other configured
+model the 4K button is **disabled rather than faked** — the studio will not
+upscale a 720p render and call it 4K. The free on-device engine renders its
+canvas natively at 3840×2160 when you pick 4K, which is real resolution for a
+procedural scene, but is not a diffusion model's 4K output.
 
 ## Running locally
 
@@ -92,10 +87,10 @@ api/
   video-status.js     GET   one poll tick
   video-proxy.js      GET   streams key-gated media without exposing the key
   video-providers.js  GET   which models are reachable
-  _keyframe.js        text-to-image backend for the fallback engine
 js/
   video-engine.js     client: submit, poll with backoff, resolve to a blob
-  ai-synth.js         fallback: keyframe interpolation under a virtual camera
+  neural-engine.js    free on-device engine: procedural scene renderer
+  post-fx.js          shared finishing pass — grade, atmosphere, grain
   studio.js           studio controller and generation pipeline
 ```
 

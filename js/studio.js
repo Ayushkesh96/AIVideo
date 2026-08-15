@@ -21,20 +21,8 @@
   let fogStrength = 50;
   let generatedBlob = null;
   let generatedVideoUrl = null;
-  let aiSynth = null;
-  let usedAiKeyframes = false;
+  let postFx = null;
   let recordingExtension = 'webm';
-
-  // Chained keyframes are fetched sequentially — each one edits the previous —
-  // so frame count trades wait time against how continuous the clip looks.
-  //
-  // Scaled to clip length rather than fixed: a 10s clip built from six stills
-  // holds each one for nearly two seconds, which reads as a slideshow no matter
-  // how well they are chained. Roughly one frame per 0.8s keeps the dwell short
-  // enough to read as motion, capped so the wait stays bearable.
-  function keyframesForDuration(seconds) {
-    return Math.max(5, Math.min(12, Math.round(seconds / 0.8)));
-  }
 
   // MP4 first — it plays everywhere the user is likely to take the file.
   // WebM/VP9 is the fallback for browsers that can't mux H.264.
@@ -81,8 +69,8 @@
     if (canvas && window.NeuralVideoEngine) {
       neuralEngine = new window.NeuralVideoEngine(canvas);
     }
-    if (canvas && window.AIKeyframeSynthesizer) {
-      aiSynth = new window.AIKeyframeSynthesizer(canvas);
+    if (canvas && window.CinemaPostFx) {
+      postFx = new window.CinemaPostFx(canvas);
     }
     if (window.CinemaAudioEngine) {
       audioEngine = new window.CinemaAudioEngine();
@@ -208,7 +196,7 @@
         badge.classList.remove('is-besteffort', 'is-error');
         badge.title =
           'Clips are rendered entirely in your browser by the built-in cinematic engine — free, unlimited, nothing to configure. ' +
-          'Optionally set GEMINI_API_KEY, FAL_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET, LUMAAI_API_KEY or a funded POLLINATIONS_KEY to upgrade to a hosted AI video model.';
+          'Optionally set GEMINI_API_KEY, FAL_KEY, REPLICATE_API_TOKEN, RUNWAYML_API_SECRET or LUMAAI_API_KEY to upgrade to a hosted AI video model.';
       }
     }
 
@@ -280,7 +268,6 @@
     hideRealVideo();
     generatedBlob = null;
     generatedVideoUrl = null;
-    if (aiSynth) aiSynth.reset();
 
     loadActiveShotData();
     resizeCanvas();
@@ -380,27 +367,11 @@
     }
   }
 
-  // Prefers real model keyframes; falls back to the on-device procedural
-  // engine whenever the studio has none (before the first generate, or when
-  // the model service is unreachable).
   function renderSceneFrame(t) {
     const shot = window.FilmOS && window.FilmOS.getActiveShot ? window.FilmOS.getActiveShot() : null;
     const prompt = shot ? shot.prompt : "cinematic scene";
     const camera = shot ? shot.camera : "Orbit 360°";
     const motionSpeed = shot ? shot.motionSpeed : 75;
-
-    if (aiSynth && aiSynth.hasKeyframes()) {
-      const rendered = aiSynth.renderFrame(t, {
-        duration: activeDuration(),
-        cameraMotion: camera,
-        motionStrength: motionSpeed,
-        lut: activeLut,
-        flare: flareStrength,
-        grain: grainStrength,
-        fog: fogStrength
-      });
-      if (rendered) return;
-    }
 
     if (neuralEngine) {
       neuralEngine.renderFrame(
@@ -417,8 +388,8 @@
 
       // The procedural engine draws the scene; the shared post chain grades it,
       // so the FX controls are live on this path too.
-      if (aiSynth) {
-        aiSynth.applyPostFx({
+      if (postFx) {
+        postFx.applyPostFx({
           time: t,
           duration: activeDuration(),
           lut: activeLut,
@@ -700,11 +671,12 @@
   // 2.6 Generation pipeline.
   //
   // Two engines, tried in order:
-  //   1. A real text-to-video model. This is the only path that can actually
-  //      depict what the prompt describes, including motion.
-  //   2. The local keyframe synthesizer, which animates generated stills. It
-  //      always works and needs nothing configured, but it cannot invent
-  //      motion — so it is a fallback, not an equal.
+  //   1. A real text-to-video model, when a provider key is configured. This
+  //      is the only path that can actually depict what the prompt describes,
+  //      including motion.
+  //   2. The free on-device procedural engine. It always works and needs
+  //      nothing configured — no key, no account, no cost — and is the
+  //      default renderer for a deployment with no provider set up.
   async function startGeneration() {
     if (isGenerating || !canvas) return;
     isGenerating = true;
@@ -817,66 +789,17 @@
           badge.classList.remove('is-live', 'is-besteffort');
           badge.classList.add('is-error');
           badge.textContent = 'LOCAL ENGINE (model refused)';
-          badge.title = `The video model declined this request:\n\n${result.error}\n\nThe clip below was rendered by the local keyframe engine instead.`;
+          badge.title = `The video model declined this request:\n\n${result.error}\n\nThe clip below was rendered by the free on-device engine instead.`;
         }
       }
       generationAbort = null;
     }
 
-    // --- Path 2: local keyframe synthesizer ---------------------------------
-
-    // Pull the model keyframes BEFORE recording starts, so the whole recorded
-    // window is real footage rather than a loading screen.
-    usedAiKeyframes = false;
-    let keyframeError = null;
-    // The AI-still path needs a funded image key; without one the server would
-    // refuse every frame, so the studio goes straight to the free engine.
-    const keyframesAvailable = !providerCaps || providerCaps.keyframes !== false;
-    if (aiSynth && !keyframesAvailable) {
-      aiSynth.reset();
-      if (renderStatus) renderStatus.textContent = 'Rendering with the free on-device engine...';
-    }
-    if (aiSynth && keyframesAvailable) {
-      try {
-        if (progressFill) progressFill.style.width = '0%';
-        if (renderStatus) renderStatus.textContent = 'Sampling latent keyframes from the model...';
-
-        const frames = await aiSynth.fetchKeyframes(prompt, {
-          count: keyframesForDuration(activeDuration()),
-          seed: 4829103,
-          width: canvas.width,
-          height: canvas.height,
-          // Each frame continues the previous one instead of re-rolling the
-          // scene, which is what stops the result looking like a slideshow.
-          chain: true,
-          onProgress: (done, total) => {
-            // Keyframe fetching owns the first 30% of the progress bar.
-            if (progressFill) progressFill.style.width = `${Math.round((done / total) * 30)}%`;
-            if (renderStatus) {
-              renderStatus.textContent = `Building continuous shot — frame ${done} of ${total}...`;
-            }
-          }
-        });
-        usedAiKeyframes = frames.length > 0;
-      } catch (err) {
-        console.warn('Keyframe synthesis unavailable, using on-device engine:', err);
-        // Keep the upstream reason. "Unreachable" is almost never accurate —
-        // the service is reachable and is telling us why it refused.
-        keyframeError = err && err.message ? err.message : null;
-      }
-
-      if (!usedAiKeyframes) {
-        aiSynth.reset();
-        if (window.showToast) {
-          window.showToast(keyframeError
-            ? `⚠ Stills unavailable: ${keyframeError}`
-            : '⚠ Stills unavailable — rendering on-device instead.');
-        }
-      }
-    }
-
-    // Bail out cleanly if the user cancelled while keyframes were in flight.
-    if (!isGenerating) return;
+    // --- Path 2: free on-device engine ---------------------------------------
+    // No provider configured, or the model above refused — render locally.
+    // This is free and unlimited: no upstream call, nothing to configure.
+    if (progressFill) progressFill.style.width = '0%';
+    if (renderStatus) renderStatus.textContent = 'Rendering with the on-device engine...';
 
     if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
     generatedBlob = null;
@@ -928,9 +851,8 @@
       const elapsed = (performance.now() - startedAt) / 1000;
       renderSceneFrame(Math.min(elapsed, totalDuration));
 
-      // Frame rendering owns 30-100%; keyframe fetching already used 0-30%.
       const share = Math.min(elapsed / totalDuration, 1);
-      const progress = Math.round(30 + share * 70);
+      const progress = Math.round(share * 100);
       if (progressFill) progressFill.style.width = `${progress}%`;
       const stageIdx = Math.min(Math.floor(share * stages.length), stages.length - 1);
       if (renderStatus) renderStatus.textContent = `${stages[stageIdx]} (${progress}%)`;
@@ -947,11 +869,10 @@
           addClipToReel(prompt);
 
           if (window.showToast) {
-            const label = usedAiKeyframes ? 'Model-generated video' : 'On-device video';
             window.showToast(
               generatedBlob
-                ? `✓ ${label} ready (${formatBytes(generatedBlob.size)}) — click 'Export Video File'.`
-                : `✓ ${label} rendered. Recording unavailable in this browser.`
+                ? `✓ On-device video ready (${formatBytes(generatedBlob.size)}) — click 'Export Video File'.`
+                : `✓ On-device video rendered. Recording unavailable in this browser.`
             );
           }
         });

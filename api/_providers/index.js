@@ -17,17 +17,16 @@ const replicate = require('./replicate');
 const google = require('./google');
 const runway = require('./runway');
 const luma = require('./luma');
-const pollinations = require('./pollinations');
 const selfhosted = require('./selfhosted');
 
 // Order is the auto-selection preference.
 //
 // Self-hosted comes first: if you are running your own GPU, that is a
 // deliberate choice and it should not be silently outranked by a metered API.
-// Then the keyed providers by quality-per-call. Every provider — Pollinations
-// included — is opt-in via its key; with nothing configured the studio runs
-// entirely on the free on-device engine and makes no upstream calls at all.
-const REGISTRY = [selfhosted, google, fal, replicate, runway, luma, pollinations];
+// Then the keyed providers by quality-per-call. Every provider is opt-in via
+// its key; with nothing configured the studio runs entirely on the free
+// on-device engine and makes no upstream calls at all.
+const REGISTRY = [selfhosted, google, fal, replicate, runway, luma];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
 // Veo operation names contain slashes and dots; everything else is opaque ids.
@@ -73,9 +72,6 @@ function capabilities() {
     maxResolution: list.filter(p => p.configured).reduce((max, p) => Math.max(max, p.maxResolution || 0), 0),
     keyless: keyed.length === 0,
     keyedProviders: keyed.map(p => p.id),
-    // Whether the AI-still keyframe path has a credential. Without one the
-    // studio skips the fetch entirely — the image endpoint is metered too.
-    keyframes: Boolean((process.env.POLLINATIONS_KEY || process.env.POLLINATIONS_API_KEY || '').trim()),
     // No provider configured: the free on-device engine is the renderer.
     fallbackOnly: !active
   };
