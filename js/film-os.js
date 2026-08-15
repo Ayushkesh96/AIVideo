@@ -415,6 +415,432 @@
       return newProp;
     }
 
+    // Update Reusable Element
+    updateElement(type, id, updatedData) {
+      if (!this.state.elements[type]) return;
+      const idx = this.state.elements[type].findIndex(e => e.id === id);
+      if (idx !== -1) {
+        this.state.elements[type][idx] = Object.assign(this.state.elements[type][idx], updatedData);
+        this.save();
+      }
+    }
+
+    // Delete Element from Registry
+    deleteElement(type, id) {
+      if (!this.state.elements[type]) return;
+      this.state.elements[type] = this.state.elements[type].filter(e => e.id !== id);
+      this.save();
+    }
+
+    // Unlink element from active shot
+    unlinkElementFromShot(shotId, tag) {
+      const shot = this.getActiveShot();
+      if (!shot) return;
+      const reg = new RegExp(`@${tag}\\b`, 'gi');
+      shot.prompt = shot.prompt.replace(reg, '').replace(/\s+/g, ' ').trim();
+      if (shot.elementRefs) {
+        shot.elementRefs = shot.elementRefs.filter(t => t.toLowerCase() !== tag.toLowerCase());
+      }
+      this.save();
+    }
+
+    // Link element to active shot
+    linkElementToShot(shotId, tag) {
+      const shot = this.getActiveShot();
+      if (!shot) return;
+      if (!shot.prompt.includes(`@${tag}`)) {
+        shot.prompt = `${shot.prompt} @${tag}`.trim();
+      }
+      if (!shot.elementRefs) shot.elementRefs = [];
+      if (!shot.elementRefs.includes(tag)) shot.elementRefs.push(tag);
+      this.save();
+    }
+
+    // Get Active Elements for current shot
+    getActiveShotElements() {
+      const shot = this.getActiveShot();
+      if (!shot) return [];
+      const prompt = shot.prompt || "";
+      const matched = [];
+
+      // Extract all @mentions
+      const mentions = (prompt.match(/@(\w+)/g) || []).map(m => m.slice(1).toLowerCase());
+      if (shot.elementRefs) {
+        shot.elementRefs.forEach(r => {
+          const l = r.toLowerCase();
+          if (!mentions.includes(l)) mentions.push(l);
+        });
+      }
+
+      // Check characters
+      this.state.elements.characters.forEach(c => {
+        if (mentions.includes(c.tag.toLowerCase()) || mentions.includes(c.name.toLowerCase())) {
+          matched.push({
+            id: c.id,
+            type: 'character',
+            tag: c.tag,
+            name: c.name,
+            aka: c.name,
+            description: c.appearance || `${c.gender}, ${c.age} y/o`,
+            tags: `${c.gender}, ${c.age} y/o`,
+            avatarColor: c.avatarColor || '#ccff00'
+          });
+        }
+      });
+
+      // Check locations
+      this.state.elements.locations.forEach(l => {
+        if (mentions.includes(l.tag.toLowerCase()) || mentions.includes(l.name.toLowerCase())) {
+          matched.push({
+            id: l.id,
+            type: 'location',
+            tag: l.tag,
+            name: l.name,
+            aka: l.name,
+            description: l.description || `${l.time}, ${l.weather}`,
+            tags: l.time || 'Location',
+            colorKey: l.colorKey || '#00f0ff'
+          });
+        }
+      });
+
+      // Check props
+      this.state.elements.props.forEach(p => {
+        if (mentions.includes(p.tag.toLowerCase()) || mentions.includes(p.name.toLowerCase())) {
+          matched.push({
+            id: p.id,
+            type: 'prop',
+            tag: p.tag,
+            name: p.name,
+            aka: p.name,
+            description: p.description,
+            tags: 'Prop'
+          });
+        }
+      });
+
+      // Check styles
+      this.state.elements.styles.forEach(s => {
+        if (mentions.includes(s.tag.toLowerCase()) || mentions.includes(s.name.toLowerCase())) {
+          matched.push({
+            id: s.id,
+            type: 'style',
+            tag: s.tag,
+            name: s.name,
+            aka: s.name,
+            description: s.description,
+            tags: 'Style'
+          });
+        }
+      });
+
+      return matched;
+    }
+
+    // AI Director (Script-to-Shots Generator)
+    async generateFilmBreakdown(visionPrompt) {
+      const config = this.state.apiConfig || {};
+
+      if (config.llmEndpoint && config.llmKey) {
+        try {
+          const sysPrompt = `You are a Hollywood film director and cinematographer AI.
+Convert the user's film vision into a structured JSON production breakdown containing scenes, shots, lenses, motion rigs, and reusable @elements.
+Strictly return valid JSON only matching this schema without markdown code blocks:
+{
+  "scenes": [
+    {
+      "title": "string",
+      "shots": [
+        {
+          "title": "string",
+          "prompt": "detailed prompt with @Element tags",
+          "lens": "16mm | 24mm | 35mm | 50mm | 85mm | 135mm",
+          "cameraMovement": "Orbit 360° | Dolly | Truck | Crane | Handheld | FPV Drone",
+          "aspectRatio": "16:9",
+          "elementRefs": ["tag1", "tag2"]
+        }
+      ]
+    }
+  ],
+  "elements": [
+    { "name": "string", "aka": "string", "type": "character | location | prop | style", "description": "string", "tags": "string" }
+  ]
+}`;
+
+          const res = await fetch(config.llmEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${config.llmKey}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: sysPrompt },
+                { role: 'user', content: visionPrompt }
+              ],
+              temperature: 0.7
+            })
+          });
+
+          if (!res.ok) throw new Error(`LLM Error: ${res.statusText}`);
+          const jsonRes = await res.json();
+          let raw = jsonRes.choices[0].message.content;
+          raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+          return JSON.parse(raw);
+        } catch (err) {
+          console.warn("Live LLM failed, falling back to simulated generator:", err);
+        }
+      }
+
+      // Simulated local generator
+      await new Promise(r => setTimeout(r, 1200));
+      return this._generateSimulatedBreakdown(visionPrompt);
+    }
+
+    _generateSimulatedBreakdown(prompt) {
+      const p = (prompt || "").toLowerCase();
+      const isSpace = p.includes('space') || p.includes('planet') || p.includes('star');
+      const isHeist = p.includes('heist') || p.includes('vault') || p.includes('laser');
+      const isFashion = p.includes('fashion') || p.includes('runway') || p.includes('noir');
+
+      if (isSpace) {
+        return {
+          scenes: [
+            {
+              title: "Atmospheric Entry",
+              shots: [
+                {
+                  title: "Orbital Descent",
+                  prompt: "FPV Drone tracking shot of @OdysseyVessel breaking through cloud layers above glowing @BiolumCanyons in @SpaceCinema",
+                  lens: "16mm",
+                  cameraMovement: "FPV Drone",
+                  aspectRatio: "16:9",
+                  elementRefs: ["OdysseyVessel", "BiolumCanyons", "SpaceCinema"]
+                },
+                {
+                  title: "Commander Emergence",
+                  prompt: "Low angle 35mm Prime tracking shot of @AriaVance stepping onto crystalline surface in @BiolumCanyons",
+                  lens: "35mm",
+                  cameraMovement: "Dolly",
+                  aspectRatio: "16:9",
+                  elementRefs: ["AriaVance", "BiolumCanyons"]
+                }
+              ]
+            },
+            {
+              title: "The Artifact Discovery",
+              shots: [
+                {
+                  title: "Beacon Orbit 360",
+                  prompt: "Orbit 360 camera move around the towering alien monolith pulsing indigo energy in @BiolumCanyons",
+                  lens: "24mm",
+                  cameraMovement: "Orbit 360°",
+                  aspectRatio: "16:9",
+                  elementRefs: ["BiolumCanyons", "SpaceCinema"]
+                }
+              ]
+            }
+          ],
+          elements: [
+            { name: "Aria Vance", aka: "Commander Aria", type: "character", description: "Deep space explorer in pressurized titanium flight suit with gold-tinted visor", tags: "Female, 34 y/o" },
+            { name: "Biolum Canyons", aka: "Sector 7 Monolith Basin", type: "location", description: "Planetary canyon glowing with violet bioluminescent flora under twin moons", tags: "Exoplanet Twilight" },
+            { name: "Odyssey Vessel", aka: "Exo-Class Lander", type: "prop", description: "Sleek aerodynamic dropship with blue ion propulsion trail", tags: "Spaceship" }
+          ]
+        };
+      }
+
+      if (isHeist) {
+        return {
+          scenes: [
+            {
+              title: "The Infiltration",
+              shots: [
+                {
+                  title: "Rooftop Rappel",
+                  prompt: "Dramatic crane shot of @Cipher descending through glass ceiling of @ObsidianVault in @CyberpunkNeon",
+                  lens: "24mm",
+                  cameraMovement: "Crane",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault", "CyberpunkNeon"]
+                },
+                {
+                  title: "Laser Grid Evasion",
+                  prompt: "Dynamic Handheld 35mm shot of @Cipher executing acrobatic slide under thermal security grid in @ObsidianVault",
+                  lens: "35mm",
+                  cameraMovement: "Handheld",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault"]
+                }
+              ]
+            },
+            {
+              title: "The Data Extraction",
+              shots: [
+                {
+                  title: "Quantum Core Unlock",
+                  prompt: "Macro 85mm close-up on @Cipher inserting biometric override key into obsidian server console",
+                  lens: "85mm",
+                  cameraMovement: "Dolly",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault"]
+                }
+              ]
+            }
+          ],
+          elements: [
+            { name: "Cipher", aka: "Kaelen Cross", type: "character", description: "Tactical infiltrator in matte-black carbon nanofiber stealth suit with optic HUD", tags: "Male, 29 y/o" },
+            { name: "Obsidian Vault", aka: "OmniCorp High Security Core", type: "location", description: "Subterranean titanium vault criss-crossed with scarlet security lasers", tags: "Sub-Level 4" }
+          ]
+        };
+      }
+
+      // Default: Nike Style Tokyo Runner
+      return {
+        scenes: [
+          {
+            title: "Tokyo Protocol: The Sprint",
+            shots: [
+              {
+                title: "Wet Asphalt Launch",
+                prompt: "Low angle wide 24mm tracking sprint of @Alex sprinting through neon reflections in @TokyoRain",
+                lens: "24mm",
+                cameraMovement: "Dolly",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "TokyoRain"]
+              },
+              {
+                title: "Neon Overpass FPV",
+                prompt: "FPV Drone high-speed dive following @Alex vaulting over pedestrian rail in @TokyoRain into alleyway",
+                lens: "16mm",
+                cameraMovement: "FPV Drone",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "TokyoRain"]
+              }
+            ]
+          },
+          {
+            title: "The Cyber Rendezvous",
+            shots: [
+              {
+                title: "Sarah Communication",
+                prompt: "Medium 50mm Prime shot of @Sarah watching telemetry readouts on transparent holo-visor in @RooftopCafe",
+                lens: "50mm",
+                cameraMovement: "Orbit 360°",
+                aspectRatio: "16:9",
+                elementRefs: ["Sarah", "RooftopCafe"]
+              },
+              {
+                title: "Climax Hand-off",
+                prompt: "Handheld close-up of @Alex passing @NeuralDrive to @Sarah as rain pours over neon skyline",
+                lens: "85mm",
+                cameraMovement: "Handheld",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "Sarah", "NeuralDrive", "TokyoRain"]
+              }
+            ]
+          }
+        ],
+        elements: [
+          { name: "Alex", aka: "Alex Vance", type: "character", description: "Athletic runner in technical windbreaker with cybernetic optical scanner", tags: "Male, 28 y/o" },
+          { name: "Sarah", aka: "Sarah Chen", type: "character", description: "Mission operator in structured tailored blazer with emerald ocular implants", tags: "Female, 31 y/o" },
+          { name: "Tokyo Rain", aka: "Neo-Tokyo Alleyways", type: "location", description: "Towering neon skyscraper canyons reflecting in rain-slicked obsidian asphalt", tags: "Night Rain" },
+          { name: "Neural Drive", aka: "Cryo Storage Key", type: "prop", description: "Glowing cyan crystalline data capsule with pulsing fiber circuits", tags: "Prop" }
+        ]
+      };
+    }
+
+    // Apply breakdown to project
+    applyGeneratedFilmBreakdown(data) {
+      if (!data) return;
+
+      // 1. Merge Elements into Registry
+      if (data.elements && Array.isArray(data.elements)) {
+        data.elements.forEach(el => {
+          const type = (el.type || 'character').toLowerCase();
+          const cleanTag = (el.name || el.aka || 'Element').replace(/\s+/g, '');
+          const targetArray = this.state.elements[type === 'character' ? 'characters' : type === 'location' ? 'locations' : type === 'prop' ? 'props' : 'styles'] || this.state.elements.characters;
+          
+          const exists = targetArray.some(e => e.tag.toLowerCase() === cleanTag.toLowerCase() || e.name.toLowerCase() === el.name.toLowerCase());
+          if (!exists) {
+            if (type === 'character') {
+              this.addCharacter({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                appearance: el.description || "",
+                gender: el.tags ? el.tags.split(',')[0] : "Any",
+                age: el.tags && el.tags.includes('y/o') ? parseInt(el.tags) || 28 : 28
+              });
+            } else if (type === 'location') {
+              this.addLocation({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                description: el.description || "",
+                time: el.tags || "Night",
+                weather: "Rain"
+              });
+            } else if (type === 'prop') {
+              this.addProp({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                description: el.description || ""
+              });
+            }
+          }
+        });
+      }
+
+      // 2. Append Scenes
+      if (data.scenes && Array.isArray(data.scenes)) {
+        let firstNewShotId = null;
+        data.scenes.forEach(sc => {
+          const newScene = {
+            id: `scene-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            number: this.state.scenes.length + 1,
+            title: sc.title || `Scene ${this.state.scenes.length + 1}`,
+            setting: sc.setting || "EXT. CITY - NIGHT",
+            summary: sc.summary || "",
+            shots: []
+          };
+
+          (sc.shots || []).forEach((sh, sIdx) => {
+            const shotId = `shot-${Date.now()}-${sIdx}`;
+            if (!firstNewShotId) firstNewShotId = shotId;
+            newScene.shots.push({
+              id: shotId,
+              code: `${newScene.number}${String.fromCharCode(65 + sIdx)}`,
+              title: sh.title || `Shot ${newScene.number}${String.fromCharCode(65 + sIdx)}`,
+              prompt: sh.prompt || "",
+              model: this.state.activeModel,
+              camera: sh.cameraMovement || "Orbit 360°",
+              cameraMovement: sh.cameraMovement || "Orbit 360°",
+              cameraBody: "ARRI Alexa Mini",
+              lens: sh.lens || "24mm",
+              rig: sh.cameraMovement || "Dolly",
+              motionRig: sh.cameraMovement || "Dolly",
+              motionSpeed: 75,
+              aspectRatio: sh.aspectRatio || "16:9",
+              elementRefs: sh.elementRefs || [],
+              fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+              keyframeApproved: false,
+              status: "draft",
+              referenceImage: null,
+              videoUrl: null,
+              duration: 4
+            });
+          });
+
+          this.state.scenes.push(newScene);
+        });
+
+        if (firstNewShotId) {
+          this.state.activeShotId = firstNewShotId;
+        }
+      }
+
+      this.save();
+    }
+
     // Add Scene & Shots
     createScene(title, setting = "EXT. CITY - NIGHT") {
       const newScene = {
@@ -431,10 +857,13 @@
             prompt: `Cinematic establishing shot of ${title}`,
             model: this.state.activeModel,
             camera: "Orbit 360°",
+            cameraBody: "ARRI Alexa Mini",
             lens: "35mm",
             rig: "Orbit 360°",
+            motionRig: "Orbit 360°",
             motionSpeed: 75,
             aspectRatio: this.state.aspectRatio,
+            elementRefs: [],
             fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
             keyframeApproved: false,
             status: "draft",

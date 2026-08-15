@@ -1027,7 +1027,7 @@ button {
   box-shadow: 0 0 14px rgba(204, 255, 0, 0.35);
 }
 
-/* AI Co-Director Assistant Banner */
+/* AI Co-Director Assistant Banner & Expandable Drawer */
 .director-assistant-banner {
   background: linear-gradient(135deg, #141420, #0f1622);
   border: 1px solid rgba(0, 240, 255, 0.3);
@@ -1037,7 +1037,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   min-width: 0;
 }
 
@@ -1052,6 +1052,62 @@ button {
   justify-content: center;
   color: var(--accent-cyan);
   flex-shrink: 0;
+}
+
+.director-drawer {
+  background: #0f121a;
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.2s ease;
+}
+
+.director-drawer.open {
+  display: flex;
+}
+
+.director-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.director-preset-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.director-preset-chip:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: #fff;
+}
+
+.director-review-box {
+  background: #141824;
+  border: 1px solid var(--accent-lime);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.director-review-box.open {
+  display: flex;
 }
 
 /* MASTER 3-COLUMN FILMMAKING OS GRID: Left (260px) | Center (Fluid) | Right (340px) */
@@ -1441,15 +1497,138 @@ button {
   text-overflow: ellipsis;
 }
 
-.camera-rig-btn:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+.camera-body-select {
+  background: rgba(204, 255, 0, 0.12);
+  border: 1px solid var(--accent-lime);
+  color: var(--accent-lime);
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  text-transform: uppercase;
 }
 
-.camera-rig-btn.active {
-  background: rgba(204, 255, 0, 0.15);
+.camera-body-select option {
+  background: #111116;
+  color: #fff;
+}
+
+/* Active @Elements In Scene Cards */
+.active-elements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.active-element-card {
+  background: #171722;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  min-width: 0;
+}
+
+.active-element-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: #1d1d2b;
+}
+
+.active-element-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.element-title-character {
+  color: var(--accent-lime) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-location {
+  color: var(--accent-cyan) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-prop {
+  color: var(--accent-orange) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-style {
+  color: var(--accent-pink-badge) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-element-remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s ease;
+  padding: 0 4px;
+}
+
+.active-element-card:hover .active-element-remove-btn {
+  opacity: 1;
+}
+
+.active-element-remove-btn:hover {
+  color: #ff4444;
+}
+
+.add-existing-element-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #13131c;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.add-existing-element-btn:hover {
+  background: #1c1c28;
   border-color: var(--accent-lime);
-  color: var(--accent-lime);
+  color: #fff;
 }
 
 /* =========================================================================
@@ -3840,6 +4019,48 @@ button {
         </button>
       </div>
 
+      <!-- Expandable AI Director Script-to-Shots Copilot Drawer -->
+      <div id="director-drawer" class="director-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:800; font-size:0.88rem; color:#fff; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/></svg>
+            <span>AI Co-Director Prompt Engine</span>
+            <span id="director-mode-badge" class="hud-simulated-badge">SIMULATED</span>
+          </div>
+          <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.toggleDirectorDrawer()">✕</button>
+        </div>
+
+        <div class="director-presets-row">
+          <span style="font-size:0.72rem; color:var(--text-muted);">Quick Concepts:</span>
+          <button class="director-preset-chip" onclick="window.FilmOSUI.fillDirectorConcept('A 30-sec Nike style runner in Tokyo rain with cyberpunk synthwave aesthetic')">🏃 Nike Tokyo Runner</button>
+          <button class="director-preset-chip" onclick="window.FilmOSUI.fillDirectorConcept('High-stakes futuristic cyberpunk heist in an obsidian skyscraper vault with thermal lasers')">💎 Cyber Vault Heist</button>
+          <button class="director-preset-chip" onclick="window.FilmOSUI.fillDirectorConcept('Cinematic deep space planetary discovery with bioluminescent atmosphere and rings')">🌌 Deep Space Discovery</button>
+          <button class="director-preset-chip" onclick="window.FilmOSUI.fillDirectorConcept('Neo-noir fashion runway showcase in mist with dramatic 35mm anamorphic flares')">👠 Neo-Noir Runway</button>
+        </div>
+
+        <textarea id="director-vision-input" class="prompt-textarea" style="height:75px;" placeholder="Describe your film premise, mood, characters, and visual story..."></textarea>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.toggleDirectorDrawer()">Cancel</button>
+          <button id="director-generate-submit-btn" class="btn btn-lime btn-sm" onclick="window.FilmOSUI.generateFilmFromDirector()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Generate Film Breakdown</span>
+          </button>
+        </div>
+
+        <!-- Review & Apply Confirmation Box -->
+        <div id="director-review-box" class="director-review-box">
+          <div style="font-weight:800; font-size:0.85rem; color:var(--accent-lime);" id="director-review-summary">
+            Generated 2 Scenes, 4 Shots, and 2 @Elements!
+          </div>
+          <div id="director-review-details" style="font-size:0.75rem; color:var(--text-secondary); line-height:1.5; max-height:160px; overflow-y:auto; background:#0d0d14; padding:10px; border-radius:6px;"></div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.discardDirectorReview()">✕ Discard</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.applyDirectorReview()">✓ Review & Apply to Project</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Master FilmOS 3-Column Studio Grid -->
       <div class="filmos-layout-grid">
         
@@ -4101,35 +4322,44 @@ button {
         <div class="filmos-inspector-panel">
           <div class="studio-panel-title">
             <span>Pro Virtual Camera Rig</span>
-            <span class="badge-lime">ARRI Alexa Mini</span>
+            <select id="camera-body-select" class="camera-body-select" onchange="window.FilmOSUI.setCameraBody(this.value)">
+              <option value="ARRI Alexa Mini">ARRI Alexa Mini</option>
+              <option value="RED V-Raptor">RED V-Raptor</option>
+              <option value="Sony Venice 2">Sony Venice 2</option>
+              <option value="Blackmagic URSA 12K">Blackmagic URSA 12K</option>
+            </select>
           </div>
 
           <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Lens Focal Length:</div>
-          <div class="camera-rig-selector" style="margin-bottom:12px;">
-            <button class="camera-rig-btn" onclick="window.showToast('Selected 16mm Ultra-Wide')">16mm</button>
-            <button class="camera-rig-btn active" onclick="window.showToast('Selected 24mm Wide Anamorphic')">24mm</button>
-            <button class="camera-rig-btn" onclick="window.showToast('Selected 35mm Hollywood Prime')">35mm</button>
-            <button class="camera-rig-btn" onclick="window.showToast('Selected 50mm Standard Prime')">50mm</button>
-            <button class="camera-rig-btn" onclick="window.showToast('Selected 85mm Portrait Telephoto')">85mm</button>
-            <button class="camera-rig-btn" onclick="window.showToast('Selected 135mm Close-Up')">135mm</button>
+          <div class="camera-rig-selector" id="lens-selector-grid" style="margin-bottom:12px;">
+            <button class="camera-rig-btn" data-lens="16mm" onclick="window.FilmOSUI.selectLens('16mm')">16mm</button>
+            <button class="camera-rig-btn active" data-lens="24mm" onclick="window.FilmOSUI.selectLens('24mm')">24mm</button>
+            <button class="camera-rig-btn" data-lens="35mm" onclick="window.FilmOSUI.selectLens('35mm')">35mm</button>
+            <button class="camera-rig-btn" data-lens="50mm" onclick="window.FilmOSUI.selectLens('50mm')">50mm</button>
+            <button class="camera-rig-btn" data-lens="85mm" onclick="window.FilmOSUI.selectLens('85mm')">85mm</button>
+            <button class="camera-rig-btn" data-lens="135mm" onclick="window.FilmOSUI.selectLens('135mm')">135mm</button>
           </div>
 
           <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Motion Rig Type:</div>
-          <div class="camera-rig-selector" style="margin-bottom:14px;">
-            <button class="camera-rig-btn active">Dolly</button>
-            <button class="camera-rig-btn">Truck</button>
-            <button class="camera-rig-btn">Crane</button>
-            <button class="camera-rig-btn">Handheld</button>
-            <button class="camera-rig-btn">FPV Drone</button>
-            <button class="camera-rig-btn">Orbit 360°</button>
+          <div class="camera-rig-selector" id="motion-rig-selector-grid" style="margin-bottom:14px;">
+            <button class="camera-rig-btn active" data-rig="Dolly" onclick="window.FilmOSUI.selectMotionRig('Dolly')">Dolly</button>
+            <button class="camera-rig-btn" data-rig="Truck" onclick="window.FilmOSUI.selectMotionRig('Truck')">Truck</button>
+            <button class="camera-rig-btn" data-rig="Crane" onclick="window.FilmOSUI.selectMotionRig('Crane')">Crane</button>
+            <button class="camera-rig-btn" data-rig="Handheld" onclick="window.FilmOSUI.selectMotionRig('Handheld')">Handheld</button>
+            <button class="camera-rig-btn" data-rig="FPV Drone" onclick="window.FilmOSUI.selectMotionRig('FPV Drone')">FPV Drone</button>
+            <button class="camera-rig-btn" data-rig="Orbit 360°" onclick="window.FilmOSUI.selectMotionRig('Orbit 360°')">Orbit 360°</button>
           </div>
 
           <div class="studio-panel-title">
             <span>Active @Elements In Scene</span>
+            <span id="active-elements-count" class="badge badge-lime" style="font-size:0.6rem;">2 ACTIVE</span>
           </div>
-          <div id="filmos-elements-list" style="max-height:220px; overflow-y:auto;">
+          <div id="filmos-elements-list" class="active-elements-list">
             <!-- Populated dynamically by FilmOS -->
           </div>
+          <button class="add-existing-element-btn" onclick="window.FilmOSUI.openAddExistingElementPopover()">
+            <span>+ Add Existing Element</span>
+          </button>
         </div>
 
       </div>
@@ -5036,6 +5266,432 @@ button {
       return newProp;
     }
 
+    // Update Reusable Element
+    updateElement(type, id, updatedData) {
+      if (!this.state.elements[type]) return;
+      const idx = this.state.elements[type].findIndex(e => e.id === id);
+      if (idx !== -1) {
+        this.state.elements[type][idx] = Object.assign(this.state.elements[type][idx], updatedData);
+        this.save();
+      }
+    }
+
+    // Delete Element from Registry
+    deleteElement(type, id) {
+      if (!this.state.elements[type]) return;
+      this.state.elements[type] = this.state.elements[type].filter(e => e.id !== id);
+      this.save();
+    }
+
+    // Unlink element from active shot
+    unlinkElementFromShot(shotId, tag) {
+      const shot = this.getActiveShot();
+      if (!shot) return;
+      const reg = new RegExp(`@${tag}\\b`, 'gi');
+      shot.prompt = shot.prompt.replace(reg, '').replace(/\s+/g, ' ').trim();
+      if (shot.elementRefs) {
+        shot.elementRefs = shot.elementRefs.filter(t => t.toLowerCase() !== tag.toLowerCase());
+      }
+      this.save();
+    }
+
+    // Link element to active shot
+    linkElementToShot(shotId, tag) {
+      const shot = this.getActiveShot();
+      if (!shot) return;
+      if (!shot.prompt.includes(`@${tag}`)) {
+        shot.prompt = `${shot.prompt} @${tag}`.trim();
+      }
+      if (!shot.elementRefs) shot.elementRefs = [];
+      if (!shot.elementRefs.includes(tag)) shot.elementRefs.push(tag);
+      this.save();
+    }
+
+    // Get Active Elements for current shot
+    getActiveShotElements() {
+      const shot = this.getActiveShot();
+      if (!shot) return [];
+      const prompt = shot.prompt || "";
+      const matched = [];
+
+      // Extract all @mentions
+      const mentions = (prompt.match(/@(\w+)/g) || []).map(m => m.slice(1).toLowerCase());
+      if (shot.elementRefs) {
+        shot.elementRefs.forEach(r => {
+          const l = r.toLowerCase();
+          if (!mentions.includes(l)) mentions.push(l);
+        });
+      }
+
+      // Check characters
+      this.state.elements.characters.forEach(c => {
+        if (mentions.includes(c.tag.toLowerCase()) || mentions.includes(c.name.toLowerCase())) {
+          matched.push({
+            id: c.id,
+            type: 'character',
+            tag: c.tag,
+            name: c.name,
+            aka: c.name,
+            description: c.appearance || `${c.gender}, ${c.age} y/o`,
+            tags: `${c.gender}, ${c.age} y/o`,
+            avatarColor: c.avatarColor || '#ccff00'
+          });
+        }
+      });
+
+      // Check locations
+      this.state.elements.locations.forEach(l => {
+        if (mentions.includes(l.tag.toLowerCase()) || mentions.includes(l.name.toLowerCase())) {
+          matched.push({
+            id: l.id,
+            type: 'location',
+            tag: l.tag,
+            name: l.name,
+            aka: l.name,
+            description: l.description || `${l.time}, ${l.weather}`,
+            tags: l.time || 'Location',
+            colorKey: l.colorKey || '#00f0ff'
+          });
+        }
+      });
+
+      // Check props
+      this.state.elements.props.forEach(p => {
+        if (mentions.includes(p.tag.toLowerCase()) || mentions.includes(p.name.toLowerCase())) {
+          matched.push({
+            id: p.id,
+            type: 'prop',
+            tag: p.tag,
+            name: p.name,
+            aka: p.name,
+            description: p.description,
+            tags: 'Prop'
+          });
+        }
+      });
+
+      // Check styles
+      this.state.elements.styles.forEach(s => {
+        if (mentions.includes(s.tag.toLowerCase()) || mentions.includes(s.name.toLowerCase())) {
+          matched.push({
+            id: s.id,
+            type: 'style',
+            tag: s.tag,
+            name: s.name,
+            aka: s.name,
+            description: s.description,
+            tags: 'Style'
+          });
+        }
+      });
+
+      return matched;
+    }
+
+    // AI Director (Script-to-Shots Generator)
+    async generateFilmBreakdown(visionPrompt) {
+      const config = this.state.apiConfig || {};
+
+      if (config.llmEndpoint && config.llmKey) {
+        try {
+          const sysPrompt = `You are a Hollywood film director and cinematographer AI.
+Convert the user's film vision into a structured JSON production breakdown containing scenes, shots, lenses, motion rigs, and reusable @elements.
+Strictly return valid JSON only matching this schema without markdown code blocks:
+{
+  "scenes": [
+    {
+      "title": "string",
+      "shots": [
+        {
+          "title": "string",
+          "prompt": "detailed prompt with @Element tags",
+          "lens": "16mm | 24mm | 35mm | 50mm | 85mm | 135mm",
+          "cameraMovement": "Orbit 360° | Dolly | Truck | Crane | Handheld | FPV Drone",
+          "aspectRatio": "16:9",
+          "elementRefs": ["tag1", "tag2"]
+        }
+      ]
+    }
+  ],
+  "elements": [
+    { "name": "string", "aka": "string", "type": "character | location | prop | style", "description": "string", "tags": "string" }
+  ]
+}`;
+
+          const res = await fetch(config.llmEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${config.llmKey}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: sysPrompt },
+                { role: 'user', content: visionPrompt }
+              ],
+              temperature: 0.7
+            })
+          });
+
+          if (!res.ok) throw new Error(`LLM Error: ${res.statusText}`);
+          const jsonRes = await res.json();
+          let raw = jsonRes.choices[0].message.content;
+          raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+          return JSON.parse(raw);
+        } catch (err) {
+          console.warn("Live LLM failed, falling back to simulated generator:", err);
+        }
+      }
+
+      // Simulated local generator
+      await new Promise(r => setTimeout(r, 1200));
+      return this._generateSimulatedBreakdown(visionPrompt);
+    }
+
+    _generateSimulatedBreakdown(prompt) {
+      const p = (prompt || "").toLowerCase();
+      const isSpace = p.includes('space') || p.includes('planet') || p.includes('star');
+      const isHeist = p.includes('heist') || p.includes('vault') || p.includes('laser');
+      const isFashion = p.includes('fashion') || p.includes('runway') || p.includes('noir');
+
+      if (isSpace) {
+        return {
+          scenes: [
+            {
+              title: "Atmospheric Entry",
+              shots: [
+                {
+                  title: "Orbital Descent",
+                  prompt: "FPV Drone tracking shot of @OdysseyVessel breaking through cloud layers above glowing @BiolumCanyons in @SpaceCinema",
+                  lens: "16mm",
+                  cameraMovement: "FPV Drone",
+                  aspectRatio: "16:9",
+                  elementRefs: ["OdysseyVessel", "BiolumCanyons", "SpaceCinema"]
+                },
+                {
+                  title: "Commander Emergence",
+                  prompt: "Low angle 35mm Prime tracking shot of @AriaVance stepping onto crystalline surface in @BiolumCanyons",
+                  lens: "35mm",
+                  cameraMovement: "Dolly",
+                  aspectRatio: "16:9",
+                  elementRefs: ["AriaVance", "BiolumCanyons"]
+                }
+              ]
+            },
+            {
+              title: "The Artifact Discovery",
+              shots: [
+                {
+                  title: "Beacon Orbit 360",
+                  prompt: "Orbit 360 camera move around the towering alien monolith pulsing indigo energy in @BiolumCanyons",
+                  lens: "24mm",
+                  cameraMovement: "Orbit 360°",
+                  aspectRatio: "16:9",
+                  elementRefs: ["BiolumCanyons", "SpaceCinema"]
+                }
+              ]
+            }
+          ],
+          elements: [
+            { name: "Aria Vance", aka: "Commander Aria", type: "character", description: "Deep space explorer in pressurized titanium flight suit with gold-tinted visor", tags: "Female, 34 y/o" },
+            { name: "Biolum Canyons", aka: "Sector 7 Monolith Basin", type: "location", description: "Planetary canyon glowing with violet bioluminescent flora under twin moons", tags: "Exoplanet Twilight" },
+            { name: "Odyssey Vessel", aka: "Exo-Class Lander", type: "prop", description: "Sleek aerodynamic dropship with blue ion propulsion trail", tags: "Spaceship" }
+          ]
+        };
+      }
+
+      if (isHeist) {
+        return {
+          scenes: [
+            {
+              title: "The Infiltration",
+              shots: [
+                {
+                  title: "Rooftop Rappel",
+                  prompt: "Dramatic crane shot of @Cipher descending through glass ceiling of @ObsidianVault in @CyberpunkNeon",
+                  lens: "24mm",
+                  cameraMovement: "Crane",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault", "CyberpunkNeon"]
+                },
+                {
+                  title: "Laser Grid Evasion",
+                  prompt: "Dynamic Handheld 35mm shot of @Cipher executing acrobatic slide under thermal security grid in @ObsidianVault",
+                  lens: "35mm",
+                  cameraMovement: "Handheld",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault"]
+                }
+              ]
+            },
+            {
+              title: "The Data Extraction",
+              shots: [
+                {
+                  title: "Quantum Core Unlock",
+                  prompt: "Macro 85mm close-up on @Cipher inserting biometric override key into obsidian server console",
+                  lens: "85mm",
+                  cameraMovement: "Dolly",
+                  aspectRatio: "16:9",
+                  elementRefs: ["Cipher", "ObsidianVault"]
+                }
+              ]
+            }
+          ],
+          elements: [
+            { name: "Cipher", aka: "Kaelen Cross", type: "character", description: "Tactical infiltrator in matte-black carbon nanofiber stealth suit with optic HUD", tags: "Male, 29 y/o" },
+            { name: "Obsidian Vault", aka: "OmniCorp High Security Core", type: "location", description: "Subterranean titanium vault criss-crossed with scarlet security lasers", tags: "Sub-Level 4" }
+          ]
+        };
+      }
+
+      // Default: Nike Style Tokyo Runner
+      return {
+        scenes: [
+          {
+            title: "Tokyo Protocol: The Sprint",
+            shots: [
+              {
+                title: "Wet Asphalt Launch",
+                prompt: "Low angle wide 24mm tracking sprint of @Alex sprinting through neon reflections in @TokyoRain",
+                lens: "24mm",
+                cameraMovement: "Dolly",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "TokyoRain"]
+              },
+              {
+                title: "Neon Overpass FPV",
+                prompt: "FPV Drone high-speed dive following @Alex vaulting over pedestrian rail in @TokyoRain into alleyway",
+                lens: "16mm",
+                cameraMovement: "FPV Drone",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "TokyoRain"]
+              }
+            ]
+          },
+          {
+            title: "The Cyber Rendezvous",
+            shots: [
+              {
+                title: "Sarah Communication",
+                prompt: "Medium 50mm Prime shot of @Sarah watching telemetry readouts on transparent holo-visor in @RooftopCafe",
+                lens: "50mm",
+                cameraMovement: "Orbit 360°",
+                aspectRatio: "16:9",
+                elementRefs: ["Sarah", "RooftopCafe"]
+              },
+              {
+                title: "Climax Hand-off",
+                prompt: "Handheld close-up of @Alex passing @NeuralDrive to @Sarah as rain pours over neon skyline",
+                lens: "85mm",
+                cameraMovement: "Handheld",
+                aspectRatio: "16:9",
+                elementRefs: ["Alex", "Sarah", "NeuralDrive", "TokyoRain"]
+              }
+            ]
+          }
+        ],
+        elements: [
+          { name: "Alex", aka: "Alex Vance", type: "character", description: "Athletic runner in technical windbreaker with cybernetic optical scanner", tags: "Male, 28 y/o" },
+          { name: "Sarah", aka: "Sarah Chen", type: "character", description: "Mission operator in structured tailored blazer with emerald ocular implants", tags: "Female, 31 y/o" },
+          { name: "Tokyo Rain", aka: "Neo-Tokyo Alleyways", type: "location", description: "Towering neon skyscraper canyons reflecting in rain-slicked obsidian asphalt", tags: "Night Rain" },
+          { name: "Neural Drive", aka: "Cryo Storage Key", type: "prop", description: "Glowing cyan crystalline data capsule with pulsing fiber circuits", tags: "Prop" }
+        ]
+      };
+    }
+
+    // Apply breakdown to project
+    applyGeneratedFilmBreakdown(data) {
+      if (!data) return;
+
+      // 1. Merge Elements into Registry
+      if (data.elements && Array.isArray(data.elements)) {
+        data.elements.forEach(el => {
+          const type = (el.type || 'character').toLowerCase();
+          const cleanTag = (el.name || el.aka || 'Element').replace(/\s+/g, '');
+          const targetArray = this.state.elements[type === 'character' ? 'characters' : type === 'location' ? 'locations' : type === 'prop' ? 'props' : 'styles'] || this.state.elements.characters;
+          
+          const exists = targetArray.some(e => e.tag.toLowerCase() === cleanTag.toLowerCase() || e.name.toLowerCase() === el.name.toLowerCase());
+          if (!exists) {
+            if (type === 'character') {
+              this.addCharacter({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                appearance: el.description || "",
+                gender: el.tags ? el.tags.split(',')[0] : "Any",
+                age: el.tags && el.tags.includes('y/o') ? parseInt(el.tags) || 28 : 28
+              });
+            } else if (type === 'location') {
+              this.addLocation({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                description: el.description || "",
+                time: el.tags || "Night",
+                weather: "Rain"
+              });
+            } else if (type === 'prop') {
+              this.addProp({
+                tag: cleanTag,
+                name: el.name || cleanTag,
+                description: el.description || ""
+              });
+            }
+          }
+        });
+      }
+
+      // 2. Append Scenes
+      if (data.scenes && Array.isArray(data.scenes)) {
+        let firstNewShotId = null;
+        data.scenes.forEach(sc => {
+          const newScene = {
+            id: `scene-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            number: this.state.scenes.length + 1,
+            title: sc.title || `Scene ${this.state.scenes.length + 1}`,
+            setting: sc.setting || "EXT. CITY - NIGHT",
+            summary: sc.summary || "",
+            shots: []
+          };
+
+          (sc.shots || []).forEach((sh, sIdx) => {
+            const shotId = `shot-${Date.now()}-${sIdx}`;
+            if (!firstNewShotId) firstNewShotId = shotId;
+            newScene.shots.push({
+              id: shotId,
+              code: `${newScene.number}${String.fromCharCode(65 + sIdx)}`,
+              title: sh.title || `Shot ${newScene.number}${String.fromCharCode(65 + sIdx)}`,
+              prompt: sh.prompt || "",
+              model: this.state.activeModel,
+              camera: sh.cameraMovement || "Orbit 360°",
+              cameraMovement: sh.cameraMovement || "Orbit 360°",
+              cameraBody: "ARRI Alexa Mini",
+              lens: sh.lens || "24mm",
+              rig: sh.cameraMovement || "Dolly",
+              motionRig: sh.cameraMovement || "Dolly",
+              motionSpeed: 75,
+              aspectRatio: sh.aspectRatio || "16:9",
+              elementRefs: sh.elementRefs || [],
+              fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
+              keyframeApproved: false,
+              status: "draft",
+              referenceImage: null,
+              videoUrl: null,
+              duration: 4
+            });
+          });
+
+          this.state.scenes.push(newScene);
+        });
+
+        if (firstNewShotId) {
+          this.state.activeShotId = firstNewShotId;
+        }
+      }
+
+      this.save();
+    }
+
     // Add Scene & Shots
     createScene(title, setting = "EXT. CITY - NIGHT") {
       const newScene = {
@@ -5052,10 +5708,13 @@ button {
             prompt: `Cinematic establishing shot of ${title}`,
             model: this.state.activeModel,
             camera: "Orbit 360°",
+            cameraBody: "ARRI Alexa Mini",
             lens: "35mm",
             rig: "Orbit 360°",
+            motionRig: "Orbit 360°",
             motionSpeed: 75,
             aspectRatio: this.state.aspectRatio,
+            elementRefs: [],
             fx: { lut: "cyber", flare: 80, grain: 35, fog: 50, speed: 1.0 },
             keyframeApproved: false,
             status: "draft",
@@ -6378,8 +7037,9 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
     const config = window.FilmOS ? window.FilmOS.state.apiConfig : {};
     const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
-    const lens = shot ? shot.lens : "35mm";
-    const rig = shot ? shot.rig : "Dolly Push";
+    const lens = shot && shot.lens ? shot.lens : "24mm";
+    const rig = shot && shot.motionRig ? shot.motionRig : (shot && shot.camera ? shot.camera : "Dolly");
+    const body = shot && shot.cameraBody ? shot.cameraBody : "ARRI Alexa Mini";
 
     if (config && config.llmEndpoint && config.llmKey) {
       try {
@@ -6392,7 +7052,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
           body: JSON.stringify({
             model: "gpt-4o-mini",
             messages: [
-              { role: "system", content: "You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying lens, lighting, atmospheric mood, depth, and camera motion in one cohesive paragraph." },
+              { role: "system", content: `You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying shot on ${body} with a ${lens} lens and ${rig} motion choreography.` },
               { role: "user", content: basePrompt }
             ]
           })
@@ -6403,12 +7063,12 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         }
       } catch (err) {
         console.warn("LLM API failed, falling back to local rule enhancer:", err);
-        applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+        applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
       }
     } else {
       // Local Intelligent Cinematic Expander
       await new Promise(r => setTimeout(r, 600));
-      applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+      applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
     }
 
     btn.innerHTML = origBtnHtml;
@@ -6420,10 +7080,10 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     if (window.showToast) window.showToast("✨ AI Prompt Enhanced with Cinematic Tokens!");
   }
 
-  function applyLocalEnhancer(input, base, lens, rig) {
+  function applyLocalEnhancer(input, base, lens, rig, body) {
     const tokens = [
-      `shot on ${lens} anamorphic lens`,
-      `${rig} camera choreography`,
+      `shot on ${body || 'ARRI Alexa Mini'} with a ${lens || '24mm'} lens`,
+      `${rig || 'Dolly'} motion rig`,
       "volumetric God-rays & atmospheric mist",
       "shallow depth of field with 35mm Hollywood grain",
       "subsurface skin scattering and 8k hyper-detailed textures"
@@ -6887,27 +7547,38 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 /**
  * AIVIDEO FILMMAKING PRODUCTION OS — UI CONTROLLER & MODALS (PHASE 2)
  * Connects reactive FilmOS state store with Project Tree, Autocomplete,
- * Modals, Settings, Multi-Track NLE, and Keyboard Shortcuts.
+ * Modals, Settings, Multi-Track NLE, Camera Rig Inspector, Active @Elements,
+ * and AI Co-Director (Script-to-Shots Generator).
  */
 
 (function () {
   let selectedClip = null;
+  let lastDirectorResult = null;
+  let editingElementRef = null;
 
   function initFilmUI() {
     if (!window.FilmOS) return;
 
     renderProjectTree();
     renderActiveElementsList();
+    renderCameraInspector();
     renderNLETracks();
     updateHeaderCounters();
     bindGlobalShortcuts();
     bindAutocomplete();
     injectModals();
 
+    // Wire Copilot Ask Director Button
+    const askDirectorBtn = document.getElementById('filmos-ask-director-btn');
+    if (askDirectorBtn) {
+      askDirectorBtn.onclick = () => window.FilmOSUI.toggleDirectorDrawer();
+    }
+
     // Subscribe to state changes
     window.FilmOS.subscribe(() => {
       renderProjectTree();
       renderActiveElementsList();
+      renderCameraInspector();
       renderNLETracks();
       updateHeaderCounters();
     });
@@ -6987,36 +7658,66 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
   // 2. Render Column 3 Active Elements List
   function renderActiveElementsList() {
     const listEl = document.getElementById('filmos-elements-list');
+    const countBadge = document.getElementById('active-elements-count');
     if (!listEl) return;
 
-    const proj = window.FilmOS.state;
-    let html = '';
+    const activeElements = window.FilmOS.getActiveShotElements();
+    if (countBadge) {
+      countBadge.textContent = `${activeElements.length} ACTIVE`;
+    }
 
-    proj.elements.characters.forEach(c => {
-      html += `
-        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-lime);">@${c.tag} (${c.name})</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">${c.gender}, ${c.age} y/o</span>
-          </div>
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.appearance}">${c.appearance}</div>
+    if (activeElements.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding:14px; text-align:center; color:var(--text-muted); font-size:0.72rem; border:1px dashed rgba(255,255,255,0.08); border-radius:6px;">
+          No @Elements active in this shot.<br>Type @ in prompt or click "+ Add Existing".
         </div>
       `;
-    });
+      return;
+    }
 
-    proj.elements.locations.forEach(l => {
+    let html = '';
+    activeElements.forEach(el => {
+      const typeClass = el.type === 'character' ? 'element-title-character' : el.type === 'location' ? 'element-title-location' : el.type === 'prop' ? 'element-title-prop' : 'element-title-style';
       html += `
-        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-cyan);">@${l.tag} (${l.name})</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">${l.time}</span>
+        <div class="active-element-card" onclick="window.FilmOSUI.openEditElementModal('${el.type}', '${el.id}')" title="Click to Edit @${el.tag}">
+          <div class="active-element-header">
+            <span class="${typeClass}">@${el.tag} (${el.name})</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.68rem; color:var(--text-muted);">${el.tags || ''}</span>
+              <button class="active-element-remove-btn" onclick="event.stopPropagation(); window.FilmOSUI.unlinkElement('${el.tag}')" title="Remove from this shot">×</button>
+            </div>
           </div>
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${l.description}">${l.description}</div>
+          <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${el.description}">${el.description}</div>
         </div>
       `;
     });
 
     listEl.innerHTML = html;
+  }
+
+  function renderCameraInspector() {
+    const shot = window.FilmOS.getActiveShot();
+    if (!shot) return;
+
+    // 1. Sync Lens Buttons
+    const curLens = shot.lens || '24mm';
+    document.querySelectorAll('#lens-selector-grid .camera-rig-btn').forEach(btn => {
+      const isMatch = btn.getAttribute('data-lens') === curLens || btn.textContent.trim() === curLens;
+      btn.classList.toggle('active', isMatch);
+    });
+
+    // 2. Sync Motion Rig Buttons
+    const curRig = shot.motionRig || 'Dolly';
+    document.querySelectorAll('#motion-rig-selector-grid .camera-rig-btn').forEach(btn => {
+      const rigAttr = btn.getAttribute('data-rig') || btn.textContent.trim();
+      btn.classList.toggle('active', rigAttr === curRig);
+    });
+
+    // 3. Sync Camera Body Select
+    const bodySelect = document.getElementById('camera-body-select');
+    if (bodySelect && shot.cameraBody) {
+      bodySelect.value = shot.cameraBody;
+    }
   }
 
   // 3. Render Multi-Track NLE Timeline Sequencer
@@ -7029,15 +7730,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     let html = `
       <!-- Timecode Ruler Bar -->
       <div class="timeline-ruler-bar">
-        <span>00:00</span>
-        <span>00:02</span>
-        <span>00:04</span>
-        <span>00:06</span>
-        <span>00:08</span>
-        <span>00:10</span>
-        <span>00:12</span>
-        <span>00:14</span>
-        <span>00:16</span>
+        <span>00:00</span><span>00:02</span><span>00:04</span><span>00:06</span><span>00:08</span><span>00:10</span>
       </div>
 
       <!-- Video Track -->
@@ -7046,7 +7739,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           <span>Video Track</span>
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-video" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
@@ -7065,7 +7758,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-video', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-video', 160)">▶</button>
       </div>
 
       <!-- Voice Track -->
@@ -7073,9 +7766,9 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
           <span>Voice</span>
-          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()" title="Add Voice Dialogue">+</button>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()">+</button>
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-voice" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
@@ -7092,7 +7785,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', 160)">▶</button>
       </div>
 
       <!-- Music Track -->
@@ -7100,17 +7793,17 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Music</span>
-          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()" title="Upload Audio File">+</button>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()">+</button>
           <input type="file" id="nle-music-uploader" accept="audio/mp3,audio/wav" style="display:none;" onchange="window.FilmOSUI.handleMusicUpload(event)">
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-music', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-music', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-music" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
     tData.music.forEach(clip => {
       html += `
-        <div class="timeline-clip-block music" title="${clip.title} (${clip.genre}) - ${clip.duration}s">
-          <span>🎵 ${clip.title} (${clip.genre || 'Audio'})</span>
+        <div class="timeline-clip-block music" title="${clip.title}">
+          <span>🎵 ${clip.title}</span>
           <span style="display:flex; align-items:center; gap:4px;">
             <span style="font-size:0.65rem;">${clip.duration}s</span>
             <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('music', '${clip.id}')">×</button>
@@ -7121,20 +7814,21 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-music', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-music', 160)">▶</button>
       </div>
     `;
 
     tracksContainer.innerHTML = html;
   }
 
-  // 4. Update Header Live Counters
+  // 4. Update Header Info
   function updateHeaderCounters() {
     const proj = window.FilmOS.state;
-    const projNameEl = document.getElementById('filmos-project-name');
-    if (projNameEl) projNameEl.textContent = proj.name;
+    const nameEl = document.getElementById('filmos-project-name');
+    if (nameEl) nameEl.textContent = proj.name;
 
-    const totalShots = proj.scenes.reduce((acc, s) => acc + s.shots.length, 0);
+    let totalShots = 0;
+    proj.scenes.forEach(s => totalShots += s.shots.length);
     const totalElements = proj.elements.characters.length + proj.elements.locations.length + proj.elements.props.length;
 
     const descEl = document.querySelector('.filmos-project-badge div div:last-child');
@@ -7157,6 +7851,11 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       if (textarea.parentElement) textarea.parentElement.appendChild(dropdown);
     }
 
+    textarea.addEventListener('input', () => {
+      window.FilmOS.updateActiveShot({ prompt: textarea.value });
+      renderActiveElementsList();
+    });
+
     textarea.addEventListener('keyup', (e) => {
       const val = textarea.value;
       const cursor = textarea.selectionStart;
@@ -7169,8 +7868,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         const allElements = [
           ...proj.elements.characters.map(c => ({ type: 'Character', tag: c.tag, name: c.name })),
           ...proj.elements.locations.map(l => ({ type: 'Location', tag: l.tag, name: l.name })),
-          ...proj.elements.props.map(p => ({ type: 'Prop', tag: p.tag, name: p.name })),
-          ...proj.elements.styles.map(s => ({ type: 'Style', tag: s.tag, name: s.name }))
+          ...proj.elements.props.map(p => ({ type: 'Prop', tag: p.tag, name: p.name }))
         ].filter(el => el.tag.toLowerCase().includes(query) || el.name.toLowerCase().includes(query));
 
         if (allElements.length > 0) {
@@ -7193,19 +7891,16 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
   // 6. Global Keyboard Shortcuts
   function bindGlobalShortcuts() {
     window.addEventListener('keydown', (e) => {
-      // Space = Play/Pause (if not typing in input/textarea)
       if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
         e.preventDefault();
         const playBtn = document.getElementById('playback-play-pause');
         if (playBtn) playBtn.click();
       }
-      // Ctrl+S = Save Project
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         window.FilmOS.save();
         if (window.showToast) window.showToast("✓ FilmOS Project Saved to LocalStorage!");
       }
-      // Delete = Remove Selected Timeline Clip
       if (e.key === 'Delete' && selectedClip) {
         window.FilmOS.deleteTimelineClip(selectedClip.track, selectedClip.id);
         selectedClip = null;
@@ -7214,7 +7909,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     });
   }
 
-  // 7. Inject Modal Backdrops
+  // 7. Inject Modals
   function injectModals() {
     if (document.getElementById('filmos-modal-container')) return;
     const modalContainer = document.createElement('div');
@@ -7242,11 +7937,11 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         </div>
       </div>
 
-      <!-- Add Element Modal -->
+      <!-- Add/Edit Element Modal -->
       <div id="modal-add-element" class="filmos-modal-backdrop">
         <div class="filmos-modal-card">
           <div class="filmos-modal-header">
-            <span class="filmos-modal-title">🎭 Create Reusable @Element</span>
+            <span class="filmos-modal-title" id="elem-modal-title">🎭 Create Reusable @Element</span>
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
@@ -7257,15 +7952,31 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
               <option value="prop">Prop (@Object)</option>
             </select>
             <label class="modal-label">Symbol Tag (without @):</label>
-            <input type="text" id="elem-modal-tag" class="custom-input" placeholder="e.g. Maya, CyberAlley, LaserPistol" style="width:100%; margin-bottom:12px;">
+            <input type="text" id="elem-modal-tag" class="custom-input" style="width:100%; margin-bottom:12px;">
             <label class="modal-label">Full Name / Label:</label>
-            <input type="text" id="elem-modal-name" class="custom-input" placeholder="e.g. Maya Thorne" style="width:100%; margin-bottom:12px;">
+            <input type="text" id="elem-modal-name" class="custom-input" style="width:100%; margin-bottom:12px;">
             <label class="modal-label">Visual Appearance / Description:</label>
             <textarea id="elem-modal-desc" class="prompt-textarea" style="width:100%; height:75px;" placeholder="Detailed visual features, lighting, clothing, materials..."></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
-            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveNewElement()">Create @Element</button>
+            <button class="btn btn-lime btn-sm" id="elem-modal-save-btn" onclick="window.FilmOSUI.saveNewElement()">Save @Element</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Existing Element Popover Modal -->
+      <div id="modal-existing-elements" class="filmos-modal-backdrop">
+        <div class="filmos-modal-card">
+          <div class="filmos-modal-header">
+            <span class="filmos-modal-title">➕ Add Existing Registry Element To Shot</span>
+            <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
+          </div>
+          <div id="existing-elements-picker-list" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto;">
+            <!-- Populated dynamically -->
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Close</button>
           </div>
         </div>
       </div>
@@ -7278,16 +7989,8 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Configure real API endpoints or run in on-device Simulation Mode.</p>
-            <label class="modal-label">LLM Prompt Enhancer Endpoint:</label>
-            <input type="text" id="settings-llm-endpoint" class="custom-input" placeholder="https://api.openai.com/v1/chat/completions" style="width:100%; margin-bottom:8px;">
             <label class="modal-label">LLM API Key:</label>
-            <input type="password" id="settings-llm-key" class="custom-input" placeholder="sk-..." style="width:100%; margin-bottom:14px;">
-
-            <label class="modal-label">Video Generation API Endpoint:</label>
-            <input type="text" id="settings-video-endpoint" class="custom-input" placeholder="https://api.klingai.com/v1/videos/generations" style="width:100%; margin-bottom:8px;">
-            <label class="modal-label">Video Gen API Key:</label>
-            <input type="password" id="settings-video-key" class="custom-input" placeholder="Bearer ..." style="width:100%;">
+            <input type="password" id="settings-llm-key" class="custom-input" style="width:100%; margin-bottom:14px;">
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
             <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
@@ -7310,19 +8013,6 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       const promptInput = document.getElementById('studio-prompt-input');
       if (promptInput) promptInput.value = shot.prompt;
 
-      // Update Camera buttons
-      document.querySelectorAll('.camera-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.camera === shot.camera);
-      });
-
-      // Update Motion Slider
-      const motionSlider = document.getElementById('motion-strength-slider');
-      const motionVal = document.getElementById('motion-strength-val');
-      if (motionSlider && motionVal) {
-        motionSlider.value = shot.motionSpeed || 75;
-        motionVal.textContent = `${shot.motionSpeed || 75}%`;
-      }
-
       // Update Aspect Ratio
       document.querySelectorAll('.ratio-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.ratio === (shot.aspectRatio || '16:9'));
@@ -7335,7 +8025,58 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       const hudMotion = document.getElementById('hud-motion-tag');
       if (hudMotion) hudMotion.textContent = `${shot.lens || '35mm'} • ${shot.camera || 'Orbit 360°'}`;
 
+      // Refresh inspector & active elements
+      renderCameraInspector();
+      renderActiveElementsList();
+
       if (window.showToast) window.showToast(`Loaded Shot ${shot.code}: ${shot.title}`);
+    },
+
+    selectLens: function (lensVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.lens = lensVal;
+      window.FilmOS.save();
+      renderCameraInspector();
+      if (window.showToast) window.showToast(`Selected ${lensVal} Hollywood Cine Prime`);
+    },
+
+    selectMotionRig: function (rigVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.motionRig = rigVal;
+      
+      // Map to cameraMovement / choreography
+      const rigToChoreography = {
+        'Dolly': 'Dolly Push',
+        'Truck': 'Pan Left',
+        'Crane': 'Tilt Up',
+        'Handheld': 'Handheld',
+        'FPV Drone': 'FPV Dive',
+        'Orbit 360°': 'Orbit 360°'
+      };
+
+      const mappedCamera = rigToChoreography[rigVal] || rigVal;
+      shot.camera = mappedCamera;
+      shot.cameraMovement = rigVal;
+
+      window.FilmOS.save();
+      renderCameraInspector();
+
+      // Sync 9-button choreography grid
+      document.querySelectorAll('.camera-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.camera === mappedCamera);
+      });
+
+      if (window.showToast) window.showToast(`Active Motion Rig: ${rigVal}`);
+    },
+
+    setCameraBody: function (bodyVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.cameraBody = bodyVal;
+      window.FilmOS.save();
+      if (window.showToast) window.showToast(`Selected Camera Body: ${bodyVal}`);
     },
 
     insertMention: function (tag) {
@@ -7351,6 +8092,7 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       if (dropdown) dropdown.style.display = 'none';
       textarea.focus();
       window.FilmOS.updateActiveShot({ prompt: textarea.value });
+      renderActiveElementsList();
     },
 
     openStoryModal: function () {
@@ -7373,6 +8115,32 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     },
 
     openAddElementModal: function () {
+      editingElementRef = null;
+      document.getElementById('elem-modal-title').textContent = "🎭 Create Reusable @Element";
+      document.getElementById('elem-modal-type').disabled = false;
+      document.getElementById('elem-modal-tag').value = '';
+      document.getElementById('elem-modal-name').value = '';
+      document.getElementById('elem-modal-desc').value = '';
+      const m = document.getElementById('modal-add-element');
+      if (m) m.classList.add('active');
+    },
+
+    openEditElementModal: function (type, id) {
+      const proj = window.FilmOS.state;
+      const targetArray = proj.elements[type === 'character' ? 'characters' : type === 'location' ? 'locations' : type === 'prop' ? 'props' : 'styles'] || [];
+      const item = targetArray.find(e => e.id === id);
+      if (!item) return;
+
+      editingElementRef = { type, id };
+      document.getElementById('elem-modal-title').textContent = `✏️ Edit Reusable @${item.tag}`;
+      const typeSelect = document.getElementById('elem-modal-type');
+      typeSelect.value = type;
+      typeSelect.disabled = true;
+
+      document.getElementById('elem-modal-tag').value = item.tag;
+      document.getElementById('elem-modal-name').value = item.name;
+      document.getElementById('elem-modal-desc').value = item.appearance || item.description || '';
+
       const m = document.getElementById('modal-add-element');
       if (m) m.classList.add('active');
     },
@@ -7384,20 +8152,89 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       const desc = document.getElementById('elem-modal-desc').value.trim();
 
       if (!tag || !name) {
-        alert("Please enter a tag and name.");
+        alert("Please enter a symbol tag and name.");
         return;
       }
 
-      if (type === 'character') {
-        window.FilmOS.addCharacter({ tag, name, appearance: desc, clothing: "Custom Outfit" });
-      } else if (type === 'location') {
-        window.FilmOS.addLocation({ tag, name, description: desc, time: "Night" });
+      if (editingElementRef) {
+        // Editing existing element
+        window.FilmOS.updateElement(editingElementRef.type === 'character' ? 'characters' : editingElementRef.type === 'location' ? 'locations' : 'props', editingElementRef.id, {
+          tag,
+          name,
+          appearance: desc,
+          description: desc
+        });
+        if (window.showToast) window.showToast(`✓ Updated @${tag} everywhere in project!`);
       } else {
-        window.FilmOS.addProp({ tag, name, description: desc });
+        // Creating new element
+        if (type === 'character') {
+          window.FilmOS.addCharacter({ tag, name, appearance: desc, clothing: "Custom Outfit" });
+        } else if (type === 'location') {
+          window.FilmOS.addLocation({ tag, name, description: desc, time: "Night" });
+        } else {
+          window.FilmOS.addProp({ tag, name, description: desc });
+        }
+        if (window.showToast) window.showToast(`✓ Added Reusable Element @${tag}!`);
       }
 
       this.closeModals();
-      if (window.showToast) window.showToast(`✓ Added Reusable Element @${tag}!`);
+    },
+
+    unlinkElement: function (tag) {
+      window.FilmOS.unlinkElementFromShot(window.FilmOS.state.activeShotId, tag);
+      const promptInput = document.getElementById('studio-prompt-input');
+      const shot = window.FilmOS.getActiveShot();
+      if (promptInput && shot) promptInput.value = shot.prompt;
+      renderActiveElementsList();
+      if (window.showToast) window.showToast(`Unlinked @${tag} from this shot`);
+    },
+
+    openAddExistingElementPopover: function () {
+      const proj = window.FilmOS.state;
+      const activeList = window.FilmOS.getActiveShotElements();
+      const activeTags = activeList.map(a => a.tag.toLowerCase());
+
+      const allRegistry = [
+        ...proj.elements.characters.map(c => ({ type: 'character', tag: c.tag, name: c.name, desc: c.appearance })),
+        ...proj.elements.locations.map(l => ({ type: 'location', tag: l.tag, name: l.name, desc: l.description })),
+        ...proj.elements.props.map(p => ({ type: 'prop', tag: p.tag, name: p.name, desc: p.description }))
+      ];
+
+      const available = allRegistry.filter(r => !activeTags.includes(r.tag.toLowerCase()));
+      const container = document.getElementById('existing-elements-picker-list');
+
+      if (!container) return;
+
+      if (available.length === 0) {
+        container.innerHTML = `
+          <div style="padding:16px; text-align:center; color:var(--text-muted); font-size:0.75rem;">
+            All registry elements are already active in this shot!
+          </div>
+        `;
+      } else {
+        container.innerHTML = available.map(el => `
+          <div class="active-element-card" onclick="window.FilmOSUI.linkExistingElement('${el.tag}')" style="cursor:pointer;">
+            <div class="active-element-header">
+              <span class="${el.type === 'character' ? 'element-title-character' : el.type === 'location' ? 'element-title-location' : 'element-title-prop'}">@${el.tag} (${el.name})</span>
+              <span class="badge badge-dark" style="font-size:0.6rem;">+ Add To Scene</span>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px;">${el.desc || ''}</div>
+          </div>
+        `).join('');
+      }
+
+      const m = document.getElementById('modal-existing-elements');
+      if (m) m.classList.add('active');
+    },
+
+    linkExistingElement: function (tag) {
+      window.FilmOS.linkElementToShot(window.FilmOS.state.activeShotId, tag);
+      const promptInput = document.getElementById('studio-prompt-input');
+      const shot = window.FilmOS.getActiveShot();
+      if (promptInput && shot) promptInput.value = shot.prompt;
+      renderActiveElementsList();
+      this.closeModals();
+      if (window.showToast) window.showToast(`✓ Added @${tag} to active shot!`);
     },
 
     showElementsListModal: function (type) {
@@ -7414,28 +8251,117 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
       }
     },
 
+    // AI Director Drawer Methods
+    toggleDirectorDrawer: function () {
+      const drawer = document.getElementById('director-drawer');
+      if (!drawer) return;
+      const isOpen = drawer.classList.toggle('open');
+      if (isOpen) {
+        const input = document.getElementById('director-vision-input');
+        if (input && !input.value) {
+          input.value = "A 30-sec Nike style runner in Tokyo rain with cyberpunk synthwave aesthetic";
+        }
+        // Update Simulated vs Live badge
+        const badge = document.getElementById('director-mode-badge');
+        const config = window.FilmOS.state.apiConfig || {};
+        if (badge) {
+          badge.textContent = (config.llmEndpoint && config.llmKey) ? "LIVE LLM" : "SIMULATED";
+        }
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    },
+
+    fillDirectorConcept: function (text) {
+      const input = document.getElementById('director-vision-input');
+      if (input) input.value = text;
+    },
+
+    generateFilmFromDirector: async function () {
+      const input = document.getElementById('director-vision-input');
+      const btn = document.getElementById('director-generate-submit-btn');
+      const reviewBox = document.getElementById('director-review-box');
+      if (!input || !input.value.trim()) {
+        alert("Please describe your film vision.");
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="loading-spinner"></span> <span>Directing Script & Shots...</span>`;
+      }
+
+      try {
+        const breakdown = await window.FilmOS.generateFilmBreakdown(input.value.trim());
+        lastDirectorResult = breakdown;
+
+        let totalShots = 0;
+        (breakdown.scenes || []).forEach(s => totalShots += (s.shots || []).length);
+        const totalElements = (breakdown.elements || []).length;
+
+        const summaryEl = document.getElementById('director-review-summary');
+        const detailsEl = document.getElementById('director-review-details');
+
+        if (summaryEl) {
+          summaryEl.textContent = `Generated ${breakdown.scenes.length} Scenes, ${totalShots} Shots, and ${totalElements} @Elements!`;
+        }
+
+        if (detailsEl) {
+          let detHtml = `<div style="font-weight:800; color:#fff; margin-bottom:4px;">PROPOSED BREAKDOWN:</div>`;
+          (breakdown.scenes || []).forEach(sc => {
+            detHtml += `<div style="margin-bottom:6px;"><strong style="color:var(--accent-lime);">🎬 ${sc.title}:</strong> ${(sc.shots || []).map(s => `${s.title} (${s.lens}, ${s.cameraMovement})`).join(' • ')}</div>`;
+          });
+          detHtml += `<div style="margin-top:6px;"><strong style="color:var(--accent-cyan);">🎭 New Elements:</strong> ${(breakdown.elements || []).map(e => `@${e.name}`).join(', ')}</div>`;
+          detailsEl.innerHTML = detHtml;
+        }
+
+        if (reviewBox) reviewBox.classList.add('open');
+      } catch (err) {
+        alert("Error generating breakdown: " + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span>Generate Film Breakdown</span>`;
+        }
+      }
+    },
+
+    discardDirectorReview: function () {
+      const reviewBox = document.getElementById('director-review-box');
+      if (reviewBox) reviewBox.classList.remove('open');
+      lastDirectorResult = null;
+      if (window.showToast) window.showToast("Director proposal discarded");
+    },
+
+    applyDirectorReview: function () {
+      if (!lastDirectorResult) return;
+      window.FilmOS.applyGeneratedFilmBreakdown(lastDirectorResult);
+      const reviewBox = document.getElementById('director-review-box');
+      if (reviewBox) reviewBox.classList.remove('open');
+      this.toggleDirectorDrawer();
+
+      // Switch to first new shot
+      const shot = window.FilmOS.getActiveShot();
+      if (shot) this.selectShot(shot.id);
+
+      if (window.showToast) window.showToast("✓ Applied AI Director Breakdown to Project!");
+    },
+
     openSettings: function () {
       const config = window.FilmOS.state.apiConfig || {};
-      document.getElementById('settings-llm-endpoint').value = config.llmEndpoint || '';
       document.getElementById('settings-llm-key').value = config.llmKey || '';
-      document.getElementById('settings-video-endpoint').value = config.videoGenEndpoint || '';
-      document.getElementById('settings-video-key').value = config.videoGenKey || '';
       const m = document.getElementById('modal-settings');
       if (m) m.classList.add('active');
     },
 
     saveSettings: function () {
       const config = {
-        llmEndpoint: document.getElementById('settings-llm-endpoint').value.trim(),
         llmKey: document.getElementById('settings-llm-key').value.trim(),
-        videoGenEndpoint: document.getElementById('settings-video-endpoint').value.trim(),
-        videoGenKey: document.getElementById('settings-video-key').value.trim(),
-        isSimulatedMode: !document.getElementById('settings-video-key').value.trim()
+        isSimulatedMode: !document.getElementById('settings-llm-key').value.trim()
       };
       window.FilmOS.state.apiConfig = config;
       window.FilmOS.save();
       this.closeModals();
-      if (window.showToast) window.showToast("✓ Settings Saved! (Mode: " + (config.isSimulatedMode ? "SIMULATED" : "LIVE API") + ")");
+      if (window.showToast) window.showToast("✓ Settings Saved!");
     },
 
     closeModals: function () {
@@ -7521,7 +8447,6 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
 
   window.addEventListener('DOMContentLoaded', initFilmUI);
 })();
-
 
 /* --- js/presets.js --- */
 /**

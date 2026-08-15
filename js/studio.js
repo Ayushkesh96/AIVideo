@@ -170,8 +170,9 @@
 
     const config = window.FilmOS ? window.FilmOS.state.apiConfig : {};
     const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
-    const lens = shot ? shot.lens : "35mm";
-    const rig = shot ? shot.rig : "Dolly Push";
+    const lens = shot && shot.lens ? shot.lens : "24mm";
+    const rig = shot && shot.motionRig ? shot.motionRig : (shot && shot.camera ? shot.camera : "Dolly");
+    const body = shot && shot.cameraBody ? shot.cameraBody : "ARRI Alexa Mini";
 
     if (config && config.llmEndpoint && config.llmKey) {
       try {
@@ -184,7 +185,7 @@
           body: JSON.stringify({
             model: "gpt-4o-mini",
             messages: [
-              { role: "system", content: "You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying lens, lighting, atmospheric mood, depth, and camera motion in one cohesive paragraph." },
+              { role: "system", content: `You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying shot on ${body} with a ${lens} lens and ${rig} motion choreography.` },
               { role: "user", content: basePrompt }
             ]
           })
@@ -195,12 +196,12 @@
         }
       } catch (err) {
         console.warn("LLM API failed, falling back to local rule enhancer:", err);
-        applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+        applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
       }
     } else {
       // Local Intelligent Cinematic Expander
       await new Promise(r => setTimeout(r, 600));
-      applyLocalEnhancer(promptInput, basePrompt, lens, rig);
+      applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
     }
 
     btn.innerHTML = origBtnHtml;
@@ -212,10 +213,10 @@
     if (window.showToast) window.showToast("✨ AI Prompt Enhanced with Cinematic Tokens!");
   }
 
-  function applyLocalEnhancer(input, base, lens, rig) {
+  function applyLocalEnhancer(input, base, lens, rig, body) {
     const tokens = [
-      `shot on ${lens} anamorphic lens`,
-      `${rig} camera choreography`,
+      `shot on ${body || 'ARRI Alexa Mini'} with a ${lens || '24mm'} lens`,
+      `${rig || 'Dolly'} motion rig`,
       "volumetric God-rays & atmospheric mist",
       "shallow depth of field with 35mm Hollywood grain",
       "subsurface skin scattering and 8k hyper-detailed textures"

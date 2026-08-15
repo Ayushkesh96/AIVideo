@@ -1,27 +1,38 @@
 /**
  * AIVIDEO FILMMAKING PRODUCTION OS — UI CONTROLLER & MODALS (PHASE 2)
  * Connects reactive FilmOS state store with Project Tree, Autocomplete,
- * Modals, Settings, Multi-Track NLE, and Keyboard Shortcuts.
+ * Modals, Settings, Multi-Track NLE, Camera Rig Inspector, Active @Elements,
+ * and AI Co-Director (Script-to-Shots Generator).
  */
 
 (function () {
   let selectedClip = null;
+  let lastDirectorResult = null;
+  let editingElementRef = null;
 
   function initFilmUI() {
     if (!window.FilmOS) return;
 
     renderProjectTree();
     renderActiveElementsList();
+    renderCameraInspector();
     renderNLETracks();
     updateHeaderCounters();
     bindGlobalShortcuts();
     bindAutocomplete();
     injectModals();
 
+    // Wire Copilot Ask Director Button
+    const askDirectorBtn = document.getElementById('filmos-ask-director-btn');
+    if (askDirectorBtn) {
+      askDirectorBtn.onclick = () => window.FilmOSUI.toggleDirectorDrawer();
+    }
+
     // Subscribe to state changes
     window.FilmOS.subscribe(() => {
       renderProjectTree();
       renderActiveElementsList();
+      renderCameraInspector();
       renderNLETracks();
       updateHeaderCounters();
     });
@@ -101,36 +112,66 @@
   // 2. Render Column 3 Active Elements List
   function renderActiveElementsList() {
     const listEl = document.getElementById('filmos-elements-list');
+    const countBadge = document.getElementById('active-elements-count');
     if (!listEl) return;
 
-    const proj = window.FilmOS.state;
-    let html = '';
+    const activeElements = window.FilmOS.getActiveShotElements();
+    if (countBadge) {
+      countBadge.textContent = `${activeElements.length} ACTIVE`;
+    }
 
-    proj.elements.characters.forEach(c => {
-      html += `
-        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-lime);">@${c.tag} (${c.name})</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">${c.gender}, ${c.age} y/o</span>
-          </div>
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.appearance}">${c.appearance}</div>
+    if (activeElements.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding:14px; text-align:center; color:var(--text-muted); font-size:0.72rem; border:1px dashed rgba(255,255,255,0.08); border-radius:6px;">
+          No @Elements active in this shot.<br>Type @ in prompt or click "+ Add Existing".
         </div>
       `;
-    });
+      return;
+    }
 
-    proj.elements.locations.forEach(l => {
+    let html = '';
+    activeElements.forEach(el => {
+      const typeClass = el.type === 'character' ? 'element-title-character' : el.type === 'location' ? 'element-title-location' : el.type === 'prop' ? 'element-title-prop' : 'element-title-style';
       html += `
-        <div style="background:#171722; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:800; font-size:0.75rem; color:var(--accent-cyan);">@${l.tag} (${l.name})</span>
-            <span style="font-size:0.68rem; color:var(--text-muted);">${l.time}</span>
+        <div class="active-element-card" onclick="window.FilmOSUI.openEditElementModal('${el.type}', '${el.id}')" title="Click to Edit @${el.tag}">
+          <div class="active-element-header">
+            <span class="${typeClass}">@${el.tag} (${el.name})</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.68rem; color:var(--text-muted);">${el.tags || ''}</span>
+              <button class="active-element-remove-btn" onclick="event.stopPropagation(); window.FilmOSUI.unlinkElement('${el.tag}')" title="Remove from this shot">×</button>
+            </div>
           </div>
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${l.description}">${l.description}</div>
+          <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${el.description}">${el.description}</div>
         </div>
       `;
     });
 
     listEl.innerHTML = html;
+  }
+
+  function renderCameraInspector() {
+    const shot = window.FilmOS.getActiveShot();
+    if (!shot) return;
+
+    // 1. Sync Lens Buttons
+    const curLens = shot.lens || '24mm';
+    document.querySelectorAll('#lens-selector-grid .camera-rig-btn').forEach(btn => {
+      const isMatch = btn.getAttribute('data-lens') === curLens || btn.textContent.trim() === curLens;
+      btn.classList.toggle('active', isMatch);
+    });
+
+    // 2. Sync Motion Rig Buttons
+    const curRig = shot.motionRig || 'Dolly';
+    document.querySelectorAll('#motion-rig-selector-grid .camera-rig-btn').forEach(btn => {
+      const rigAttr = btn.getAttribute('data-rig') || btn.textContent.trim();
+      btn.classList.toggle('active', rigAttr === curRig);
+    });
+
+    // 3. Sync Camera Body Select
+    const bodySelect = document.getElementById('camera-body-select');
+    if (bodySelect && shot.cameraBody) {
+      bodySelect.value = shot.cameraBody;
+    }
   }
 
   // 3. Render Multi-Track NLE Timeline Sequencer
@@ -143,15 +184,7 @@
     let html = `
       <!-- Timecode Ruler Bar -->
       <div class="timeline-ruler-bar">
-        <span>00:00</span>
-        <span>00:02</span>
-        <span>00:04</span>
-        <span>00:06</span>
-        <span>00:08</span>
-        <span>00:10</span>
-        <span>00:12</span>
-        <span>00:14</span>
-        <span>00:16</span>
+        <span>00:00</span><span>00:02</span><span>00:04</span><span>00:06</span><span>00:08</span><span>00:10</span>
       </div>
 
       <!-- Video Track -->
@@ -160,7 +193,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           <span>Video Track</span>
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-video" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
@@ -179,7 +212,7 @@
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-video', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-video', 160)">▶</button>
       </div>
 
       <!-- Voice Track -->
@@ -187,9 +220,9 @@
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
           <span>Voice</span>
-          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()" title="Add Voice Dialogue">+</button>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="window.FilmOSUI.openAddVoiceModal()">+</button>
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-voice" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
@@ -206,7 +239,7 @@
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-voice', 160)">▶</button>
       </div>
 
       <!-- Music Track -->
@@ -214,17 +247,17 @@
         <div class="track-lane-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Music</span>
-          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()" title="Upload Audio File">+</button>
+          <button class="btn btn-icon btn-sm" style="padding:1px 4px; font-size:0.7rem; margin-left:auto;" onclick="document.getElementById('nle-music-uploader').click()">+</button>
           <input type="file" id="nle-music-uploader" accept="audio/mp3,audio/wav" style="display:none;" onchange="window.FilmOSUI.handleMusicUpload(event)">
         </div>
-        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-music', -160)" title="Scroll Left">◀</button>
+        <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-music', -160)">◀</button>
         <div class="track-clips-area" id="nle-track-music" onscroll="window.FilmOSUI.handleTrackScroll(this)">
     `;
 
     tData.music.forEach(clip => {
       html += `
-        <div class="timeline-clip-block music" title="${clip.title} (${clip.genre}) - ${clip.duration}s">
-          <span>🎵 ${clip.title} (${clip.genre || 'Audio'})</span>
+        <div class="timeline-clip-block music" title="${clip.title}">
+          <span>🎵 ${clip.title}</span>
           <span style="display:flex; align-items:center; gap:4px;">
             <span style="font-size:0.65rem;">${clip.duration}s</span>
             <button class="timeline-clip-delete-btn" onclick="event.stopPropagation(); window.FilmOSUI.removeClip('music', '${clip.id}')">×</button>
@@ -235,20 +268,21 @@
 
     html += `
         </div>
-        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-music', 160)" title="Scroll Right">▶</button>
+        <button class="track-nav-btn next" onclick="window.FilmOSUI.scrollTrack('nle-track-music', 160)">▶</button>
       </div>
     `;
 
     tracksContainer.innerHTML = html;
   }
 
-  // 4. Update Header Live Counters
+  // 4. Update Header Info
   function updateHeaderCounters() {
     const proj = window.FilmOS.state;
-    const projNameEl = document.getElementById('filmos-project-name');
-    if (projNameEl) projNameEl.textContent = proj.name;
+    const nameEl = document.getElementById('filmos-project-name');
+    if (nameEl) nameEl.textContent = proj.name;
 
-    const totalShots = proj.scenes.reduce((acc, s) => acc + s.shots.length, 0);
+    let totalShots = 0;
+    proj.scenes.forEach(s => totalShots += s.shots.length);
     const totalElements = proj.elements.characters.length + proj.elements.locations.length + proj.elements.props.length;
 
     const descEl = document.querySelector('.filmos-project-badge div div:last-child');
@@ -271,6 +305,11 @@
       if (textarea.parentElement) textarea.parentElement.appendChild(dropdown);
     }
 
+    textarea.addEventListener('input', () => {
+      window.FilmOS.updateActiveShot({ prompt: textarea.value });
+      renderActiveElementsList();
+    });
+
     textarea.addEventListener('keyup', (e) => {
       const val = textarea.value;
       const cursor = textarea.selectionStart;
@@ -283,8 +322,7 @@
         const allElements = [
           ...proj.elements.characters.map(c => ({ type: 'Character', tag: c.tag, name: c.name })),
           ...proj.elements.locations.map(l => ({ type: 'Location', tag: l.tag, name: l.name })),
-          ...proj.elements.props.map(p => ({ type: 'Prop', tag: p.tag, name: p.name })),
-          ...proj.elements.styles.map(s => ({ type: 'Style', tag: s.tag, name: s.name }))
+          ...proj.elements.props.map(p => ({ type: 'Prop', tag: p.tag, name: p.name }))
         ].filter(el => el.tag.toLowerCase().includes(query) || el.name.toLowerCase().includes(query));
 
         if (allElements.length > 0) {
@@ -307,19 +345,16 @@
   // 6. Global Keyboard Shortcuts
   function bindGlobalShortcuts() {
     window.addEventListener('keydown', (e) => {
-      // Space = Play/Pause (if not typing in input/textarea)
       if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
         e.preventDefault();
         const playBtn = document.getElementById('playback-play-pause');
         if (playBtn) playBtn.click();
       }
-      // Ctrl+S = Save Project
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         window.FilmOS.save();
         if (window.showToast) window.showToast("✓ FilmOS Project Saved to LocalStorage!");
       }
-      // Delete = Remove Selected Timeline Clip
       if (e.key === 'Delete' && selectedClip) {
         window.FilmOS.deleteTimelineClip(selectedClip.track, selectedClip.id);
         selectedClip = null;
@@ -328,7 +363,7 @@
     });
   }
 
-  // 7. Inject Modal Backdrops
+  // 7. Inject Modals
   function injectModals() {
     if (document.getElementById('filmos-modal-container')) return;
     const modalContainer = document.createElement('div');
@@ -356,11 +391,11 @@
         </div>
       </div>
 
-      <!-- Add Element Modal -->
+      <!-- Add/Edit Element Modal -->
       <div id="modal-add-element" class="filmos-modal-backdrop">
         <div class="filmos-modal-card">
           <div class="filmos-modal-header">
-            <span class="filmos-modal-title">🎭 Create Reusable @Element</span>
+            <span class="filmos-modal-title" id="elem-modal-title">🎭 Create Reusable @Element</span>
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
@@ -371,15 +406,31 @@
               <option value="prop">Prop (@Object)</option>
             </select>
             <label class="modal-label">Symbol Tag (without @):</label>
-            <input type="text" id="elem-modal-tag" class="custom-input" placeholder="e.g. Maya, CyberAlley, LaserPistol" style="width:100%; margin-bottom:12px;">
+            <input type="text" id="elem-modal-tag" class="custom-input" style="width:100%; margin-bottom:12px;">
             <label class="modal-label">Full Name / Label:</label>
-            <input type="text" id="elem-modal-name" class="custom-input" placeholder="e.g. Maya Thorne" style="width:100%; margin-bottom:12px;">
+            <input type="text" id="elem-modal-name" class="custom-input" style="width:100%; margin-bottom:12px;">
             <label class="modal-label">Visual Appearance / Description:</label>
             <textarea id="elem-modal-desc" class="prompt-textarea" style="width:100%; height:75px;" placeholder="Detailed visual features, lighting, clothing, materials..."></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
-            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveNewElement()">Create @Element</button>
+            <button class="btn btn-lime btn-sm" id="elem-modal-save-btn" onclick="window.FilmOSUI.saveNewElement()">Save @Element</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Existing Element Popover Modal -->
+      <div id="modal-existing-elements" class="filmos-modal-backdrop">
+        <div class="filmos-modal-card">
+          <div class="filmos-modal-header">
+            <span class="filmos-modal-title">➕ Add Existing Registry Element To Shot</span>
+            <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
+          </div>
+          <div id="existing-elements-picker-list" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto;">
+            <!-- Populated dynamically -->
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Close</button>
           </div>
         </div>
       </div>
@@ -392,16 +443,8 @@
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Configure real API endpoints or run in on-device Simulation Mode.</p>
-            <label class="modal-label">LLM Prompt Enhancer Endpoint:</label>
-            <input type="text" id="settings-llm-endpoint" class="custom-input" placeholder="https://api.openai.com/v1/chat/completions" style="width:100%; margin-bottom:8px;">
             <label class="modal-label">LLM API Key:</label>
-            <input type="password" id="settings-llm-key" class="custom-input" placeholder="sk-..." style="width:100%; margin-bottom:14px;">
-
-            <label class="modal-label">Video Generation API Endpoint:</label>
-            <input type="text" id="settings-video-endpoint" class="custom-input" placeholder="https://api.klingai.com/v1/videos/generations" style="width:100%; margin-bottom:8px;">
-            <label class="modal-label">Video Gen API Key:</label>
-            <input type="password" id="settings-video-key" class="custom-input" placeholder="Bearer ..." style="width:100%;">
+            <input type="password" id="settings-llm-key" class="custom-input" style="width:100%; margin-bottom:14px;">
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
             <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
@@ -424,19 +467,6 @@
       const promptInput = document.getElementById('studio-prompt-input');
       if (promptInput) promptInput.value = shot.prompt;
 
-      // Update Camera buttons
-      document.querySelectorAll('.camera-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.camera === shot.camera);
-      });
-
-      // Update Motion Slider
-      const motionSlider = document.getElementById('motion-strength-slider');
-      const motionVal = document.getElementById('motion-strength-val');
-      if (motionSlider && motionVal) {
-        motionSlider.value = shot.motionSpeed || 75;
-        motionVal.textContent = `${shot.motionSpeed || 75}%`;
-      }
-
       // Update Aspect Ratio
       document.querySelectorAll('.ratio-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.ratio === (shot.aspectRatio || '16:9'));
@@ -449,7 +479,58 @@
       const hudMotion = document.getElementById('hud-motion-tag');
       if (hudMotion) hudMotion.textContent = `${shot.lens || '35mm'} • ${shot.camera || 'Orbit 360°'}`;
 
+      // Refresh inspector & active elements
+      renderCameraInspector();
+      renderActiveElementsList();
+
       if (window.showToast) window.showToast(`Loaded Shot ${shot.code}: ${shot.title}`);
+    },
+
+    selectLens: function (lensVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.lens = lensVal;
+      window.FilmOS.save();
+      renderCameraInspector();
+      if (window.showToast) window.showToast(`Selected ${lensVal} Hollywood Cine Prime`);
+    },
+
+    selectMotionRig: function (rigVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.motionRig = rigVal;
+      
+      // Map to cameraMovement / choreography
+      const rigToChoreography = {
+        'Dolly': 'Dolly Push',
+        'Truck': 'Pan Left',
+        'Crane': 'Tilt Up',
+        'Handheld': 'Handheld',
+        'FPV Drone': 'FPV Dive',
+        'Orbit 360°': 'Orbit 360°'
+      };
+
+      const mappedCamera = rigToChoreography[rigVal] || rigVal;
+      shot.camera = mappedCamera;
+      shot.cameraMovement = rigVal;
+
+      window.FilmOS.save();
+      renderCameraInspector();
+
+      // Sync 9-button choreography grid
+      document.querySelectorAll('.camera-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.camera === mappedCamera);
+      });
+
+      if (window.showToast) window.showToast(`Active Motion Rig: ${rigVal}`);
+    },
+
+    setCameraBody: function (bodyVal) {
+      const shot = window.FilmOS.getActiveShot();
+      if (!shot) return;
+      shot.cameraBody = bodyVal;
+      window.FilmOS.save();
+      if (window.showToast) window.showToast(`Selected Camera Body: ${bodyVal}`);
     },
 
     insertMention: function (tag) {
@@ -465,6 +546,7 @@
       if (dropdown) dropdown.style.display = 'none';
       textarea.focus();
       window.FilmOS.updateActiveShot({ prompt: textarea.value });
+      renderActiveElementsList();
     },
 
     openStoryModal: function () {
@@ -487,6 +569,32 @@
     },
 
     openAddElementModal: function () {
+      editingElementRef = null;
+      document.getElementById('elem-modal-title').textContent = "🎭 Create Reusable @Element";
+      document.getElementById('elem-modal-type').disabled = false;
+      document.getElementById('elem-modal-tag').value = '';
+      document.getElementById('elem-modal-name').value = '';
+      document.getElementById('elem-modal-desc').value = '';
+      const m = document.getElementById('modal-add-element');
+      if (m) m.classList.add('active');
+    },
+
+    openEditElementModal: function (type, id) {
+      const proj = window.FilmOS.state;
+      const targetArray = proj.elements[type === 'character' ? 'characters' : type === 'location' ? 'locations' : type === 'prop' ? 'props' : 'styles'] || [];
+      const item = targetArray.find(e => e.id === id);
+      if (!item) return;
+
+      editingElementRef = { type, id };
+      document.getElementById('elem-modal-title').textContent = `✏️ Edit Reusable @${item.tag}`;
+      const typeSelect = document.getElementById('elem-modal-type');
+      typeSelect.value = type;
+      typeSelect.disabled = true;
+
+      document.getElementById('elem-modal-tag').value = item.tag;
+      document.getElementById('elem-modal-name').value = item.name;
+      document.getElementById('elem-modal-desc').value = item.appearance || item.description || '';
+
       const m = document.getElementById('modal-add-element');
       if (m) m.classList.add('active');
     },
@@ -498,20 +606,89 @@
       const desc = document.getElementById('elem-modal-desc').value.trim();
 
       if (!tag || !name) {
-        alert("Please enter a tag and name.");
+        alert("Please enter a symbol tag and name.");
         return;
       }
 
-      if (type === 'character') {
-        window.FilmOS.addCharacter({ tag, name, appearance: desc, clothing: "Custom Outfit" });
-      } else if (type === 'location') {
-        window.FilmOS.addLocation({ tag, name, description: desc, time: "Night" });
+      if (editingElementRef) {
+        // Editing existing element
+        window.FilmOS.updateElement(editingElementRef.type === 'character' ? 'characters' : editingElementRef.type === 'location' ? 'locations' : 'props', editingElementRef.id, {
+          tag,
+          name,
+          appearance: desc,
+          description: desc
+        });
+        if (window.showToast) window.showToast(`✓ Updated @${tag} everywhere in project!`);
       } else {
-        window.FilmOS.addProp({ tag, name, description: desc });
+        // Creating new element
+        if (type === 'character') {
+          window.FilmOS.addCharacter({ tag, name, appearance: desc, clothing: "Custom Outfit" });
+        } else if (type === 'location') {
+          window.FilmOS.addLocation({ tag, name, description: desc, time: "Night" });
+        } else {
+          window.FilmOS.addProp({ tag, name, description: desc });
+        }
+        if (window.showToast) window.showToast(`✓ Added Reusable Element @${tag}!`);
       }
 
       this.closeModals();
-      if (window.showToast) window.showToast(`✓ Added Reusable Element @${tag}!`);
+    },
+
+    unlinkElement: function (tag) {
+      window.FilmOS.unlinkElementFromShot(window.FilmOS.state.activeShotId, tag);
+      const promptInput = document.getElementById('studio-prompt-input');
+      const shot = window.FilmOS.getActiveShot();
+      if (promptInput && shot) promptInput.value = shot.prompt;
+      renderActiveElementsList();
+      if (window.showToast) window.showToast(`Unlinked @${tag} from this shot`);
+    },
+
+    openAddExistingElementPopover: function () {
+      const proj = window.FilmOS.state;
+      const activeList = window.FilmOS.getActiveShotElements();
+      const activeTags = activeList.map(a => a.tag.toLowerCase());
+
+      const allRegistry = [
+        ...proj.elements.characters.map(c => ({ type: 'character', tag: c.tag, name: c.name, desc: c.appearance })),
+        ...proj.elements.locations.map(l => ({ type: 'location', tag: l.tag, name: l.name, desc: l.description })),
+        ...proj.elements.props.map(p => ({ type: 'prop', tag: p.tag, name: p.name, desc: p.description }))
+      ];
+
+      const available = allRegistry.filter(r => !activeTags.includes(r.tag.toLowerCase()));
+      const container = document.getElementById('existing-elements-picker-list');
+
+      if (!container) return;
+
+      if (available.length === 0) {
+        container.innerHTML = `
+          <div style="padding:16px; text-align:center; color:var(--text-muted); font-size:0.75rem;">
+            All registry elements are already active in this shot!
+          </div>
+        `;
+      } else {
+        container.innerHTML = available.map(el => `
+          <div class="active-element-card" onclick="window.FilmOSUI.linkExistingElement('${el.tag}')" style="cursor:pointer;">
+            <div class="active-element-header">
+              <span class="${el.type === 'character' ? 'element-title-character' : el.type === 'location' ? 'element-title-location' : 'element-title-prop'}">@${el.tag} (${el.name})</span>
+              <span class="badge badge-dark" style="font-size:0.6rem;">+ Add To Scene</span>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px;">${el.desc || ''}</div>
+          </div>
+        `).join('');
+      }
+
+      const m = document.getElementById('modal-existing-elements');
+      if (m) m.classList.add('active');
+    },
+
+    linkExistingElement: function (tag) {
+      window.FilmOS.linkElementToShot(window.FilmOS.state.activeShotId, tag);
+      const promptInput = document.getElementById('studio-prompt-input');
+      const shot = window.FilmOS.getActiveShot();
+      if (promptInput && shot) promptInput.value = shot.prompt;
+      renderActiveElementsList();
+      this.closeModals();
+      if (window.showToast) window.showToast(`✓ Added @${tag} to active shot!`);
     },
 
     showElementsListModal: function (type) {
@@ -528,28 +705,117 @@
       }
     },
 
+    // AI Director Drawer Methods
+    toggleDirectorDrawer: function () {
+      const drawer = document.getElementById('director-drawer');
+      if (!drawer) return;
+      const isOpen = drawer.classList.toggle('open');
+      if (isOpen) {
+        const input = document.getElementById('director-vision-input');
+        if (input && !input.value) {
+          input.value = "A 30-sec Nike style runner in Tokyo rain with cyberpunk synthwave aesthetic";
+        }
+        // Update Simulated vs Live badge
+        const badge = document.getElementById('director-mode-badge');
+        const config = window.FilmOS.state.apiConfig || {};
+        if (badge) {
+          badge.textContent = (config.llmEndpoint && config.llmKey) ? "LIVE LLM" : "SIMULATED";
+        }
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    },
+
+    fillDirectorConcept: function (text) {
+      const input = document.getElementById('director-vision-input');
+      if (input) input.value = text;
+    },
+
+    generateFilmFromDirector: async function () {
+      const input = document.getElementById('director-vision-input');
+      const btn = document.getElementById('director-generate-submit-btn');
+      const reviewBox = document.getElementById('director-review-box');
+      if (!input || !input.value.trim()) {
+        alert("Please describe your film vision.");
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="loading-spinner"></span> <span>Directing Script & Shots...</span>`;
+      }
+
+      try {
+        const breakdown = await window.FilmOS.generateFilmBreakdown(input.value.trim());
+        lastDirectorResult = breakdown;
+
+        let totalShots = 0;
+        (breakdown.scenes || []).forEach(s => totalShots += (s.shots || []).length);
+        const totalElements = (breakdown.elements || []).length;
+
+        const summaryEl = document.getElementById('director-review-summary');
+        const detailsEl = document.getElementById('director-review-details');
+
+        if (summaryEl) {
+          summaryEl.textContent = `Generated ${breakdown.scenes.length} Scenes, ${totalShots} Shots, and ${totalElements} @Elements!`;
+        }
+
+        if (detailsEl) {
+          let detHtml = `<div style="font-weight:800; color:#fff; margin-bottom:4px;">PROPOSED BREAKDOWN:</div>`;
+          (breakdown.scenes || []).forEach(sc => {
+            detHtml += `<div style="margin-bottom:6px;"><strong style="color:var(--accent-lime);">🎬 ${sc.title}:</strong> ${(sc.shots || []).map(s => `${s.title} (${s.lens}, ${s.cameraMovement})`).join(' • ')}</div>`;
+          });
+          detHtml += `<div style="margin-top:6px;"><strong style="color:var(--accent-cyan);">🎭 New Elements:</strong> ${(breakdown.elements || []).map(e => `@${e.name}`).join(', ')}</div>`;
+          detailsEl.innerHTML = detHtml;
+        }
+
+        if (reviewBox) reviewBox.classList.add('open');
+      } catch (err) {
+        alert("Error generating breakdown: " + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span>Generate Film Breakdown</span>`;
+        }
+      }
+    },
+
+    discardDirectorReview: function () {
+      const reviewBox = document.getElementById('director-review-box');
+      if (reviewBox) reviewBox.classList.remove('open');
+      lastDirectorResult = null;
+      if (window.showToast) window.showToast("Director proposal discarded");
+    },
+
+    applyDirectorReview: function () {
+      if (!lastDirectorResult) return;
+      window.FilmOS.applyGeneratedFilmBreakdown(lastDirectorResult);
+      const reviewBox = document.getElementById('director-review-box');
+      if (reviewBox) reviewBox.classList.remove('open');
+      this.toggleDirectorDrawer();
+
+      // Switch to first new shot
+      const shot = window.FilmOS.getActiveShot();
+      if (shot) this.selectShot(shot.id);
+
+      if (window.showToast) window.showToast("✓ Applied AI Director Breakdown to Project!");
+    },
+
     openSettings: function () {
       const config = window.FilmOS.state.apiConfig || {};
-      document.getElementById('settings-llm-endpoint').value = config.llmEndpoint || '';
       document.getElementById('settings-llm-key').value = config.llmKey || '';
-      document.getElementById('settings-video-endpoint').value = config.videoGenEndpoint || '';
-      document.getElementById('settings-video-key').value = config.videoGenKey || '';
       const m = document.getElementById('modal-settings');
       if (m) m.classList.add('active');
     },
 
     saveSettings: function () {
       const config = {
-        llmEndpoint: document.getElementById('settings-llm-endpoint').value.trim(),
         llmKey: document.getElementById('settings-llm-key').value.trim(),
-        videoGenEndpoint: document.getElementById('settings-video-endpoint').value.trim(),
-        videoGenKey: document.getElementById('settings-video-key').value.trim(),
-        isSimulatedMode: !document.getElementById('settings-video-key').value.trim()
+        isSimulatedMode: !document.getElementById('settings-llm-key').value.trim()
       };
       window.FilmOS.state.apiConfig = config;
       window.FilmOS.save();
       this.closeModals();
-      if (window.showToast) window.showToast("✓ Settings Saved! (Mode: " + (config.isSimulatedMode ? "SIMULATED" : "LIVE API") + ")");
+      if (window.showToast) window.showToast("✓ Settings Saved!");
     },
 
     closeModals: function () {
@@ -635,4 +901,3 @@
 
   window.addEventListener('DOMContentLoaded', initFilmUI);
 })();
-

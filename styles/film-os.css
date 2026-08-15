@@ -77,7 +77,7 @@
   box-shadow: 0 0 14px rgba(204, 255, 0, 0.35);
 }
 
-/* AI Co-Director Assistant Banner */
+/* AI Co-Director Assistant Banner & Expandable Drawer */
 .director-assistant-banner {
   background: linear-gradient(135deg, #141420, #0f1622);
   border: 1px solid rgba(0, 240, 255, 0.3);
@@ -87,7 +87,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   min-width: 0;
 }
 
@@ -102,6 +102,62 @@
   justify-content: center;
   color: var(--accent-cyan);
   flex-shrink: 0;
+}
+
+.director-drawer {
+  background: #0f121a;
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.2s ease;
+}
+
+.director-drawer.open {
+  display: flex;
+}
+
+.director-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.director-preset-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.director-preset-chip:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: #fff;
+}
+
+.director-review-box {
+  background: #141824;
+  border: 1px solid var(--accent-lime);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.director-review-box.open {
+  display: flex;
 }
 
 /* MASTER 3-COLUMN FILMMAKING OS GRID: Left (260px) | Center (Fluid) | Right (340px) */
@@ -491,15 +547,138 @@
   text-overflow: ellipsis;
 }
 
-.camera-rig-btn:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+.camera-body-select {
+  background: rgba(204, 255, 0, 0.12);
+  border: 1px solid var(--accent-lime);
+  color: var(--accent-lime);
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  text-transform: uppercase;
 }
 
-.camera-rig-btn.active {
-  background: rgba(204, 255, 0, 0.15);
+.camera-body-select option {
+  background: #111116;
+  color: #fff;
+}
+
+/* Active @Elements In Scene Cards */
+.active-elements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.active-element-card {
+  background: #171722;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  min-width: 0;
+}
+
+.active-element-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: #1d1d2b;
+}
+
+.active-element-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.element-title-character {
+  color: var(--accent-lime) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-location {
+  color: var(--accent-cyan) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-prop {
+  color: var(--accent-orange) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.element-title-style {
+  color: var(--accent-pink-badge) !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-element-remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s ease;
+  padding: 0 4px;
+}
+
+.active-element-card:hover .active-element-remove-btn {
+  opacity: 1;
+}
+
+.active-element-remove-btn:hover {
+  color: #ff4444;
+}
+
+.add-existing-element-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #13131c;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.add-existing-element-btn:hover {
+  background: #1c1c28;
   border-color: var(--accent-lime);
-  color: var(--accent-lime);
+  color: #fff;
 }
 
 /* =========================================================================
