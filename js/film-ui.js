@@ -141,11 +141,24 @@
     const tData = window.FilmOS.state.timeline.tracks;
 
     let html = `
+      <!-- Timecode Ruler Bar -->
+      <div class="timeline-ruler-bar">
+        <span>00:00</span>
+        <span>00:02</span>
+        <span>00:04</span>
+        <span>00:06</span>
+        <span>00:08</span>
+        <span>00:10</span>
+        <span>00:12</span>
+        <span>00:14</span>
+        <span>00:16</span>
+      </div>
+
       <!-- Video Track -->
       <div class="timeline-track-lane">
         <div class="track-lane-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-          <span>Video</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>Video Track</span>
         </div>
         <button class="track-nav-btn prev" onclick="window.FilmOSUI.scrollTrack('nle-track-video', -160)" title="Scroll Left">◀</button>
         <div class="track-clips-area" id="nle-track-video" onscroll="window.FilmOSUI.handleTrackScroll(this)">
