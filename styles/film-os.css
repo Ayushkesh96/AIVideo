@@ -7,17 +7,19 @@
 }
 
 /* Main Workspace Header Bar */
+/* Main Workspace Header Bar */
 .filmos-workspace-header {
   background: #0d0d12;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 12px 20px;
+  padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.5vw, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: clamp(8px, 1.2vw, 16px);
   margin-bottom: 16px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .filmos-project-badge {
@@ -25,6 +27,7 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .project-folder-icon {
@@ -48,15 +51,17 @@
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-subtle);
   flex-shrink: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .filmos-tab-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: clamp(0.72rem, 0.5vw + 0.5rem, 0.8rem);
   font-weight: 700;
-  padding: 6px 14px;
+  padding: 6px clamp(8px, 1vw, 14px);
   border-radius: var(--radius-pill);
   cursor: pointer;
   display: flex;
@@ -82,18 +87,19 @@
   background: linear-gradient(135deg, #141420, #0f1622);
   border: 1px solid rgba(0, 240, 255, 0.3);
   border-radius: var(--radius-lg);
-  padding: 14px 20px;
+  padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: clamp(10px, 1.2vw, 16px);
   margin-bottom: 12px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .director-icon-box {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   background: rgba(0, 240, 255, 0.15);
   border: 1px solid var(--accent-cyan);
   border-radius: 50%;
@@ -108,7 +114,7 @@
   background: #0f121a;
   border: 1px solid rgba(0, 240, 255, 0.35);
   border-radius: var(--radius-lg);
-  padding: 18px 22px;
+  padding: clamp(12px, 1.4vw, 18px) clamp(14px, 1.6vw, 22px);
   margin-bottom: 20px;
   display: none;
   flex-direction: column;
@@ -160,35 +166,83 @@
   display: flex;
 }
 
-/* MASTER 3-COLUMN FILMMAKING OS GRID: Left (260px) | Center (Fluid) | Right (340px) */
+/* =========================================================================
+   MASTER RESPONSIVE BREAKPOINT ARCHITECTURE (XL / DESKTOP / LAPTOP / TABLET / MOBILE)
+   ========================================================================= */
+
+/* Default XL (≥1600px): Full 3-Column + Fluid Studio Grid */
 .filmos-layout-grid {
   display: grid;
-  grid-template-columns: 260px 1fr 340px;
-  gap: 16px;
+  grid-template-columns: 280px minmax(0, 1fr) 360px;
+  gap: var(--space-gap);
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   align-items: start;
   min-width: 0;
   width: 100%;
 }
 
-@media (max-width: 1320px) {
+/* Desktop (1280px – 1599px): 3 Columns proportionally scaled */
+@media (max-width: 1599px) {
   .filmos-layout-grid {
-    grid-template-columns: 240px 1fr;
-  }
-  .filmos-inspector-panel {
-    grid-column: 1 / -1;
+    grid-template-columns: 240px minmax(0, 1fr) 320px;
+    gap: clamp(10px, 1.2vw, 16px);
   }
 }
 
-@media (max-width: 1024px) {
+/* Laptop (1024px – 1279px): 2 Column layout, sidebar collapsed */
+@media (max-width: 1279px) {
+  .filmos-layout-grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 14px;
+  }
+  .filmos-tree-panel {
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+  }
+}
+
+/* Tablet (768px – 1023px): Stacked 2-row layout */
+@media (max-width: 1023px) {
   .filmos-layout-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
   .filmos-tree-panel,
   .filmos-stage-panel,
   .filmos-inspector-panel {
     grid-column: 1 / -1;
+  }
+  .director-assistant-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  #filmos-ask-director-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Mobile (<768px): Single column fluid stack */
+@media (max-width: 767px) {
+  .filmos-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .filmos-workspace-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .filmos-nav-tabs {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  .filmos-tab-btn {
+    flex: 1;
+    justify-content: center;
   }
 }
 

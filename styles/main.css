@@ -54,8 +54,20 @@
   --radius-xl: 20px;
   --radius-pill: 9999px;
 
+  /* Breakpoints & Responsive Variables */
+  --bp-xl: 1600px;
+  --bp-desktop: 1280px;
+  --bp-laptop: 1024px;
+  --bp-tablet: 768px;
+  --bp-mobile: 480px;
+
+  /* Fluid Spacing & Padding Tokens */
+  --space-panel: clamp(12px, 1.4vw, 24px);
+  --space-gap: clamp(8px, 1.2vw, 18px);
+  --font-title-clamp: clamp(0.95rem, 1vw + 0.5rem, 1.25rem);
+
   /* Layout */
-  --max-width: 1440px;
+  --max-width: 1720px;
   --nav-height: 60px;
 }
 
@@ -71,6 +83,7 @@ html {
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -80,6 +93,7 @@ body {
   line-height: 1.5;
   overflow-x: hidden;
   min-height: 100vh;
+  width: 100%;
 }
 
 a {
