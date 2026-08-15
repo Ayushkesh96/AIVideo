@@ -22,6 +22,25 @@
   let generatedBlob = null;
   let generatedVideoUrl = null;
   let aiSynth = null;
+  let usedAiKeyframes = false;
+  let recordingExtension = 'webm';
+
+  // How many stills to request per clip. Enough to carry a shot without making
+  // the user wait through a dozen model round-trips.
+  const KEYFRAMES_PER_CLIP = 4;
+
+  // MP4 first — it plays everywhere the user is likely to take the file.
+  // WebM/VP9 is the fallback for browsers that can't mux H.264.
+  const RECORDING_FORMATS = [
+    { mimeType: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' },
+    { mimeType: 'video/mp4', extension: 'mp4' },
+    { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
+    { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
+    { mimeType: 'video/webm', extension: 'webm' }
+  ];
+
+  const ASPECT_RATIOS = { "16:9": 16 / 9, "9:16": 9 / 16, "1:1": 1, "21:9": 21 / 9 };
+  const RESOLUTION_HEIGHTS = { "720p": 720, "1080p": 1080, "4K": 2160 };
 
   const LUT_FILTERS = {
     cyber: 'hue-rotate(-10deg) saturate(1.45) contrast(1.15)',
@@ -50,17 +69,54 @@
     renderGenerationReel();
   }
 
-  function resizeCanvas(customWidth, customHeight) {
-    if (!canvas || !canvas.parentElement) return;
-    if (customWidth && customHeight) {
-      canvas.width = customWidth;
-      canvas.height = customHeight;
-      return;
+  function activeAspectRatio() {
+    if (window.FilmOS && window.FilmOS.state && window.FilmOS.state.aspectRatio) {
+      return window.FilmOS.state.aspectRatio;
     }
-    const parentWidth = canvas.parentElement.clientWidth || 800;
-    const parentHeight = canvas.parentElement.clientHeight || 450;
-    canvas.width = Math.min(parentWidth, 1280);
-    canvas.height = Math.min(parentHeight, 720);
+    return "16:9";
+  }
+
+  function activeDuration() {
+    const shot = window.FilmOS && window.FilmOS.getActiveShot ? window.FilmOS.getActiveShot() : null;
+    return (shot && shot.duration) || 5;
+  }
+
+  // The canvas backing store IS the video frame — MediaRecorder captures it at
+  // these exact pixel dimensions. It must come from the chosen format, never
+  // from the container, or the export silently ships at whatever size the
+  // layout happened to be.
+  function frameSize() {
+    const ratio = ASPECT_RATIOS[activeAspectRatio()] || ASPECT_RATIOS["16:9"];
+    const base = RESOLUTION_HEIGHTS["1080p"];
+
+    // "1080p" names the short edge, so portrait 9:16 is 1080x1920 rather than
+    // a 607-pixel-wide sliver.
+    let width, height;
+    if (ratio >= 1) {
+      height = base;
+      width = Math.round(base * ratio);
+    } else {
+      width = base;
+      height = Math.round(base / ratio);
+    }
+
+    // Even dimensions keep VP9/H.264 encoders happy.
+    return { width: width - (width % 2), height: height - (height % 2) };
+  }
+
+  function resizeCanvas() {
+    if (!canvas) return;
+    const { width, height } = frameSize();
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+    // Display size is independent of the backing store: letterbox into the
+    // container so a 9:16 render doesn't stretch the desktop viewport.
+    canvas.style.aspectRatio = `${width} / ${height}`;
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.objectFit = 'contain';
   }
 
   function loadActiveShotData() {
@@ -99,37 +155,52 @@
     }
   }
 
+  // Prefers real model keyframes; falls back to the on-device procedural
+  // engine whenever the studio has none (before the first generate, or when
+  // the model service is unreachable).
   function renderSceneFrame(t) {
-    if (window.FilmOS) {
-      const shot = window.FilmOS.getActiveShot();
-      const prompt = shot ? shot.prompt : "cinematic scene";
-      const camera = shot ? shot.camera : "Orbit 360°";
-      const motionSpeed = shot ? shot.motionSpeed : 75;
+    const shot = window.FilmOS && window.FilmOS.getActiveShot ? window.FilmOS.getActiveShot() : null;
+    const prompt = shot ? shot.prompt : "cinematic scene";
+    const camera = shot ? shot.camera : "Orbit 360°";
+    const motionSpeed = shot ? shot.motionSpeed : 75;
 
-      if (aiSynth && aiSynth.hasKeyframes()) {
-        const rendered = aiSynth.renderFrame(t * playbackSpeed, {
-          camera: camera,
-          motionSpeed: motionSpeed,
-          activeLut: activeLut,
+    if (aiSynth && aiSynth.hasKeyframes()) {
+      const rendered = aiSynth.renderFrame(t, {
+        duration: activeDuration(),
+        cameraMotion: camera,
+        motionStrength: motionSpeed,
+        lut: activeLut,
+        flare: flareStrength,
+        grain: grainStrength,
+        fog: fogStrength
+      });
+      if (rendered) return;
+    }
+
+    if (neuralEngine) {
+      neuralEngine.renderFrame(
+        t * playbackSpeed,
+        prompt,
+        camera,
+        motionSpeed,
+        4829103,
+        activeLut,
+        flareStrength,
+        grainStrength,
+        fogStrength
+      );
+
+      // The procedural engine draws the scene; the shared post chain grades it,
+      // so the FX controls are live on this path too.
+      if (aiSynth) {
+        aiSynth.applyPostFx({
+          time: t,
+          duration: activeDuration(),
+          lut: activeLut,
           flare: flareStrength,
           grain: grainStrength,
           fog: fogStrength
         });
-        if (rendered) return;
-      }
-
-      if (neuralEngine) {
-        neuralEngine.renderFrame(
-          t * playbackSpeed,
-          prompt,
-          camera,
-          motionSpeed,
-          4829103,
-          activeLut,
-          flareStrength,
-          grainStrength,
-          fogStrength
-        );
       }
     }
   }
@@ -307,12 +378,13 @@
     document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed) === playbackSpeed));
   }
 
-  // 2.6 Generate Real Video (API or Keyframe/Simulation Mode)
+  // 2.6 Generate Real Video (API or Simulation Mode)
   async function startGeneration() {
     if (isGenerating || !canvas) return;
     isGenerating = true;
     isPlaying = false;
     recordedChunks = [];
+    resizeCanvas();
 
     const overlay = document.getElementById('studio-rendering-overlay');
     const progressFill = document.getElementById('render-progress-fill');
@@ -326,61 +398,77 @@
       window.FilmOS.updateActiveShot({ prompt: promptInput.value });
     }
 
-    // Set correct backing resolution according to aspect ratio
-    let targetWidth = 1280;
-    let targetHeight = 720;
-    const ratio = window.FilmOS ? (window.FilmOS.state.aspectRatio || "16:9") : "16:9";
-    if (ratio === '9:16') { targetWidth = 720; targetHeight = 1280; }
-    else if (ratio === '1:1') { targetWidth = 1080; targetHeight = 1080; }
-    else if (ratio === '21:9') { targetWidth = 1920; targetHeight = 820; }
-    resizeCanvas(targetWidth, targetHeight);
-
     if (window.showToast) window.showToast(`⚡ Synthesizing Video for "${prompt.slice(0, 26)}..."`);
 
-    // Fetch keyframes from model API if available
+    // Pull the model keyframes BEFORE recording starts, so the whole recorded
+    // window is real footage rather than a loading screen.
+    usedAiKeyframes = false;
     if (aiSynth) {
-      if (renderStatus) renderStatus.textContent = "Synthesizing High-Fidelity Diffusion Keyframes...";
       try {
-        await aiSynth.fetchKeyframes(prompt, {
-          count: 4,
-          width: targetWidth,
-          height: targetHeight,
-          seed: Math.floor(Math.random() * 899999 + 100000),
+        if (progressFill) progressFill.style.width = '0%';
+        if (renderStatus) renderStatus.textContent = 'Sampling latent keyframes from the model...';
+
+        const frames = await aiSynth.fetchKeyframes(prompt, {
+          count: KEYFRAMES_PER_CLIP,
+          seed: 4829103,
+          width: canvas.width,
+          height: canvas.height,
           onProgress: (done, total) => {
-            const p = Math.floor((done / total) * 35);
-            if (progressFill) progressFill.style.width = `${p}%`;
-            if (renderStatus) renderStatus.textContent = `Generating Diffusion Keyframe ${done}/${total}...`;
+            // Keyframe fetching owns the first 30% of the progress bar.
+            if (progressFill) progressFill.style.width = `${Math.round((done / total) * 30)}%`;
+            if (renderStatus) {
+              renderStatus.textContent = `Sampling latent keyframes from the model... (${done}/${total})`;
+            }
           }
         });
+        usedAiKeyframes = frames.length > 0;
       } catch (err) {
-        console.warn("Keyframe synthesis failed, using procedural engine fallback:", err);
+        console.warn('Keyframe synthesis unavailable, using on-device engine:', err);
+      }
+
+      if (!usedAiKeyframes) {
+        aiSynth.reset();
+        if (window.showToast) {
+          window.showToast('⚠ Model service unreachable — rendering on-device instead.');
+        }
       }
     }
 
-    // MediaRecorder stream capture
+    // Bail out cleanly if the user cancelled while keyframes were in flight.
+    if (!isGenerating) return;
+
+    if (generatedVideoUrl) URL.revokeObjectURL(generatedVideoUrl);
+    generatedBlob = null;
+    generatedVideoUrl = null;
+
     try {
       const stream = canvas.captureStream ? canvas.captureStream(30) : null;
       if (stream && typeof MediaRecorder !== 'undefined') {
-        let mimeType = 'video/webm;codecs=vp9';
-        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-        mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+        const codec = pickRecordingMimeType();
+        recordingExtension = codec.extension;
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: codec.mimeType,
+          // Scale bitrate with frame area so 4K and 21:9 don't come out mushy.
+          videoBitsPerSecond: bitrateFor(canvas.width, canvas.height)
+        });
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) recordedChunks.push(e.data);
         };
         mediaRecorder.onstop = () => {
           if (recordedChunks.length > 0) {
-            generatedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            generatedBlob = new Blob(recordedChunks, { type: codec.mimeType });
             generatedVideoUrl = URL.createObjectURL(generatedBlob);
           }
         };
-        mediaRecorder.start();
+        // Timeslice keeps chunks flowing, so a long render can't be lost to a
+        // single end-of-stream flush.
+        mediaRecorder.start(1000);
       }
     } catch (e) {
       console.warn("MediaRecorder setup:", e);
     }
 
-    const totalFrames = 5 * 30; // 5 seconds at 30 fps
-    let frame = 0;
+    const totalDuration = activeDuration();
     const stages = [
       "Encoding 128-dim Latent Prompt Tokens...",
       "Diffusing Multi-Plane 3D Parallax...",
@@ -389,25 +477,27 @@
       "Hardware Muxing Master 1080p Video Stream..."
     ];
 
+    // MediaRecorder timestamps frames by wall clock, so scene time has to track
+    // wall clock too. Counting rendered frames instead would stretch a 5s clip
+    // to however long the machine needed to draw 150 frames.
+    const startedAt = performance.now();
+
     function step() {
       if (!isGenerating) return;
-      frame++;
-      const timeInSec = frame / 30;
-      renderSceneFrame(timeInSec);
+      const elapsed = (performance.now() - startedAt) / 1000;
+      renderSceneFrame(Math.min(elapsed, totalDuration));
 
-      const progress = Math.min(Math.floor((frame / totalFrames) * 100), 100);
+      // Frame rendering owns 30-100%; keyframe fetching already used 0-30%.
+      const share = Math.min(elapsed / totalDuration, 1);
+      const progress = Math.round(30 + share * 70);
       if (progressFill) progressFill.style.width = `${progress}%`;
-      const stageIdx = Math.min(Math.floor((progress / 100) * stages.length), stages.length - 1);
+      const stageIdx = Math.min(Math.floor(share * stages.length), stages.length - 1);
       if (renderStatus) renderStatus.textContent = `${stages[stageIdx]} (${progress}%)`;
 
-      if (frame < totalFrames) {
-        setTimeout(() => requestAnimationFrame(step), 1000 / 30);
+      if (elapsed < totalDuration) {
+        requestAnimationFrame(step);
       } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          try { mediaRecorder.stop(); } catch (err) {}
-        }
-
-        setTimeout(() => {
+        finishRecording().then(() => {
           if (overlay) overlay.classList.remove('active');
           isGenerating = false;
           isPlaying = true;
@@ -428,12 +518,62 @@
             renderGenerationReel();
           }
 
-          if (window.showToast) window.showToast("✓ Video Synthesized & Playing! Click 'Export Video File' to download.");
-        }, 300);
+          if (window.showToast) {
+            const label = usedAiKeyframes ? 'Model-generated video' : 'On-device video';
+            window.showToast(
+              generatedBlob
+                ? `✓ ${label} ready (${formatBytes(generatedBlob.size)}) — click 'Export Video File'.`
+                : `✓ ${label} rendered. Recording unavailable in this browser.`
+            );
+          }
+        });
       }
     }
 
     requestAnimationFrame(step);
+  }
+
+  function pickRecordingMimeType() {
+    const supported = RECORDING_FORMATS.find(
+      f => typeof MediaRecorder !== 'undefined' &&
+           typeof MediaRecorder.isTypeSupported === 'function' &&
+           MediaRecorder.isTypeSupported(f.mimeType)
+    );
+    return supported || { mimeType: 'video/webm', extension: 'webm' };
+  }
+
+  function bitrateFor(width, height) {
+    // ~0.12 bits per pixel per frame at 30fps lands around 8 Mbps for 1080p.
+    const perFrame = width * height * 0.12;
+    return Math.round(Math.max(2.5e6, Math.min(40e6, perFrame * 30)));
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+    return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  }
+
+  // Resolves once MediaRecorder has actually flushed its final chunk. Reading
+  // generatedBlob before this settles races the encoder and can hand back the
+  // previous clip.
+  function finishRecording() {
+    return new Promise(resolve => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') return resolve();
+
+      const done = () => resolve();
+      mediaRecorder.addEventListener('stop', done, { once: true });
+      // Don't hang the UI forever if the encoder never reports back.
+      setTimeout(done, 4000);
+
+      try {
+        mediaRecorder.stop();
+      } catch (err) {
+        console.warn('MediaRecorder stop:', err);
+        resolve();
+      }
+    });
   }
 
   // 2.8 Recent Generation Reel Renderer
@@ -680,11 +820,15 @@
     if (generatedBlob) {
       const a = document.createElement('a');
       a.href = generatedVideoUrl;
-      a.download = `aivideo-master-${Date.now()}.webm`;
+      // Extension must match what MediaRecorder actually produced, or the file
+      // won't open in the player the user hands it to.
+      a.download = `aivideo-master-${Date.now()}.${recordingExtension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (window.showToast) window.showToast("✓ Master Video File Downloaded!");
+      if (window.showToast) {
+        window.showToast(`✓ Exported ${formatBytes(generatedBlob.size)} ${recordingExtension.toUpperCase()}`);
+      }
     } else {
       if (!canvas) return;
       const a = document.createElement('a');
