@@ -8,7 +8,7 @@
  * an edit to js/ or styles/ could look correct in the repo and change nothing
  * in the deployed studio.
  *
- * styles/ and js/ are the source. Run `npm run build` after editing either.
+ * styles/ and js/ are the source. Run `npm run bundle` after editing either.
  *
  *   node build.js          rewrite index.html from source
  *   node build.js --check  verify index.html is in sync (non-zero exit if not)
@@ -127,7 +127,7 @@ function main() {
   }
 
   if (check) {
-    console.error('index.html is OUT OF SYNC with styles/ or js/ — run `npm run build`.');
+    console.error('index.html is OUT OF SYNC with styles/ or js/ — run `npm run bundle`.');
     process.exit(1);
   }
 

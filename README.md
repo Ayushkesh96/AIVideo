@@ -79,12 +79,12 @@ The server prints which providers it found on startup.
 inlined copies are **generated** — `styles/` and `js/` are the source.
 
 ```bash
-npm run build            # rebuild index.html from styles/ and js/
+npm run bundle            # rebuild index.html from styles/ and js/
 npm run check            # fail if index.html is out of sync
 npm test                 # backend smoke tests (includes the sync check)
 ```
 
-Editing `js/` or `styles/` without running `npm run build` changes nothing in
+Editing `js/` or `styles/` without running `npm run bundle` changes nothing in
 the browser. `npm test` catches that.
 
 ## Architecture
