@@ -228,7 +228,7 @@ function withStubProvider(behaviour, fn) {
   }));
 
   const ALL_KEYS = ['FAL_KEY', 'FAL_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'REPLICATE_API_TOKEN',
-    'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY'];
+    'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY', 'PEXELS_API_KEY'];
 
   /** Runs fn with every provider key unset, then restores them. */
   async function withNoKeys(fn) {
@@ -481,6 +481,80 @@ function withStubProvider(behaviour, fn) {
     } finally {
       delete process.env.COGVIDEOX_URL;
     }
+  });
+
+  // --- stock footage (Pexels) -------------------------------------------
+
+  console.log('\nstock footage adapter (Pexels)');
+
+  const stockfootage = providers.byId('stockfootage');
+
+  test('cleanSearchQuery strips camera/style jargon this app stuffs into every prompt', () => {
+    const cleaned = stockfootage.cleanSearchQuery(
+      'a happy dog dancing energetically, shot on a 35mm lens, orbiting camera movement, cinematic, photorealistic, natural motion'
+    );
+    assert.ok(cleaned.includes('dog'), `expected "dog" to survive, got "${cleaned}"`);
+    assert.ok(cleaned.includes('dancing'), `expected "dancing" to survive, got "${cleaned}"`);
+    assert.ok(!cleaned.includes('cinematic'), `"cinematic" should have been stripped, got "${cleaned}"`);
+    assert.ok(!cleaned.includes('lens'), `"lens" should have been stripped, got "${cleaned}"`);
+    assert.ok(!cleaned.includes('35mm'), `"35mm" should have been stripped, got "${cleaned}"`);
+  });
+
+  test('cleanSearchQuery caps the query length rather than sending a full sentence', () => {
+    const cleaned = stockfootage.cleanSearchQuery('one two three four five six seven eight nine ten');
+    assert.ok(cleaned.split(' ').length <= 6, `expected at most 6 words, got "${cleaned}"`);
+  });
+
+  test('cleanSearchQuery returns empty for a prompt that is entirely style jargon', () => {
+    assert.strictEqual(stockfootage.cleanSearchQuery('cinematic photorealistic natural motion 4k 8k'), '');
+  });
+
+  await testAsync('stockfootage outranks nothing being configured but not a real depiction provider', () => withNoKeys(async () => {
+    process.env.PEXELS_API_KEY = 'test-key';
+    process.env.FAL_KEY = 'test-key';
+    try {
+      const caps = video.capabilities();
+      assert.strictEqual(caps.active, 'fal', 'a provider that actually depicts the prompt must win over generic stock footage');
+    } finally {
+      delete process.env.PEXELS_API_KEY;
+      delete process.env.FAL_KEY;
+    }
+  }));
+
+  await testAsync('stockfootage is used when nothing else is configured', () => withNoKeys(async () => {
+    process.env.PEXELS_API_KEY = 'test-key';
+    try {
+      const caps = video.capabilities();
+      assert.strictEqual(caps.active, 'stockfootage');
+      assert.strictEqual(caps.keyless, false);
+    } finally {
+      delete process.env.PEXELS_API_KEY;
+    }
+  }));
+
+  await testAsync('submit refuses a prompt with no concrete subject rather than searching blind', () => withNoKeys(async () => {
+    process.env.PEXELS_API_KEY = 'test-key';
+    try {
+      await assert.rejects(
+        () => stockfootage.submit({ prompt: 'cinematic photorealistic natural motion', aspectRatio: '16:9', height: 1080 }),
+        /no concrete subject/
+      );
+    } finally {
+      delete process.env.PEXELS_API_KEY;
+    }
+  }));
+
+  await testAsync('submit throws without a key rather than making an unauthenticated request', async () => {
+    delete process.env.PEXELS_API_KEY;
+    await assert.rejects(
+      () => stockfootage.submit({ prompt: 'a dog running', aspectRatio: '16:9', height: 1080 }),
+      /PEXELS_API_KEY is not set/
+    );
+  });
+
+  test('the finished clip URL is never proxied — Pexels video files need no credential', () => {
+    assert.strictEqual(stockfootage.ownsUrl('https://videos.pexels.com/video-files/123/123.mp4'), true);
+    assert.strictEqual(stockfootage.ownsUrl('https://evil.example.com/steal.mp4'), false);
   });
 
   // --- song generation ---------------------------------------------------

@@ -19,6 +19,7 @@ const runway = require('./runway');
 const luma = require('./luma');
 const selfhosted = require('./selfhosted');
 const cogvideox = require('./cogvideox');
+const stockfootage = require('./stockfootage');
 
 // Order is the auto-selection preference.
 //
@@ -27,10 +28,16 @@ const cogvideox = require('./cogvideox');
 // Two self-hosted adapters exist (ComfyUI and a standalone CogVideoX server)
 // because they're genuinely different backends, not tiers of one — both rank
 // above every metered provider regardless of which one you've set up. Then
-// the keyed providers by quality-per-call. Every provider is opt-in via its
-// key; with nothing configured the studio runs entirely on the free
-// on-device engine and makes no upstream calls at all.
-const REGISTRY = [selfhosted, cogvideox, google, fal, replicate, runway, luma];
+// the keyed providers by quality-per-call — each of these actually depicts
+// the prompt, real or self-hosted. stockfootage ranks below all of them on
+// purpose: it returns real but *generic* footage matched by keyword, not a
+// custom render of the prompt, so a provider that can actually depict what
+// was asked for should always win when one is configured. It still ranks
+// above nothing being configured, since real footage beats the procedural
+// fallback for anything it can find a match for, and it's free either way.
+// Every provider is opt-in via its key; with nothing configured the studio
+// runs entirely on the free on-device engine and makes no upstream calls at all.
+const REGISTRY = [selfhosted, cogvideox, google, fal, replicate, runway, luma, stockfootage];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
 // Veo operation names contain slashes and dots; everything else is opaque ids.

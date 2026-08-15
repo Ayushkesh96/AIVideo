@@ -7,21 +7,28 @@ key upgrades generation to a hosted AI video model.
 
 ## How generation works
 
-Two engines, tried in order. The first one available wins:
+Four engines, tried in order. The first one available wins:
 
 | | Engine | Needs | What it can do |
 |---|---|---|---|
 | 0 | **Your own GPU** — LTX-Video, Wan 2.1 and CogVideoX-2b bundled and ready to run; Wan 2.2/HunyuanVideo via ComfyUI's template gallery | hardware, no fees | Open weights you run yourself. No per-clip cost, no upstream policy. `docker/` has a one-command setup for either backend. See [docs/self-hosting.md](docs/self-hosting.md) |
 | 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | an API key (paid) | Genuinely depicts the prompt, including motion, up to 4K |
-| 2 | **Free on-device engine** | nothing | Renders a cinematic procedural scene for the prompt in your browser — camera moves, grading, grain, atmosphere — and records it to a real video file |
+| 2 | **Stock footage (Pexels)** | a free key, no card | Real, camera-shot video matched to the prompt's keywords — not generated, *found*. Only works for things that exist as real footage; a fictional or impossible scene has no match and falls through |
+| 3 | **Free on-device engine** | nothing | Renders a cinematic procedural scene for the prompt in your browser — camera moves, grading, grain, atmosphere — and records it to a real video file |
 
-**Engine 2 is the default.** With nothing configured the studio makes no
+**Engine 3 is the default.** With nothing configured the studio makes no
 upstream calls at all: the scene is synthesized, animated and recorded entirely
 client-side, so it is unlimited and free forever, with no metered or paid
 dependency of any kind. It is honest about what it is — a procedural renderer,
 not a diffusion model. It composes a scene *inspired by* the prompt; it cannot
-photorealistically depict arbitrary text. For that, add a key (engine 1) or
-point it at your own GPU (engine 0).
+photorealistically depict arbitrary text.
+
+**Engine 2 is the free path to real (not synthetic) video.** No GPU, no
+training, no per-clip cost — `PEXELS_API_KEY` (free signup, no card) is all it
+needs. It's a fundamentally different technique from the other three: it
+searches real footage rather than generating anything, so it's genuine for
+"a dog running in snow" and correctly finds nothing for "a dragon skateboarding
+on Mars." For an AI model that can depict *any* prompt, you need engine 0 or 1.
 
 ## Song Studio (nav → Audio)
 
@@ -46,6 +53,7 @@ Environment Variables, or a local `.env`):
 | `REPLICATE_API_TOKEN` | Replicate | `wan-video/wan-2.2-t2v-fast` | 720p | paid |
 | `RUNWAYML_API_SECRET` | Runway | `gen4_turbo` | 720p | paid |
 | `LUMAAI_API_KEY` | Luma | `ray-2` | 4K | paid |
+| `PEXELS_API_KEY` | Stock footage search, not generation | — | up to 4K, whatever the matched clip is | **free** |
 
 Providers are tried in that order and the first one with a key wins. Redeploy
 after adding one — the studio reads capabilities at page load. With no key at
