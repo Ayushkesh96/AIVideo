@@ -271,7 +271,18 @@
     const generateBtn = document.getElementById('studio-generate-btn');
     if (generateBtn) generateBtn.addEventListener('click', startRealVideoGeneration);
 
-    const aiEnhanceBtn = document.getElementById('ai-enhance-prompt-btn');
+    const promptInput = document.getElementById('studio-prompt-input');
+    if (promptInput) {
+      promptInput.addEventListener('input', (e) => {
+        state.prompt = e.target.value;
+      });
+      promptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          startRealVideoGeneration();
+        }
+      });
+    }
     if (aiEnhanceBtn) {
       aiEnhanceBtn.addEventListener('click', () => {
         const promptInput = document.getElementById('studio-prompt-input');
