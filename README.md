@@ -5,34 +5,50 @@ back an actual video file rendered by a frontier video model.
 
 ## How generation works
 
-There are two engines, tried in order:
+Three engines, tried in order. The first one that answers wins:
 
 | | Engine | Needs a key | What it can do |
 |---|---|---|---|
-| 1 | **Real video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | yes | Genuinely depicts the prompt, including motion, and up to 4K |
-| 2 | **Local keyframe engine** | no | Generates stills for the prompt and animates them under a virtual camera |
+| 1 | **Keyed video model** — Veo, Sora, Kling, Wan, Hailuo, LTX, Runway, Luma | yes | Genuinely depicts the prompt, including motion, up to 4K |
+| 2 | **Pollinations, anonymously** | **no** | A real video model, attempted with no credentials at all |
+| 3 | **Local keyframe engine** | no | Generates stills for the prompt and animates them under a virtual camera |
 
-The second engine is the fallback. It looks cinematic, but it interpolates
-between stills — it cannot invent motion, so a prompt like *"the dog turns its
-head"* will not do that. **If you want the platform to actually generate video
-from a prompt, you need a key from one of the providers below.** The studio tells
-you which engine is live in the "Render Engine" badge.
+**Engine 2 is the no-key path.** With nothing configured, the studio still asks a
+real video model for a real clip. That request can be refused or rate limited —
+anonymous access is a courtesy, not a guarantee — and when it is, engine 3 takes
+over. The "Render Engine" badge shows amber for this best-effort state and green
+once a key makes it reliable.
+
+Engine 3 is honest about what it is: it interpolates between stills, so it
+cannot invent motion. A prompt like *"the dog turns its head"* will not do that.
+Only engines 1 and 2 can.
+
+### If you want it to work without any key
+
+Deploy as-is. Engine 2 runs by default. If clips stop arriving, you have hit the
+anonymous limit — a **free** key from [enter.pollinations.ai](https://enter.pollinations.ai)
+(no credit card) set as `POLLINATIONS_KEY` lifts it. That is the cheapest route
+to reliable generation and the only "free" one that exists: image generation is
+cheap enough to give away anonymously, video is 100–1000× the GPU cost, so no
+provider offers unlimited keyless video.
 
 ## Enabling real video generation
 
 Set **one** of these in your environment (Vercel → Project → Settings →
 Environment Variables, or a local `.env`):
 
-| Variable | Provider | Default model | Max |
-|---|---|---|---|
-| `GEMINI_API_KEY` | Google Veo | `veo-3.1-generate-preview` | 4K, native audio |
-| `FAL_KEY` | fal.ai | `fal-ai/veo3` | 4K, native audio |
-| `REPLICATE_API_TOKEN` | Replicate | `wan-video/wan-2.2-t2v-fast` | 720p |
-| `RUNWAYML_API_SECRET` | Runway | `gen4_turbo` | 720p |
-| `LUMAAI_API_KEY` | Luma | `ray-2` | 4K |
+| Variable | Provider | Default model | Max | Cost |
+|---|---|---|---|---|
+| `GEMINI_API_KEY` | Google Veo | `veo-3.1-generate-preview` | 4K, native audio | paid |
+| `FAL_KEY` | fal.ai | `fal-ai/veo3` | 4K, native audio | paid |
+| `REPLICATE_API_TOKEN` | Replicate | `wan-video/wan-2.2-t2v-fast` | 720p | paid |
+| `RUNWAYML_API_SECRET` | Runway | `gen4_turbo` | 720p | paid |
+| `LUMAAI_API_KEY` | Luma | `ray-2` | 4K | paid |
+| `POLLINATIONS_KEY` | Pollinations | `wan` | 1080p | **free tier** |
 
-Providers are tried in that order and the first one with a key wins. Redeploy
-after adding a key — the studio reads capabilities at page load.
+Providers are tried in that order and the first one with a key wins;
+Pollinations runs last and needs no key at all. Redeploy after adding one — the
+studio reads capabilities at page load.
 
 To pin a different model on a provider, set the matching override
 (`GOOGLE_VEO_MODEL`, `FAL_VIDEO_MODEL`, `REPLICATE_VIDEO_MODEL`,

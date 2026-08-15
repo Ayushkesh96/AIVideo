@@ -94,6 +94,58 @@
       return { ok: false, fallback: true, error: `Could not reach the generation API: ${err.message}` };
     }
 
+    // Synchronous provider: the finished file comes back on one request, so
+    // there is no job to poll. Progress is indeterminate here — the upstream
+    // reports nothing until it starts streaming.
+    if (created && created.success && created.direct) {
+      const label = created.modelLabel || created.providerLabel || 'video model';
+      onProgress({ phase: 'running', progress: 0.35, detail: `Rendering on ${label}` });
+
+      try {
+        const res = await fetch(created.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: options.prompt,
+            aspectRatio: options.aspectRatio || '16:9',
+            quality: options.quality || '1080p',
+            durationSec: options.durationSec || 5,
+            provider: created.provider,
+            modelKey: options.modelKey || '',
+            seed: options.seed
+          }),
+          signal
+        });
+
+        const type = res.headers.get('content-type') || '';
+        if (!type.startsWith('video/')) {
+          // The route reports refusals as JSON so they can be explained.
+          const detail = await res.json().catch(() => null);
+          return {
+            ok: false,
+            fallback: true,
+            provider: created.provider,
+            error: (detail && detail.error) || 'The video model did not return a clip.'
+          };
+        }
+
+        const blob = await res.blob();
+        onProgress({ phase: 'succeeded', progress: 1, detail: `Rendered by ${label}` });
+        return {
+          ok: true,
+          videoUrl: URL.createObjectURL(blob),
+          blob,
+          direct: true,
+          provider: created.provider,
+          modelLabel: label,
+          request: created.request
+        };
+      } catch (err) {
+        if (err && err.name === 'AbortError') throw err;
+        return { ok: false, fallback: true, error: `Video model request failed: ${err.message}` };
+      }
+    }
+
     if (!created || !created.success || !created.job) {
       return {
         ok: false,

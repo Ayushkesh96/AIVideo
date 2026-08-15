@@ -225,19 +225,59 @@ function withStubProvider(behaviour, fn) {
     assert.match(out.error, /content policy/);
   }));
 
-  await testAsync('no configured provider yields a fallback instruction, not an error', async () => {
+  const ALL_KEYS = ['FAL_KEY', 'FAL_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'REPLICATE_API_TOKEN',
+    'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY',
+    'POLLINATIONS_KEY', 'POLLINATIONS_API_KEY'];
+
+  /** Runs fn with every provider key unset, then restores them. */
+  async function withNoKeys(fn) {
     const saved = {};
-    ['FAL_KEY', 'FAL_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'REPLICATE_API_TOKEN',
-      'REPLICATE_API_KEY', 'RUNWAYML_API_SECRET', 'RUNWAY_API_KEY', 'LUMAAI_API_KEY', 'LUMA_API_KEY']
-      .forEach(k => { saved[k] = process.env[k]; delete process.env[k]; });
+    ALL_KEYS.forEach(k => { saved[k] = process.env[k]; delete process.env[k]; });
     try {
-      const res = await video.createJob({ prompt: 'a fox' });
-      assert.strictEqual(res.success, false);
-      assert.strictEqual(res.fallback, true);
-      assert.strictEqual(res.reason, 'no_provider_configured');
-      assert.ok(res.hint, 'expected a hint naming the env vars');
+      return await fn();
     } finally {
-      Object.keys(saved).forEach(k => { if (saved[k] !== undefined) process.env[k] = saved[k]; });
+      ALL_KEYS.forEach(k => { if (saved[k] !== undefined) process.env[k] = saved[k]; });
+    }
+  }
+
+  await testAsync('with no keys at all, a keyless real-model attempt is offered', () => withNoKeys(async () => {
+    const res = await video.createJob({ prompt: 'a fox' });
+    assert.strictEqual(res.success, true, 'a keyless attempt should still be offered');
+    assert.strictEqual(res.direct, true, 'it must use the synchronous streaming route');
+    assert.strictEqual(res.provider, 'pollinations');
+    assert.strictEqual(res.endpoint, '/api/video-direct');
+  }));
+
+  await testAsync('capabilities marks a keyless deployment as best-effort', () => withNoKeys(async () => {
+    const caps = video.capabilities();
+    assert.strictEqual(caps.keyless, true, 'no keys means keyless');
+    assert.deepStrictEqual(caps.keyedProviders, []);
+    assert.strictEqual(caps.active, 'pollinations');
+    assert.ok(caps.maxResolution > 0, 'a keyless attempt still advertises a resolution ceiling');
+  }));
+
+  await testAsync('a real key outranks the keyless provider', async () => {
+    process.env.FAL_KEY = 'test-key';
+    const caps = video.capabilities();
+    assert.strictEqual(caps.active, 'fal', 'a keyed provider must win');
+    assert.strictEqual(caps.keyless, false);
+    assert.ok(caps.keyedProviders.indexOf('fal') >= 0);
+  });
+
+  await testAsync('the streaming descriptor targets the provider host, never the caller', () => withNoKeys(async () => {
+    const desc = video.resolveStream({ prompt: 'a fox in snow', quality: '720p' });
+    assert.ok(desc.url.startsWith('https://gen.pollinations.ai/video/'), `got ${desc.url}`);
+    assert.ok(desc.url.includes('a%20fox%20in%20snow'), 'prompt must be url-encoded into the path');
+    assert.strictEqual(desc.headers.Authorization, undefined, 'no key set means no auth header');
+  }));
+
+  await testAsync('a key is attached to the stream when one is set', async () => {
+    process.env.POLLINATIONS_KEY = 'pk_test';
+    try {
+      const desc = video.resolveStream({ prompt: 'a fox', provider: 'pollinations' });
+      assert.strictEqual(desc.headers.Authorization, 'Bearer pk_test');
+    } finally {
+      delete process.env.POLLINATIONS_KEY;
     }
   });
 

@@ -398,6 +398,14 @@
   color: var(--accent-lime);
 }
 
+/* A keyless attempt at a real model: amber, because it may still be refused
+   upstream and must not read as a provisioned, reliable setup. */
+.provider-badge.is-besteffort {
+  border-color: #d9a441;
+  background: rgba(217, 164, 65, 0.12);
+  color: #e5b45c;
+}
+
 /* Finished model renders play as a real <video> stacked on the canvas. */
 #studio-result-video {
   position: absolute;

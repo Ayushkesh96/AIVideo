@@ -17,10 +17,15 @@ const replicate = require('./replicate');
 const google = require('./google');
 const runway = require('./runway');
 const luma = require('./luma');
+const pollinations = require('./pollinations');
 
 // Order is the auto-selection preference: quality-per-call first, cheap and
 // fast last. Whichever has a key wins.
-const REGISTRY = [google, fal, replicate, runway, luma];
+//
+// Pollinations is last and always "configured" — it needs no key, so it acts
+// as a real-model attempt for deployments that have set up nothing at all,
+// ahead of the purely local fallback. Any keyed provider outranks it.
+const REGISTRY = [google, fal, replicate, runway, luma, pollinations];
 const BY_ID = REGISTRY.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
 // Veo operation names contain slashes and dots; everything else is opaque ids.
@@ -55,14 +60,25 @@ function pick(preferredId) {
 function capabilities() {
   const list = REGISTRY.map(p => p.capabilities());
   const active = configured()[0] || null;
+
+  // Pollinations reports itself configured with no key, so "is a provider
+  // active" no longer distinguishes a paid, reliable setup from a best-effort
+  // anonymous attempt. keyless says which one the user actually has.
+  const keyed = REGISTRY.filter(p => p.isConfigured() && (p.envKeys || []).some(k => process.env[k]));
+
   return {
     providers: list,
     configured: list.filter(p => p.configured).map(p => p.id),
     active: active ? active.id : null,
     // The studio uses this to decide whether to offer 4K at all.
     maxResolution: list.filter(p => p.configured).reduce((max, p) => Math.max(max, p.maxResolution || 0), 0),
-    // Everything still works with no keys — it just falls back to the
-    // keyframe synthesizer, which is not a real video model.
+    // True when nothing but the anonymous attempt is available: a real model
+    // may still answer, but it can also refuse, so the UI must not promise it.
+    keyless: keyed.length === 0,
+    keyedProviders: keyed.map(p => p.id),
+    // No provider at all would mean the local engine is the only option. With
+    // Pollinations always present this is now only reachable if that adapter
+    // is removed.
     fallbackOnly: !active
   };
 }

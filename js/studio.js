@@ -130,10 +130,16 @@
         badge.textContent = active
           ? `${active.label} · ${active.activeModelLabel || active.activeModel}`
           : 'LIVE MODEL';
-        badge.classList.add('is-live');
-        badge.title = active
-          ? `Real text-to-video is active: ${active.activeModelLabel} (${active.activeModel}) via ${active.label}. Max ${active.maxResolution}p.`
-          : 'Real text-to-video is active.';
+        // A keyless attempt may still be refused upstream, so it must not be
+        // dressed up the same as a provisioned model.
+        badge.classList.toggle('is-live', !providerCaps.keyless);
+        badge.classList.toggle('is-besteffort', Boolean(providerCaps.keyless));
+        badge.title = providerCaps.keyless
+          ? 'No API key is set, so the studio will try a real video model anonymously. That can be refused or rate limited — ' +
+            'if it is, the local keyframe engine renders instead. A free key from enter.pollinations.ai (POLLINATIONS_KEY) makes this reliable.'
+          : (active
+            ? `Real text-to-video is active: ${active.activeModelLabel} (${active.activeModel}) via ${active.label}. Max ${active.maxResolution}p.`
+            : 'Real text-to-video is active.');
       } else {
         badge.textContent = 'LOCAL ENGINE';
         badge.classList.remove('is-live');
@@ -536,8 +542,9 @@
         setRenderProgress(0.99, 'Downloading master file...');
 
         // Pulling the file down once means playback, scrubbing and export all
-        // work from the same local copy, and the download is instant.
-        const blob = await window.AIVideoEngine.toBlob(result.videoUrl);
+        // work from the same local copy, and the download is instant. A direct
+        // (synchronous) provider already handed us the bytes.
+        const blob = result.blob || await window.AIVideoEngine.toBlob(result.videoUrl);
         if (blob) {
           generatedBlob = blob;
           realVideoUrl = URL.createObjectURL(blob);

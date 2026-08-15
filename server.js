@@ -19,6 +19,7 @@ loadDotEnv();
 const ROUTES = {
   '/api/generate-video': require('./api/generate-video'),
   '/api/video-create': require('./api/video-create'),
+  '/api/video-direct': require('./api/video-direct'),
   '/api/video-status': require('./api/video-status'),
   '/api/video-proxy': require('./api/video-proxy'),
   '/api/video-providers': require('./api/video-providers')
