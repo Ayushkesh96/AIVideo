@@ -19,9 +19,13 @@ const { URL } = require('url');
 const { applyCors, resolveStream } = require('./_video');
 
 const MAX_REDIRECTS = 4;
-// Video generation is slow. This must stay under the function's maxDuration
-// (see vercel.json) or the platform kills the invocation with no diagnostic.
-const UPSTREAM_TIMEOUT_MS = 280000;
+// Must stay under the function's maxDuration (see vercel.json) or the platform
+// kills the invocation and the caller gets an opaque 504 instead of a reason.
+//
+// 60s is the Vercel Hobby ceiling, so this is sized for that. Video generation
+// can legitimately take longer, which is why a slow model reports a timeout
+// here and the studio falls back rather than hanging.
+const UPSTREAM_TIMEOUT_MS = 55000;
 
 function fail(res, status, message) {
   if (res.headersSent) return res.destroy();

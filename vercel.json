@@ -2,13 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/video-create.js": { "maxDuration": 30 },
-    "api/video-direct.js": { "maxDuration": 300 },
+    "api/video-direct.js": { "maxDuration": 60 },
     "api/video-status.js": { "maxDuration": 20 },
     "api/video-proxy.js": { "maxDuration": 60 },
     "api/video-providers.js": { "maxDuration": 10 },
+    "api/version.js": { "maxDuration": 10 },
     "api/generate-video.js": { "maxDuration": 60 }
   },
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
