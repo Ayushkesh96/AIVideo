@@ -142,7 +142,44 @@
    * UI. A deployment with no key still generates — it just falls back to the
    * local engine — and the badge says which one is answering.
    */
+  /**
+   * Compares the build stamped into this HTML against the one the running
+   * deployment reports. A mismatch means the browser is holding a cached page
+   * — which is indistinguishable from "the fix didn't work" unless you check.
+   */
+  async function checkDeployedBuild() {
+    const meta = document.querySelector('meta[name="aivideo-build"]');
+    const pageBuild = meta ? meta.getAttribute('content') : null;
+    if (!pageBuild) return;
+
+    try {
+      const res = await fetch('/api/version', { cache: 'no-store' });
+      if (!res.ok) return;
+      const info = await res.json();
+
+      console.info(
+        `%cAIVideo build ${pageBuild}%c\n` +
+        `deployment: ${info.commit} (${info.repo || 'unknown repo'} @ ${info.branch || '?'})\n` +
+        `server expects build: ${info.expectedBuildId}`,
+        'font-weight:bold', 'font-weight:normal'
+      );
+
+      if (info.expectedBuildId && info.expectedBuildId !== pageBuild) {
+        console.warn(
+          `This page is build ${pageBuild} but the server is serving ${info.expectedBuildId}. ` +
+          'You are looking at a cached copy — hard-reload (Ctrl/Cmd+Shift+R).'
+        );
+        if (window.showToast) {
+          window.showToast('⚠ Cached page detected — hard-reload to see the current version.');
+        }
+      }
+    } catch (err) {
+      // No /api/version means an old deployment; nothing to compare against.
+    }
+  }
+
   async function refreshProviderStatus() {
+    checkDeployedBuild();
     if (!window.AIVideoEngine) return;
     try {
       providerCaps = await window.AIVideoEngine.capabilities();
