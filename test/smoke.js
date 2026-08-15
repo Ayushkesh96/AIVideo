@@ -14,6 +14,8 @@ const path = require('path');
 
 const providers = require('../api/_providers');
 const video = require('../api/_video');
+const song = require('../api/_song');
+const songgen = require('../api/_providers/songgen');
 
 let passed = 0;
 let failed = 0;
@@ -479,6 +481,160 @@ function withStubProvider(behaviour, fn) {
     } finally {
       delete process.env.COGVIDEOX_URL;
     }
+  });
+
+  // --- song generation ---------------------------------------------------
+
+  console.log('\nsong generation (SongGeneration Studio adapter)');
+
+  test('rejects a song with no sections', () => {
+    assert.throws(() => song.normalizeInput({ title: 'x', sections: [] }), /at least one/i);
+  });
+
+  test('rejects an unrecognized section type', () => {
+    assert.throws(
+      () => song.normalizeInput({ sections: [{ type: 'kazoo-solo' }] }),
+      /unrecognized type/i
+    );
+  });
+
+  test('accepts a section-type suffix like "intro-short"', () => {
+    const out = song.normalizeInput({ sections: [{ type: 'intro-short' }] });
+    assert.strictEqual(out.sections[0].type, 'intro-short');
+  });
+
+  test('requires lyrics on a vocal section unless every section is instrumental', () => {
+    assert.throws(
+      () => song.normalizeInput({ sections: [{ type: 'verse', lyrics: '' }, { type: 'chorus' }] }),
+      /needs lyrics/i
+    );
+    // All-instrumental is fine with no lyrics anywhere.
+    assert.doesNotThrow(() => song.normalizeInput({ sections: [{ type: 'intro' }, { type: 'outro' }] }));
+  });
+
+  test('drops lyrics text on a non-vocal section rather than sending it upstream unused', () => {
+    const out = song.normalizeInput({
+      sections: [{ type: 'verse', lyrics: 'real lyrics' }, { type: 'instrumental', lyrics: 'ignored' }]
+    });
+    assert.strictEqual(out.sections[0].lyrics, 'real lyrics');
+    assert.strictEqual(out.sections[1].lyrics, undefined);
+  });
+
+  test('clamps bpm and defaults gender/output mode to known values', () => {
+    const out = song.normalizeInput({ sections: [{ type: 'intro' }], bpm: 9999, gender: 'nonsense', outputMode: 'nonsense' });
+    assert.strictEqual(out.bpm, 220);
+    assert.strictEqual(out.gender, 'female');
+    assert.strictEqual(out.outputMode, 'mixed');
+  });
+
+  test('rejects a title or style field beyond its length cap rather than erroring upstream', () => {
+    const out = song.normalizeInput({
+      title: 'x'.repeat(500),
+      sections: [{ type: 'intro' }],
+      genre: 'y'.repeat(500)
+    });
+    assert.ok(out.title.length <= 120);
+    assert.ok(out.genre.length <= 200);
+  });
+
+  /** Runs fn with SONGGEN_URL unset, restoring it afterward. */
+  async function withNoSongUrl(fn) {
+    const saved = process.env.SONGGEN_URL;
+    delete process.env.SONGGEN_URL;
+    try {
+      return await fn();
+    } finally {
+      if (saved !== undefined) process.env.SONGGEN_URL = saved;
+    }
+  }
+
+  await testAsync('createJob falls back cleanly when no song server is configured', () => withNoSongUrl(async () => {
+    const res = await song.createJob({ sections: [{ type: 'intro' }] });
+    assert.strictEqual(res.success, false);
+    assert.strictEqual(res.fallback, true);
+    assert.strictEqual(res.reason, 'no_provider_configured');
+  }));
+
+  /** Replaces songgen's methods for the duration of a test. */
+  function withStubSongProvider(behaviour, fn) {
+    const original = {
+      isConfigured: songgen.isConfigured,
+      submit: songgen.submit,
+      poll: songgen.poll,
+      trackDownload: songgen.trackDownload,
+      ownsUrl: songgen.ownsUrl
+    };
+    Object.assign(songgen, { isConfigured: () => true }, behaviour);
+    return Promise.resolve().then(fn).finally(() => Object.assign(songgen, original));
+  }
+
+  await testAsync('createJob returns a job id on success', () => withStubSongProvider({
+    submit: async input => {
+      assert.strictEqual(input.sections[0].type, 'verse');
+      return { jobId: 'abc12345', meta: { title: input.title, outputMode: input.outputMode } };
+    }
+  }, async () => {
+    const res = await song.createJob({ title: 'My Song', sections: [{ type: 'verse', lyrics: 'la la' }] });
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.job, 'abc12345');
+    assert.strictEqual(res.title, 'My Song');
+  }));
+
+  await testAsync('createJob degrades to fallback when the provider throws', () => withStubSongProvider({
+    submit: async () => { throw new Error('GPU on fire'); }
+  }, async () => {
+    const res = await song.createJob({ sections: [{ type: 'intro' }] });
+    assert.strictEqual(res.success, false);
+    assert.strictEqual(res.fallback, true);
+    assert.match(res.error, /on fire/);
+  }));
+
+  await testAsync('pollJob rejects a malformed job id before it reaches the provider', async () => {
+    await assert.rejects(() => song.pollJob('../../etc/passwd'), /invalid job id/);
+  });
+
+  await testAsync('pollJob turns a succeeded status into proxied track URLs, never a raw upstream one', () => withStubSongProvider({
+    poll: async () => ({
+      status: 'succeeded',
+      tracks: [{ index: 0, label: 'Full Mix' }, { index: 1, label: 'Vocals' }]
+    })
+  }, async () => {
+    const out = await song.pollJob('abc12345');
+    assert.strictEqual(out.success, true);
+    assert.strictEqual(out.status, 'succeeded');
+    assert.strictEqual(out.tracks.length, 2);
+    assert.strictEqual(out.tracks[0].url, '/api/song-proxy?job=abc12345&track=0');
+    assert.ok(!out.tracks[0].url.includes('http'), 'must never leak the upstream host to the client');
+  }));
+
+  await testAsync('pollJob reports a failed generation as a fallback, not a thrown error', () => withStubSongProvider({
+    poll: async () => ({ status: 'failed', error: 'content policy' })
+  }, async () => {
+    const out = await song.pollJob('abc12345');
+    assert.strictEqual(out.success, false);
+    assert.strictEqual(out.fallback, true);
+    assert.match(out.error, /content policy/);
+  }));
+
+  await testAsync('resolveDownload rejects a track index outside the valid range', async () => {
+    await assert.rejects(() => song.resolveDownload('abc12345', '999'), /invalid track index/);
+  });
+
+  await testAsync('resolveDownload refuses a url the song server does not own', () => withStubSongProvider({
+    trackDownload: () => ({ url: 'https://evil.example.com/steal.wav', headers: {} }),
+    ownsUrl: () => false
+  }, async () => {
+    await assert.rejects(() => song.resolveDownload('abc12345', '0'), /does not claim/);
+  }));
+
+  test('trackLabels matches the output_mode semantics the reference server uses', () => {
+    assert.deepStrictEqual(songgen.trackLabels('separate', 3), ['Full Mix', 'Vocals', 'Instrumental']);
+    assert.deepStrictEqual(songgen.trackLabels('mixed', 1), ['Full Song']);
+    assert.deepStrictEqual(songgen.trackLabels('vocal', 1), ['Vocals']);
+    assert.deepStrictEqual(songgen.trackLabels('instrumental', 1), ['Instrumental']);
+    // 'separate' requested but the server only produced 1 file (e.g. it fell
+    // back) — must not claim 3 track labels for 1 real file.
+    assert.deepStrictEqual(songgen.trackLabels('separate', 1), ['Full Song']);
   });
 
   // --- bundle freshness -----------------------------------------------------
