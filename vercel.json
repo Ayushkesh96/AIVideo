@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/generate-video.js": { "maxDuration": 60 },
+    "api/video-create.js": { "maxDuration": 30 },
+    "api/video-direct.js": { "maxDuration": 60 },
+    "api/video-proxy.js": { "maxDuration": 60 },
+    "api/video-status.js": { "maxDuration": 20 },
+    "api/video-providers.js": { "maxDuration": 10 },
+    "api/version.js": { "maxDuration": 10 }
+  }
+}
