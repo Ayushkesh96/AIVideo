@@ -1,12 +1,17 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "api/generate-video.js": { "maxDuration": 60 },
-    "api/video-create.js": { "maxDuration": 30 },
-    "api/video-direct.js": { "maxDuration": 60 },
-    "api/video-proxy.js": { "maxDuration": 60 },
-    "api/video-status.js": { "maxDuration": 20 },
-    "api/video-providers.js": { "maxDuration": 10 },
-    "api/version.js": { "maxDuration": 10 }
-  }
+  "version": 2,
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "api/generate-video.js", "use": "@vercel/node" },
+    { "src": "api/video-create.js", "use": "@vercel/node" },
+    { "src": "api/video-direct.js", "use": "@vercel/node" },
+    { "src": "api/video-status.js", "use": "@vercel/node" },
+    { "src": "api/video-proxy.js", "use": "@vercel/node" },
+    { "src": "api/video-providers.js", "use": "@vercel/node" },
+    { "src": "api/version.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
