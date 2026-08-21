@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="aivideo-build" content="564e48b81421">
+  <meta name="aivideo-build" content="a881ef7a9fa6">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Higgsfield AI — AI-native creative suite (Self-Sufficient Video Platform)</title>
@@ -5990,14 +5990,6 @@ button {
       activeSceneId: "scene-01",
       activeShotId: "shot-01",
 
-      apiConfig: {
-        llmEndpoint: "",
-        llmKey: "",
-        videoGenEndpoint: "",
-        videoGenKey: "",
-        isSimulatedMode: true
-      },
-
       elements: { characters: [], locations: [], props: [], styles: [] },
 
       scenes: [
@@ -6056,15 +6048,6 @@ button {
     activeModel: "Seedance 2.5 (1080p)",
     activeSceneId: "scene-01",
     activeShotId: "shot-01a",
-
-    // API Configuration
-    apiConfig: {
-      llmEndpoint: "",
-      llmKey: "",
-      videoGenEndpoint: "",
-      videoGenKey: "",
-      isSimulatedMode: true
-    },
 
     // Reusable Elements Library (@Mentionable)
     elements: {
@@ -6595,60 +6578,33 @@ button {
       return matched;
     }
 
+    // Which providers this deployment can actually reach for AI generation.
+    // Cached: it only changes on redeploy, and the drawer badge asks on every open.
+    aiCapabilities(force) {
+      if (!this._aiCapabilitiesPromise || force) {
+        this._aiCapabilitiesPromise = fetch('/api/ai-providers', { headers: { Accept: 'application/json' } })
+          .then(res => (res.ok ? res.json() : null))
+          .then(data => data || { configured: false })
+          .catch(() => ({ configured: false }));
+      }
+      return this._aiCapabilitiesPromise;
+    }
+
     // AI Director (Script-to-Shots Generator)
     async generateFilmBreakdown(visionPrompt) {
-      const config = this.state.apiConfig || {};
-
-      if (config.llmEndpoint && config.llmKey) {
-        try {
-          const sysPrompt = `You are a Hollywood film director and cinematographer AI.
-Convert the user's film vision into a structured JSON production breakdown containing scenes, shots, lenses, motion rigs, and reusable @elements.
-Strictly return valid JSON only matching this schema without markdown code blocks:
-{
-  "scenes": [
-    {
-      "title": "string",
-      "shots": [
-        {
-          "title": "string",
-          "prompt": "detailed prompt with @Element tags",
-          "lens": "16mm | 24mm | 35mm | 50mm | 85mm | 135mm",
-          "cameraMovement": "Orbit 360° | Dolly | Truck | Crane | Handheld | FPV Drone",
-          "aspectRatio": "16:9",
-          "elementRefs": ["tag1", "tag2"]
+      try {
+        const res = await fetch('/api/ai-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'breakdown', prompt: visionPrompt })
+        });
+        const data = await res.json();
+        if (data.success && data.breakdown) return data.breakdown;
+        if (data.reason !== 'no_provider_configured') {
+          console.warn("Claude breakdown failed, falling back to simulated generator:", data.error);
         }
-      ]
-    }
-  ],
-  "elements": [
-    { "name": "string", "aka": "string", "type": "character | location | prop | style", "description": "string", "tags": "string" }
-  ]
-}`;
-
-          const res = await fetch(config.llmEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${config.llmKey}`
-            },
-            body: JSON.stringify({
-              model: 'gpt-4o',
-              messages: [
-                { role: 'system', content: sysPrompt },
-                { role: 'user', content: visionPrompt }
-              ],
-              temperature: 0.7
-            })
-          });
-
-          if (!res.ok) throw new Error(`LLM Error: ${res.statusText}`);
-          const jsonRes = await res.json();
-          let raw = jsonRes.choices[0].message.content;
-          raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
-          return JSON.parse(raw);
-        } catch (err) {
-          console.warn("Live LLM failed, falling back to simulated generator:", err);
-        }
+      } catch (err) {
+        console.warn("AI Director request failed, falling back to simulated generator:", err);
       }
 
       // Simulated local generator
@@ -8839,36 +8795,29 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     btn.innerHTML = `<span class="render-spinner" style="width:12px; height:12px; border-width:1.5px; border-top-color:#000;"></span> <span>Enhancing...</span>`;
     btn.disabled = true;
 
-    const config = window.FilmOS ? window.FilmOS.state.apiConfig : {};
     const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
     const lens = shot && shot.lens ? shot.lens : "24mm";
     const rig = shot && shot.motionRig ? shot.motionRig : (shot && shot.camera ? shot.camera : "Dolly");
     const body = shot && shot.cameraBody ? shot.cameraBody : "ARRI Alexa Mini";
 
-    if (config && config.llmEndpoint && config.llmKey) {
-      try {
-        const res = await fetch(config.llmEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.llmKey}`
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: `You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying shot on ${body} with a ${lens} lens and ${rig} motion choreography.` },
-              { role: "user", content: basePrompt }
-            ]
-          })
-        });
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          promptInput.value = data.choices[0].message.content.trim();
-        }
-      } catch (err) {
-        console.warn("LLM API failed, falling back to local rule enhancer:", err);
-        applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
+    let enhanced = null;
+    try {
+      const res = await fetch('/api/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'enhance', prompt: basePrompt, lens, rig, cameraBody: body })
+      });
+      const data = await res.json();
+      if (data.success && data.text) enhanced = data.text;
+      else if (data.reason !== 'no_provider_configured') {
+        console.warn("Claude enhance failed, falling back to local rule enhancer:", data.error);
       }
+    } catch (err) {
+      console.warn("AI Enhance request failed, falling back to local rule enhancer:", err);
+    }
+
+    if (enhanced) {
+      promptInput.value = enhanced;
     } else {
       // Local Intelligent Cinematic Expander
       await new Promise(r => setTimeout(r, 600));
@@ -10715,12 +10664,15 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
-            <label class="modal-label">LLM API Key:</label>
-            <input type="password" id="settings-llm-key" class="custom-input" style="width:100%; margin-bottom:14px;">
+            <label class="modal-label">AI Director & Prompt Enhancer (Claude):</label>
+            <div id="settings-ai-status" style="margin-bottom:14px; opacity:0.85;">Checking…</div>
+            <div style="font-size:12px; opacity:0.65; margin-bottom:14px;">
+              Set <code>ANTHROPIC_API_KEY</code> in the deployment's environment to enable live Claude
+              generation. It's a server-side key, not entered here, so it's never exposed to the browser.
+            </div>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
-            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveSettings()">Save Settings</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.closeModals()">Close</button>
           </div>
         </div>
       </div>
@@ -11002,9 +10954,11 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
         }
         // Update Simulated vs Live badge
         const badge = document.getElementById('director-mode-badge');
-        const config = window.FilmOS.state.apiConfig || {};
         if (badge) {
-          badge.textContent = (config.llmEndpoint && config.llmKey) ? "LIVE LLM" : "SIMULATED";
+          badge.textContent = "CHECKING...";
+          window.FilmOS.aiCapabilities().then(cap => {
+            badge.textContent = cap.configured ? "LIVE (CLAUDE)" : "SIMULATED";
+          });
         }
         drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -11086,21 +11040,18 @@ window.NeuralVideoEngine = HyperRealisticNeuralVideoEngine;
     },
 
     openSettings: function () {
-      const config = window.FilmOS.state.apiConfig || {};
-      document.getElementById('settings-llm-key').value = config.llmKey || '';
+      const statusEl = document.getElementById('settings-ai-status');
       const m = document.getElementById('modal-settings');
       if (m) m.classList.add('active');
-    },
-
-    saveSettings: function () {
-      const config = {
-        llmKey: document.getElementById('settings-llm-key').value.trim(),
-        isSimulatedMode: !document.getElementById('settings-llm-key').value.trim()
-      };
-      window.FilmOS.state.apiConfig = config;
-      window.FilmOS.save();
-      this.closeModals();
-      if (window.showToast) window.showToast("✓ Settings Saved!");
+      if (statusEl) {
+        statusEl.textContent = 'Checking…';
+        window.FilmOS.aiCapabilities(true).then(cap => {
+          statusEl.textContent = cap.configured
+            ? `✓ Connected — generating with ${cap.model}`
+            : '○ Not configured — running the local simulated generator';
+          statusEl.style.color = cap.configured ? 'var(--accent-lime)' : '';
+        });
+      }
     },
 
     closeModals: function () {

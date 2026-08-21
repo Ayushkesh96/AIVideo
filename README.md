@@ -72,6 +72,21 @@ upscale a 720p render and call it 4K. The free on-device engine renders its
 canvas natively at 3840×2160 when you pick 4K, which is real resolution for a
 procedural scene, but is not a diffusion model's 4K output.
 
+## AI Director & Prompt Enhancer (Claude)
+
+Two features are powered by an LLM, separate from video generation entirely:
+
+- **AI Director** — turns a one-line film vision ("a Nike-style runner in
+  Tokyo rain") into a full scene/shot breakdown with lenses, camera moves and
+  reusable `@elements`.
+- **AI Enhance** — rewrites a single shot prompt into a richer cinematic one.
+
+Set `ANTHROPIC_API_KEY` (Vercel → Project → Settings → Environment Variables,
+or a local `.env`) to run both on Claude. Without it, they run a local
+rule-based generator instead — still usable, just not a real model. The key
+lives server-side only; the browser never sees it. Pin a specific model with
+`ANTHROPIC_MODEL` (defaults to `claude-sonnet-5`).
+
 ## Running locally
 
 ```bash
@@ -106,6 +121,9 @@ api/
   video-status.js     GET   one poll tick
   video-proxy.js      GET   streams key-gated media without exposing the key
   video-providers.js  GET   which models are reachable
+  _ai.js               Claude adapter for the AI Director and Prompt Enhancer
+  ai-generate.js       POST  run a breakdown or a prompt enhance
+  ai-providers.js      GET   whether Claude is configured
   _song.js             audio counterpart to _video.js — one provider, no registry
   _providers/songgen.js talks to a self-hosted SongGeneration Studio server
   song-create.js       POST  submit a song generation, returns a job id

@@ -444,12 +444,15 @@
             <button class="btn btn-icon btn-sm" onclick="window.FilmOSUI.closeModals()">×</button>
           </div>
           <div>
-            <label class="modal-label">LLM API Key:</label>
-            <input type="password" id="settings-llm-key" class="custom-input" style="width:100%; margin-bottom:14px;">
+            <label class="modal-label">AI Director & Prompt Enhancer (Claude):</label>
+            <div id="settings-ai-status" style="margin-bottom:14px; opacity:0.85;">Checking…</div>
+            <div style="font-size:12px; opacity:0.65; margin-bottom:14px;">
+              Set <code>ANTHROPIC_API_KEY</code> in the deployment's environment to enable live Claude
+              generation. It's a server-side key, not entered here, so it's never exposed to the browser.
+            </div>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-            <button class="btn btn-dark btn-sm" onclick="window.FilmOSUI.closeModals()">Cancel</button>
-            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.saveSettings()">Save Settings</button>
+            <button class="btn btn-lime btn-sm" onclick="window.FilmOSUI.closeModals()">Close</button>
           </div>
         </div>
       </div>
@@ -731,9 +734,11 @@
         }
         // Update Simulated vs Live badge
         const badge = document.getElementById('director-mode-badge');
-        const config = window.FilmOS.state.apiConfig || {};
         if (badge) {
-          badge.textContent = (config.llmEndpoint && config.llmKey) ? "LIVE LLM" : "SIMULATED";
+          badge.textContent = "CHECKING...";
+          window.FilmOS.aiCapabilities().then(cap => {
+            badge.textContent = cap.configured ? "LIVE (CLAUDE)" : "SIMULATED";
+          });
         }
         drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -815,21 +820,18 @@
     },
 
     openSettings: function () {
-      const config = window.FilmOS.state.apiConfig || {};
-      document.getElementById('settings-llm-key').value = config.llmKey || '';
+      const statusEl = document.getElementById('settings-ai-status');
       const m = document.getElementById('modal-settings');
       if (m) m.classList.add('active');
-    },
-
-    saveSettings: function () {
-      const config = {
-        llmKey: document.getElementById('settings-llm-key').value.trim(),
-        isSimulatedMode: !document.getElementById('settings-llm-key').value.trim()
-      };
-      window.FilmOS.state.apiConfig = config;
-      window.FilmOS.save();
-      this.closeModals();
-      if (window.showToast) window.showToast("✓ Settings Saved!");
+      if (statusEl) {
+        statusEl.textContent = 'Checking…';
+        window.FilmOS.aiCapabilities(true).then(cap => {
+          statusEl.textContent = cap.configured
+            ? `✓ Connected — generating with ${cap.model}`
+            : '○ Not configured — running the local simulated generator';
+          statusEl.style.color = cap.configured ? 'var(--accent-lime)' : '';
+        });
+      }
     },
 
     closeModals: function () {

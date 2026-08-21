@@ -8,6 +8,8 @@
     "api/video-status.js": { "maxDuration": 20 },
     "api/video-providers.js": { "maxDuration": 10 },
     "api/video-selfhost-health.js": { "maxDuration": 30 },
+    "api/ai-generate.js": { "maxDuration": 60 },
+    "api/ai-providers.js": { "maxDuration": 10 },
     "api/song-create.js": { "maxDuration": 30 },
     "api/song-status.js": { "maxDuration": 20 },
     "api/song-proxy.js": { "maxDuration": 60 },

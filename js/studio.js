@@ -511,36 +511,29 @@
     btn.innerHTML = `<span class="render-spinner" style="width:12px; height:12px; border-width:1.5px; border-top-color:#000;"></span> <span>Enhancing...</span>`;
     btn.disabled = true;
 
-    const config = window.FilmOS ? window.FilmOS.state.apiConfig : {};
     const shot = window.FilmOS ? window.FilmOS.getActiveShot() : null;
     const lens = shot && shot.lens ? shot.lens : "24mm";
     const rig = shot && shot.motionRig ? shot.motionRig : (shot && shot.camera ? shot.camera : "Dolly");
     const body = shot && shot.cameraBody ? shot.cameraBody : "ARRI Alexa Mini";
 
-    if (config && config.llmEndpoint && config.llmKey) {
-      try {
-        const res = await fetch(config.llmEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.llmKey}`
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: `You are a Hollywood cinematographer and director. Rewrite the user prompt into a rich, detailed visual cinematic prompt specifying shot on ${body} with a ${lens} lens and ${rig} motion choreography.` },
-              { role: "user", content: basePrompt }
-            ]
-          })
-        });
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          promptInput.value = data.choices[0].message.content.trim();
-        }
-      } catch (err) {
-        console.warn("LLM API failed, falling back to local rule enhancer:", err);
-        applyLocalEnhancer(promptInput, basePrompt, lens, rig, body);
+    let enhanced = null;
+    try {
+      const res = await fetch('/api/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'enhance', prompt: basePrompt, lens, rig, cameraBody: body })
+      });
+      const data = await res.json();
+      if (data.success && data.text) enhanced = data.text;
+      else if (data.reason !== 'no_provider_configured') {
+        console.warn("Claude enhance failed, falling back to local rule enhancer:", data.error);
       }
+    } catch (err) {
+      console.warn("AI Enhance request failed, falling back to local rule enhancer:", err);
+    }
+
+    if (enhanced) {
+      promptInput.value = enhanced;
     } else {
       // Local Intelligent Cinematic Expander
       await new Promise(r => setTimeout(r, 600));

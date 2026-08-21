@@ -22,6 +22,8 @@ const ROUTES = {
   '/api/video-proxy': require('./api/video-proxy'),
   '/api/video-providers': require('./api/video-providers'),
   '/api/video-selfhost-health': require('./api/video-selfhost-health'),
+  '/api/ai-generate': require('./api/ai-generate'),
+  '/api/ai-providers': require('./api/ai-providers'),
   '/api/song-create': require('./api/song-create'),
   '/api/song-status': require('./api/song-status'),
   '/api/song-proxy': require('./api/song-proxy'),

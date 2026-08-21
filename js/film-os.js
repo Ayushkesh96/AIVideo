@@ -34,14 +34,6 @@
       activeSceneId: "scene-01",
       activeShotId: "shot-01",
 
-      apiConfig: {
-        llmEndpoint: "",
-        llmKey: "",
-        videoGenEndpoint: "",
-        videoGenKey: "",
-        isSimulatedMode: true
-      },
-
       elements: { characters: [], locations: [], props: [], styles: [] },
 
       scenes: [
@@ -100,15 +92,6 @@
     activeModel: "Seedance 2.5 (1080p)",
     activeSceneId: "scene-01",
     activeShotId: "shot-01a",
-
-    // API Configuration
-    apiConfig: {
-      llmEndpoint: "",
-      llmKey: "",
-      videoGenEndpoint: "",
-      videoGenKey: "",
-      isSimulatedMode: true
-    },
 
     // Reusable Elements Library (@Mentionable)
     elements: {
@@ -639,60 +622,33 @@
       return matched;
     }
 
+    // Which providers this deployment can actually reach for AI generation.
+    // Cached: it only changes on redeploy, and the drawer badge asks on every open.
+    aiCapabilities(force) {
+      if (!this._aiCapabilitiesPromise || force) {
+        this._aiCapabilitiesPromise = fetch('/api/ai-providers', { headers: { Accept: 'application/json' } })
+          .then(res => (res.ok ? res.json() : null))
+          .then(data => data || { configured: false })
+          .catch(() => ({ configured: false }));
+      }
+      return this._aiCapabilitiesPromise;
+    }
+
     // AI Director (Script-to-Shots Generator)
     async generateFilmBreakdown(visionPrompt) {
-      const config = this.state.apiConfig || {};
-
-      if (config.llmEndpoint && config.llmKey) {
-        try {
-          const sysPrompt = `You are a Hollywood film director and cinematographer AI.
-Convert the user's film vision into a structured JSON production breakdown containing scenes, shots, lenses, motion rigs, and reusable @elements.
-Strictly return valid JSON only matching this schema without markdown code blocks:
-{
-  "scenes": [
-    {
-      "title": "string",
-      "shots": [
-        {
-          "title": "string",
-          "prompt": "detailed prompt with @Element tags",
-          "lens": "16mm | 24mm | 35mm | 50mm | 85mm | 135mm",
-          "cameraMovement": "Orbit 360° | Dolly | Truck | Crane | Handheld | FPV Drone",
-          "aspectRatio": "16:9",
-          "elementRefs": ["tag1", "tag2"]
+      try {
+        const res = await fetch('/api/ai-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'breakdown', prompt: visionPrompt })
+        });
+        const data = await res.json();
+        if (data.success && data.breakdown) return data.breakdown;
+        if (data.reason !== 'no_provider_configured') {
+          console.warn("Claude breakdown failed, falling back to simulated generator:", data.error);
         }
-      ]
-    }
-  ],
-  "elements": [
-    { "name": "string", "aka": "string", "type": "character | location | prop | style", "description": "string", "tags": "string" }
-  ]
-}`;
-
-          const res = await fetch(config.llmEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${config.llmKey}`
-            },
-            body: JSON.stringify({
-              model: 'gpt-4o',
-              messages: [
-                { role: 'system', content: sysPrompt },
-                { role: 'user', content: visionPrompt }
-              ],
-              temperature: 0.7
-            })
-          });
-
-          if (!res.ok) throw new Error(`LLM Error: ${res.statusText}`);
-          const jsonRes = await res.json();
-          let raw = jsonRes.choices[0].message.content;
-          raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
-          return JSON.parse(raw);
-        } catch (err) {
-          console.warn("Live LLM failed, falling back to simulated generator:", err);
-        }
+      } catch (err) {
+        console.warn("AI Director request failed, falling back to simulated generator:", err);
       }
 
       // Simulated local generator
